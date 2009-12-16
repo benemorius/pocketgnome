@@ -353,7 +353,7 @@
         }
     }
 	else{
-		PGLog(@"[Combat] Already attacking %@, ignoring disposeOfUnit", unit);
+		//PGLog(@"[Combat] Already attacking %@, ignoring disposeOfUnit", unit);
 	}
 	
 	return;
@@ -409,7 +409,7 @@
                    afterDelay: delay];
     } else {
         // we're already attacking this unit
-		PGLog(@"[Combat] Already attacking %@", unit);
+		//PGLog(@"[Combat] Already attacking %@", unit);
     }
 }
 
@@ -544,7 +544,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	// sort units by position
 	Position *playerPosition = [playerData position];
 	[units sortUsingFunction: DistanceFromPositionCmp context: playerPosition];
-	PGLog(@"[Combat] Units in queue or attacking me: %d (Queue:%d) (Me:%d)", [units count], [_attackQueue count], [_unitsAttackingMe count]);
+	//PGLog(@"[Combat] Units in queue or attacking me: %d (Queue:%d) (Me:%d)", [units count], [_attackQueue count], [_unitsAttackingMe count]);
 	
 	// lets find the best target
 	if ( [units count] ){
@@ -616,7 +616,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			 [mob isFleeing])													// or fleeing
 			){
 			
-			PGLog(@"[Combat] In combat with mob %@", mob);
+			//PGLog(@"[Combat] In combat with mob %@", mob);
 			
 			// add mob!
 			[self addUnitToAttackingMe: (Unit*)mob];
@@ -662,7 +662,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	[self verifyCombatUnits: NO];
 	[self verifyCombatState];
 	
-	PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+	//PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
 }
 
 - (BOOL)addUnitToAttackingMe: (Unit*)unit{
