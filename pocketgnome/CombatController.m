@@ -121,8 +121,7 @@
     
     for(Unit* unit in _attackQueue) {
         // remove the unit if it's invalid, blacklisted, dead, evading or no longer in combat
-        if( ![unit isValid] || [blacklistController isBlacklisted: unit] || [unit isDead] || [unit isEvading] || [unit isTappedByOther] || ![unit isInCombat] ) {
-            PGLog(@"[Combat] [A] Removing %@  NotValid?(%d) Blacklisted?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [blacklistController isBlacklisted: unit], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
+        if( ![unit isValid] || [blacklistController isBlacklisted: unit] || [unit isDead] || [unit isEvading] || [unit isTappedByOther]) {// || ![unit isInCombat] ) {
 			[unitsToRemove addObject: unit];
         }
     }

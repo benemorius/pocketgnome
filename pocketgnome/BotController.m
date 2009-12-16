@@ -1242,7 +1242,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							//[spellController cooldownLeftForSpellID:actionID];
 							
 							//more multitasking //the world probably isn't ready for this much yet
-							//[self finishCurrentProcedure: state];
+							[self finishCurrentProcedure: state]; //but I am
 						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
@@ -2615,7 +2615,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)mountNow{
-	PGLog(@"[Bot] Need to mount?");
+	//PGLog(@"[Bot] Need to mount?");
 	if ( [mountCheckbox state] && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
 		usleep(100000);
 		
@@ -2625,7 +2625,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performAction:[[mount ID] intValue]];
 		return YES;
 	}
-	PGLog(@"[Bot] Not Mounting");
+	//PGLog(@"[Bot] Not Mounting");
 	return NO;
 }
 
