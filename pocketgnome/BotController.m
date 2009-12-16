@@ -1255,7 +1255,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						else {
 							PGLog(@"[Bot] Spell didn't cast on target %@ (%i)", target, actionResult);
 						}
-						if(actionResult != ErrSpellNotReady && actionResult != 0 && [rule resultType] == ActionType_Spell)
+						if(actionResult != ErrNotFound && actionResult != ErrSpellNotReady && actionResult != ErrSpellNot_Ready && [rule resultType] == ActionType_Spell)
 						{
 							//more multitasking //the world probably isn't ready for this much yet
 							PGLog(@"[Bot] Succesfully cast a spell. Ending combat procedure");
