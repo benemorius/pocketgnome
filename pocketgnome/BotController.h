@@ -271,6 +271,8 @@
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
 
+- (void)addLootMob:(Unit *)unit;
+
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;
 - (IBAction)startStopBot: (id)sender;

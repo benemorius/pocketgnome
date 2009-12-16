@@ -39,8 +39,8 @@
 //- (BOOL)removeUnitFromCombatList: (Unit*)unit;
 
 - (Unit*)findBestUnitToAttack;
-- (BOOL)addUnitToCombatQueue: (Unit*)unit;
-- (BOOL)removeUnitFromCombatQueue: (Unit*)unit;
+- (BOOL)addUnitToAttackingMe: (Unit*)unit;
+- (BOOL)removeUnitFromAttackingMe: (Unit*)unit;
 @end
 
 @implementation CombatController
@@ -410,7 +410,7 @@
                    afterDelay: delay];
     } else {
         // we're already attacking this unit
-		//PGLog(@"[Combat] Already attacking %@", unit);
+		PGLog(@"[Combat] Already attacking %@", unit);
     }
 }
 
@@ -501,22 +501,28 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	// begin weight calculation
 	int weight = 0;
 	
+	// always return 100 weight if weight system disabled
+	if (!botController.theCombatProfile.enemyWeightEnabled)
+		return 100;
+	
 	// player or pet?
 	if ([unit isPlayer])
-		weight += 100;
+		weight += botController.theCombatProfile.enemyWeightPlayer;
 	else if ([unit isPet])
-		weight += 25;
+		weight += botController.theCombatProfile.enemyWeightPet;
+	else if ([unit isNPC])
+		weight += botController.theCombatProfile.enemyWeightNPC;
 	
 	// current target
 	if ( [playerData targetID] == [unit GUID] )
-		weight += 25;
+		weight += botController.theCombatProfile.enemyWeightTarget;
 	
 	// health left
-	weight += (100-[unit percentHealth]);
+	weight += (100.0f - [unit percentHealth]) * (botController.theCombatProfile.enemyWeightHealth / 100.0f);
 	
 	// distance to target
 	if ( attackRange > 0 )
-		weight += ( 100 * ((attackRange-distanceToTarget)/attackRange));
+		weight += ( 100.0f * ((attackRange-distanceToTarget)/attackRange)) * (botController.theCombatProfile.enemyWeightDistance / 100.0f);
 	
 	return weight;	
 }
@@ -539,7 +545,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	// sort units by position
 	Position *playerPosition = [playerData position];
 	[units sortUsingFunction: DistanceFromPositionCmp context: playerPosition];
-	//PGLog(@"[Combat] Units in queue or attacking me: %d (Queue:%d) (Me:%d)", [units count], [_attackQueue count], [_unitsAttackingMe count]);
+	PGLog(@"[Combat] Units in queue or attacking me: %d (Queue:%d) (Me:%d)", [units count], [_attackQueue count], [_unitsAttackingMe count]);
 	
 	// lets find the best target
 	if ( [units count] ){
@@ -568,7 +574,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			
 			// begin weight calculation
 			int weight = [self unitWeight:unit PlayerPosition:playerPosition];
-			//PGLog(@"[Combat] Valid target %@ found %0.2f yards away with weight %d", unit, distanceToTarget, weight);
+			PGLog(@"[Combat] Valid target %@ found %0.2f yards away with weight %d", unit, distanceToTarget, weight);
 			
 			// best weight
 			if ( weight > highestWeight ){
@@ -611,14 +617,17 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			 [mob isFleeing])													// or fleeing
 			){
 			
-			//PGLog(@"[Combat] In combat with mob %@", mob);
+			PGLog(@"[Combat] In combat with mob %@", mob);
 			
 			// add mob!
-			[self addUnitToCombatQueue: (Unit*)mob];
+			[self addUnitToAttackingMe: (Unit*)mob];
+			//and queue it for disposal
+			[self disposeOfUnit: (Unit*)mob];
 		}
 		// remove unit
-		else{
-			[self removeUnitFromCombatQueue:(Unit*)mob];
+		else {
+			//PGLog(@"[Combat] Dropping combat with mob %@", mob);
+			[self removeUnitFromAttackingMe:(Unit*)mob];
 		}
 	}
 	
@@ -636,14 +645,17 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			 [player isFleeing])													// or fleeing
 			){
 			
-			//PGLog(@"[Combat] In combat with player %@", player);
+			PGLog(@"[Combat] In combat with player %@", player);
 			
 			// add player
-			[self addUnitToCombatQueue:player];
+			[self addUnitToAttackingMe:player];
+			//and queue it for disposal
+			[self disposeOfUnit: player];
 		}
 		// remove unit
 		else{
-			[self removeUnitFromCombatQueue:player];
+			//PGLog(@"[Combat] Dropping combat with player %@", player);
+			[self removeUnitFromAttackingMe:player];
 		}
 	}
 	
@@ -651,10 +663,10 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	[self verifyCombatUnits: NO];
 	[self verifyCombatState];
 	
-	//PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+	PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
 }
 
-- (BOOL)addUnitToCombatQueue: (Unit*)unit{
+- (BOOL)addUnitToAttackingMe: (Unit*)unit{
 	if ( ![_unitsAttackingMe containsObject: unit] ){
 		[_unitsAttackingMe addObject:unit];
 		// should we remove the unit from the blacklist?
@@ -664,7 +676,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	return NO;
 }
 
-- (BOOL)removeUnitFromCombatQueue: (Unit*)unit{
+- (BOOL)removeUnitFromAttackingMe: (Unit*)unit{
 	if ([_unitsAttackingMe containsObject: unit]){
 		[_unitsAttackingMe removeObject: unit];
 		PGLog(@"[Combat] Removing <--- [C] %@", unit);

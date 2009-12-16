@@ -44,6 +44,14 @@
         self.attackRange = 20.0f;
         self.attackLevelMin = 2;
         self.attackLevelMax = 70;
+		
+		self.enemyWeightEnabled = YES;
+		self.enemyWeightPlayer = 100;
+		self.enemyWeightPet = 0;
+		self.enemyWeightNPC = 75;
+		self.enemyWeightHealth = 40;
+		self.enemyWeightTarget = 25;
+		self.enemyWeightDistance = 25;
     }
 	PGLog(@"CombatProfile created with name %@", self.name);
     return self;
@@ -91,6 +99,15 @@
     copy.attackRange = self.attackRange;
     copy.attackLevelMin = self.attackLevelMin;
     copy.attackLevelMax = self.attackLevelMax;
+	
+	copy.enemyWeightEnabled = self.enemyWeightEnabled;
+	copy.enemyWeightPlayer = self.enemyWeightPlayer;
+	copy.enemyWeightPet = self.enemyWeightPet;
+	copy.enemyWeightNPC = self.enemyWeightNPC;
+	copy.enemyWeightHealth = self.enemyWeightHealth;
+	copy.enemyWeightTarget = self.enemyWeightTarget;
+	copy.enemyWeightDistance = self.enemyWeightDistance;
+
     
     return copy;
 }
@@ -123,6 +140,15 @@
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
         self.attackLevelMin = [[decoder decodeObjectForKey: @"AttackLevelMin"] intValue];
         self.attackLevelMax = [[decoder decodeObjectForKey: @"AttackLevelMax"] intValue];
+		
+		self.enemyWeightEnabled = [[decoder decodeObjectForKey: @"EnemyWeightEnabled"] boolValue];
+		self.enemyWeightPlayer = [[decoder decodeObjectForKey: @"EnemyWeightPlayer"] intValue];
+		self.enemyWeightPet = [[decoder decodeObjectForKey: @"EnemyWeightPet"] intValue];
+		self.enemyWeightNPC = [[decoder decodeObjectForKey: @"EnemyWeightNPC"] intValue];
+		self.enemyWeightTarget = [[decoder decodeObjectForKey: @"EnemyWeightTarget"] intValue];
+		self.enemyWeightHealth = [[decoder decodeObjectForKey: @"EnemyWeightHealth"] intValue];
+		self.enemyWeightDistance = [[decoder decodeObjectForKey: @"EnemyWeightDistance"] intValue];
+
 	}
 	return self;
 }
@@ -153,6 +179,15 @@
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMax] forKey: @"AttackLevelMax"];
 
     [coder encodeObject: self.entries forKey: @"IgnoreList"];
+	
+	[coder encodeObject: [NSNumber numberWithBool: self.enemyWeightEnabled] forKey: @"EnemyWeightEnabled"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightPlayer] forKey: @"EnemyWeightPlayer"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightPet] forKey: @"EnemyWeightPet"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightNPC] forKey: @"EnemyWeightNPC"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightTarget] forKey: @"EnemyWeightTarget"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightHealth] forKey: @"EnemyWeightHealth"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightDistance] forKey: @"EnemyWeightDistance"];
+
 }
 
 - (void) dealloc
@@ -185,6 +220,14 @@
 @synthesize attackRange;
 @synthesize attackLevelMin;
 @synthesize attackLevelMax;
+
+@synthesize enemyWeightEnabled;
+@synthesize enemyWeightPlayer;
+@synthesize enemyWeightPet;
+@synthesize enemyWeightNPC;
+@synthesize enemyWeightTarget;
+@synthesize enemyWeightHealth;
+@synthesize enemyWeightDistance;
 
 
 - (BOOL)unitFitsProfile: (Unit*)unit ignoreDistance: (BOOL)ignoreDistance {

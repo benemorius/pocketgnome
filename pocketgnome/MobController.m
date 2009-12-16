@@ -266,8 +266,10 @@ static MobController* sharedController = nil;
     NSDate *now = [NSDate date];
     for(NSNumber *address in addresses) {
         if( ![addressDict objectForKey: address] ) {
-            [dataList addObject: [Mob mobWithAddress: address inMemory: memory]];
-        } else {
+			Unit *unit = [Mob mobWithAddress: address inMemory: memory];
+            [dataList addObject: unit];
+			[botController addLootMob: unit];
+		} else {
             [[addressDict objectForKey: address] setRefreshDate: now];
         }
     }

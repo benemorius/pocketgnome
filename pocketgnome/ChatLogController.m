@@ -223,7 +223,7 @@
                 self.lastPassFoundChat = YES;
                 
                 if(passNumber > 0 && ![entry isWhisperSent]) {
-                    if(![controller isWoWFront]) {
+                    /*if(![controller isWoWFront]) {
                         if( [enableGrowlNotifications state] && [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
                             [GrowlApplicationBridge notifyWithTitle: [entry isSpoken] ? [NSString stringWithFormat: @"%@ %@...", [entry playerName], [entry typeVerb]] : [NSString stringWithFormat: @"%@ (%@)", [entry playerName], [entry isChannel] ? [entry channel] : [entry typeName]]
                                                         description: [entry text]
@@ -233,7 +233,7 @@
                                                            isSticky: [entry isWhisperReceived] ? YES : NO
                                                        clickContext: nil];             
                         }
-                    }
+                    }*/
 					
 					// Fire off a notification - Whisper received!
 					if ( [entry isWhisperReceived] ){
@@ -558,8 +558,25 @@
 		if ( [numWhispers intValue] >= [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmWhisperedTimes"] intValue] ){
 			[[NSSound soundNamed: @"alarm"] play];
 			PGLog(@"[Chat] You have been whispered %@ times by %@. Last message: %@", numWhispers, [entry playerName], [entry text] );
+			[GrowlApplicationBridge notifyWithTitle: @"Whispered too much!"
+										description: [NSString stringWithFormat: @"%@ times by %@. Last Message:\n%@", numWhispers, [entry playerName], [entry text]]
+								   notificationName: @"ReceivedManyMessages"
+										   iconData: [[NSImage imageNamed: @"Ability_Warrior_Revenge"] TIFFRepresentation]
+										   priority: 0
+										   isSticky: YES
+									   clickContext: nil];
 		}
 	}
+	if ( [numWhispers intValue] < [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmWhisperedTimes"] intValue] ) {
+		[GrowlApplicationBridge notifyWithTitle: @"Received Whisper"
+									description: [NSString stringWithFormat: @"From: %@\n%@", [entry playerName], [entry text]]
+							   notificationName: @"PlayerReceivedMessage"
+									   iconData: [[NSImage imageNamed: @"Ability_Warrior_Revenge"] TIFFRepresentation]
+									   priority: 0
+									   isSticky: NO
+								   clickContext: nil];
+	}
+
 }
 
 #pragma mark -
