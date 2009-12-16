@@ -1154,6 +1154,7 @@ static PlayerDataController* sharedController = nil;
 		
 		// only resort and display the table if the window is visible
 		if( [[combatTable window] isVisible]) {
+			PGLog(@"ZOMG@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!combat");
 			
 			NSArray *units = [combatController unitsAttackingMe];
 			NSArray *attackQueue = [combatController attackQueue];
@@ -1410,7 +1411,7 @@ static PlayerDataController* sharedController = nil;
 			return;
 		}
 		
-		[aCell setTextColor: [NSColor darkGrayColor]];
+		[aCell setTextColor: [NSColor blueColor]];
 	}
 	
 	return;

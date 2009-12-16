@@ -1634,6 +1634,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// sort by range
     Position *playerPosition = [playerController position];
     [targetsWithinRange sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
+	[targetsWithinRange addObject: [playerController player]];
 	
     if ( [targetsWithinRange count] ) {
         for ( Unit *unit in targetsWithinRange ) {
@@ -2265,6 +2266,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			healUnit = [self unitToHeal];
 		}
 		
+		//if([[playerController player] percentHealth] < [theCombatProfile healthThreshold])
+		//{
+		//	PGLog(@"Wait! We need heals and we get priority!");
+		//	healUnit = [playerController player];
+		//}
+		
 		// Time to heal! We don't want to heal if no LOS! We should follow the target! (PS this isn't smart lul)
 		BOOL isTargetUnavailable = _lastActionErrorCode == ErrTargetNotInLOS || _lastActionErrorCode == ErrTargetOutRange;
 		// Check to see if the LOS error was w/in the last 3 seconds?  If so shux lets ignore casting
@@ -2274,11 +2281,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		if ( healUnit && !isTargetUnavailable ){
 			// Should stop moving :-)
-			[movementController pauseMovement];
+			//[movementController pauseMovement]; //testing without this
 			[self healUnit:healUnit];
 			_lastUnitAttemptedToHealed = healUnit;
 			
 			return YES;
+		}
+		
+		else
+		{
+			PGLog(@"[Heal] Target is invalid or can't heal it: %@", [playerController player]);
 		}
 		
 		// Should we auto follow the focus target?
@@ -2315,7 +2327,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 		
-		PGLog(@"[Heal] Nothing required to do! Moving down the list!");
+		//PGLog(@"[Heal] Nothing required to do! Moving down the list!");
 	}
     
     // check to see if we are moving to attack a unit and bail if we are
