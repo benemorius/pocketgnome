@@ -1240,9 +1240,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						if ( [rule resultType] == ActionType_Spell ){
 							PGLog(@"[Bot] Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
 							//[spellController cooldownLeftForSpellID:actionID];
-							
-							//more multitasking //the world probably isn't ready for this much yet
-							[self finishCurrentProcedure: state]; //but I am
 						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
@@ -1257,6 +1254,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 						else {
 							PGLog(@"[Bot] Spell didn't cast on target %@ (%i)", target, actionResult);
+						}
+						if(actionResult != ErrSpellNotReady && actionResult != 0 && [rule resultType] == ActionType_Spell)
+						{
+							//more multitasking //the world probably isn't ready for this much yet
+							PGLog(@"[Bot] Succesfully cast a spell. Ending combat procedure");
+							[self finishCurrentProcedure: state]; //but I am
 						}
                     }
 	
@@ -3900,7 +3903,7 @@ NSMutableDictionary *_diffDict = nil;
 	_lastActionTime = [playerController currentTime];
 	
 	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] ){
-		PGLog(@"ZOMG THERE IS AN ERROR! AHHHHHH! %@", [playerController lastErrorMessage]);
+		//PGLog(@"ZOMG THERE IS AN ERROR! AHHHHHH! %@", [playerController lastErrorMessage]);
 	}
 	
 	// did the spell not cast?
