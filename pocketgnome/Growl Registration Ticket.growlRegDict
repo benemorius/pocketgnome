@@ -13,6 +13,8 @@
 		<string>BattlegroundLeave</string>
 		<string>FishCaught</string>
         <string>PlayerReceivedMessage</string>
+		<string>ReceivedManyMessages</string>
+		<string>PlayerDetected</string>
 	</array>
 	<key>DefaultNotifications</key>
 	<array>
@@ -25,6 +27,8 @@
 		<string>BattlegroundLeave</string>
 		<string>FishCaught</string>
         <string>PlayerReceivedMessage</string>
+		<string>ReceivedManyMessages</string>
+		<string>PlayerDetected</string>
 	</array>
 	<key>TicketVersion</key>
 	<integer>1</integer>

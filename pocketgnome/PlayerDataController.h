@@ -25,6 +25,7 @@
 @class OffsetController;
 @class MovementController;
 @class MobController;
+@class BlacklistController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"

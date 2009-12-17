@@ -15,8 +15,6 @@
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
 		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
-		0350738410CDBA460004636E /* SpellCooldown.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0350738310CDBA460004636E /* SpellCooldown.xib */; };
-		0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0350738810CDBA640004636E /* SpellCooldownConditionController.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
@@ -25,6 +23,9 @@
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
+		7CCA464710CE6BCB00DFAB96 /* SpellCooldown.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */; };
+		7CCA464810CE6BCB00DFAB96 /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CCA464610CE6BCB00DFAB96 /* SpellCooldownConditionController.m */; };
+		7CF06E5D10D70C4200B28C9B /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF06E5C10D70C4200B28C9B /* BlacklistController.m */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
 		7D0C43F80DF20B0D005F3940 /* TransparentWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43F70DF20B0D005F3940 /* TransparentWindow.m */; };
@@ -330,9 +331,6 @@
 		034429BC0FAA3E3800E9DE03 /* QuestItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestItem.m; sourceTree = "<group>"; };
 		034429BE0FAA3E5600E9DE03 /* QuestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestController.h; sourceTree = "<group>"; };
 		034429BF0FAA3E5600E9DE03 /* QuestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestController.m; sourceTree = "<group>"; };
-		0350738310CDBA460004636E /* SpellCooldown.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellCooldown.xib; sourceTree = "<group>"; };
-		0350738710CDBA640004636E /* SpellCooldownConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellCooldownConditionController.h; sourceTree = "<group>"; };
-		0350738810CDBA640004636E /* SpellCooldownConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellCooldownConditionController.m; sourceTree = "<group>"; };
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
@@ -350,6 +348,11 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* PocketGnome_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketGnome_Prefix.pch; sourceTree = "<group>"; };
+		7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellCooldown.xib; sourceTree = "<group>"; };
+		7CCA464510CE6BCB00DFAB96 /* SpellCooldownConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellCooldownConditionController.h; sourceTree = "<group>"; };
+		7CCA464610CE6BCB00DFAB96 /* SpellCooldownConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellCooldownConditionController.m; sourceTree = "<group>"; };
+		7CF06E5B10D70C4200B28C9B /* BlacklistController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistController.h; sourceTree = "<group>"; };
+		7CF06E5C10D70C4200B28C9B /* BlacklistController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistController.m; sourceTree = "<group>"; };
 		7D06F0400D23058B00DA4E99 /* AuraController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuraController.h; sourceTree = "<group>"; };
 		7D06F0410D23058B00DA4E99 /* AuraController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuraController.m; sourceTree = "<group>"; };
 		7D0C43CF0DF2089E005F3940 /* ScanGridView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScanGridView.h; sourceTree = "<group>"; };
@@ -700,7 +703,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -725,6 +728,11 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				7CF06E5C10D70C4200B28C9B /* BlacklistController.m */,
+				7CF06E5B10D70C4200B28C9B /* BlacklistController.h */,
+				7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */,
+				7CCA464510CE6BCB00DFAB96 /* SpellCooldownConditionController.h */,
+				7CCA464610CE6BCB00DFAB96 /* SpellCooldownConditionController.m */,
 				7DAAE7180D148972003F1E3C /* Controller.h */,
 				7DAAE7190D148972003F1E3C /* Controller.m */,
 				7DB2C4480D3BFE4100100B4D /* BotController.h */,
@@ -805,7 +813,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
+				8D1107320486CEB800E47090 /* ggteabag.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1085,7 +1093,6 @@
 		7D54DCB80E08449F00E1B463 /* Condition NIBs */ = {
 			isa = PBXGroup;
 			children = (
-				0350738310CDBA460004636E /* SpellCooldown.xib */,
 				7DCE50700E12F05E00C5DF01 /* AuraCondition.xib */,
 				7D5496450E1AA0F5004AA3E9 /* AuraStackCondition.xib */,
 				7DCE50710E12F05E00C5DF01 /* StatusCondition.xib */,
@@ -1138,8 +1145,6 @@
 				7D7C66DC0E58E97D002A6C96 /* CombatCountConditionController.m */,
 				7D7C67140E58EC79002A6C96 /* ProximityCountConditionController.h */,
 				7D7C67150E58EC79002A6C96 /* ProximityCountConditionController.m */,
-				0350738710CDBA640004636E /* SpellCooldownConditionController.h */,
-				0350738810CDBA640004636E /* SpellCooldownConditionController.m */,
 			);
 			name = Conditions;
 			sourceTree = "<group>";
@@ -1400,7 +1405,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
+			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1600,7 +1605,7 @@
 				03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */,
 				03C42CCA1096839E0085E888 /* Macros.plist in Resources */,
 				03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */,
-				0350738410CDBA460004636E /* SpellCooldown.xib in Resources */,
+				7CCA464710CE6BCB00DFAB96 /* SpellCooldown.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1707,7 +1712,8 @@
 				0306057C10881CAE00C57D77 /* MacroController.m in Sources */,
 				03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */,
 				0313B4D810BAEA0B009E74E4 /* EventController.m in Sources */,
-				0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */,
+				7CCA464810CE6BCB00DFAB96 /* SpellCooldownConditionController.m in Sources */,
+				7CF06E5D10D70C4200B28C9B /* BlacklistController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1802,7 +1808,7 @@
 				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "PGLOGGING=1";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;

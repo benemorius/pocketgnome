@@ -45,6 +45,7 @@
 @property (readwrite, retain) Position *lastPlayerPosition;
 @property (readwrite, retain) Position *lastAttemptedPosition;
 @property (readwrite, assign) int jumpCooldown;
+@property (readwrite, assign) float lastDistance;
 @property BOOL shouldAttack;
 @property BOOL isPaused;
 @property BOOL stopAtEnd;
@@ -61,6 +62,8 @@
 - (void)resetMovementTimer;
 - (void)moveToNextWaypoint;
 - (void)resetSpeedDistanceCheck;
+- (void)checkCurrentPosition;
+- (void)checkProximity;
 
 - (void)turnToward: (Position*)position;
 
@@ -129,6 +132,7 @@
 @synthesize shouldJump = _shouldJump;
 @synthesize lastJumpTime = _lastJumpTime;
 @synthesize jumpCooldown = _jumpCooldown;
+@synthesize lastDistance = _lastDistance;
 
 @synthesize lastDirectionCorrection = _lastDirectionCorrection;
 @synthesize shouldAttack = _shouldAttack;
@@ -338,6 +342,9 @@ typedef enum MovementType {
 	
     Position *playerPosition = [playerData position];
     float distance = [playerPosition distanceToPosition: position];
+	self.lastDistance = 0;
+	
+	//PGLog(@"[Move] Want to move %0.2f yards to %@", distance, position);
 
     if(!position || distance == INFINITY) { // sanity check
         PGLog(@"[Move] Invalid waypoint (distance: %f). Ending patrol.", distance);
@@ -373,15 +380,17 @@ typedef enum MovementType {
 	
 	// END - new stuck check
 	
-	//PGLog(@"[Move] Moving to %@ %@", position, checkPosition);
+	//PGLog(@"[Move] Moving %0.2f yards to %@ %@", distance, position, checkPosition);
 
     self.lastSavedPosition = playerPosition;
     self.lastDirectionCorrection = [NSDate date];
     self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: (distance/[playerData speedMax]) + 4.0];
     
 	if ( [movementType selectedTag] == MOVE_MOUSE ){
+		//PGLog(@"[Move] Stopping forward movement, refacing, then restarting");
 		[self moveForwardStop];
 		[self correctDirection: YES];
+		//PGLog(@"[Move] Moving forward");
 		[self moveForwardStart];
 	}
 	else if ( [movementType selectedTag] == MOVE_KEYBOARD ){
@@ -392,7 +401,8 @@ typedef enum MovementType {
 		[self setClickToMove:position andType:ctmWalkTo andGUID:0];
     }
 	
-    _movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
+    _movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.5 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
+    _proximityTimer = [NSTimer scheduledTimerWithTimeInterval: 0.05 target: self selector: @selector(checkProximity:) userInfo: nil repeats: YES];
 }
 
 // Basically it just checks our speed over time to see if we're actually moving toward our target
@@ -791,6 +801,37 @@ typedef enum MovementType {
     }
 }
 
+- (void)checkProximity: (NSTimer*)timer {
+	//this is a streamlined remake of checkCurrentPosition
+	//intended to maintain efficienty while allowing high callback rates
+	//it will call checkCurrentPosition when destination is in range
+
+	//PGLog(@"checkproximity"); //don't forget this fires at 50hz
+	
+    Position *playerPosition = [playerData position];
+    Position *destPosition = (self.unit) ? [self.unit position] : [[self destination] position];
+	
+    float distance = [playerData isOnGround] ? [playerPosition distanceToPosition2D: destPosition] : [playerPosition distanceToPosition: destPosition];
+	
+	BOOL isNode = [self.unit isKindOfClass: [Node class]];
+	BOOL isPlayerOnGround = [playerData isOnGround];
+	
+	// if we're near our target, move to the next
+    //float playerSpeed = [playerData speed];
+    //if(distance2d < playerSpeed/2.0)  {
+	float distanceToUnit = WAYPOINT_SENSITIVITY;
+	
+	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
+	if ( isNode && !isPlayerOnGround ){
+		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
+	}
+	// We're close enough to take action or move to the next waypoint!
+	if( distance <= distanceToUnit )  {
+		if(isNode)
+			[self moveForwardStop];
+		[self checkCurrentPosition];
+	}
+}
 
 - (void)checkCurrentPosition: (NSTimer*)timer {
 	if ( ![botController isBotting] ) return;
@@ -800,13 +841,32 @@ typedef enum MovementType {
 		return;		
 	}
 	
-	//PGLog(@"checkCurrentPosition");
+	PGLog(@"checkCurrentPosition");
 	
     Position *playerPosition = [playerData position];
     Position *destPosition = (self.unit) ? [self.unit position] : [[self destination] position];
 
     float distance = [playerData isOnGround] ? [playerPosition distanceToPosition2D: destPosition] : [playerPosition distanceToPosition: destPosition];
     //float distance2D = [playerPosition distanceToPosition2D: destPosition];
+	
+	//maintain a record of the previous distance to destination
+	//to be checked against the current distance to destination
+	//the plethora of flyaway checks isn't really necessary when we do this
+	if ([self lastDistance]) {
+		if (distance > [self lastDistance]) {
+			PGLog(@"[Move] We're moving away from our destination! %0.2f > %0.2f !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", distance, self.lastDistance);
+			[self moveForwardStop];
+			[self correctDirection: YES];
+			[self moveForwardStart];
+		}
+	}
+	else {
+		PGLog(@"[Move] lastDistance not set@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+	}
+
+	
+	
+	self.lastDistance = distance;
 
     // sanity check, incase something happens
     if(distance == INFINITY) {
@@ -833,7 +893,7 @@ typedef enum MovementType {
 	// if we're near our target, move to the next
     float playerSpeed = [playerData speed];
     //if(distance2d < playerSpeed/2.0)  {
-	float distanceToUnit = 5.0f;
+	float distanceToUnit = WAYPOINT_SENSITIVITY;
 	
 	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
 	if ( isNode && !isPlayerOnGround ){
@@ -842,6 +902,7 @@ typedef enum MovementType {
 	
 	// We're close enough to take action or move to the next waypoint!
 	if( distance <= distanceToUnit )  {
+		PGLog(@"[Move] Reached waypoint. %0.2f <= %0.2f", distance, distanceToUnit);
 		// Moving to a waypoint
         if(!self.unit) {
             if([botController isBotting]) {
@@ -857,6 +918,7 @@ typedef enum MovementType {
         }
         return;
     } else {
+		PGLog(@"[Move] Not yet reached waypoint. %0.2f > %0.2f", distance, distanceToUnit);
         // if we're far enough away from our target, see if we should jump
         if( (distance > playerSpeed) && (!self.unit)) {
             if( self.shouldJump && ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown) ) {
@@ -1147,7 +1209,7 @@ typedef enum MovementType {
                     
                     if( (errorNow < errorLimit) ) {
                         if(printTurnInfo) PGLog(@"[Turn] [Range is Good] %.2f < %.2f", errorNow, errorLimit);
-                        //PGLog(@"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
+                        PGLog(@"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
                         break;
                     }
                     
@@ -1217,7 +1279,7 @@ typedef enum MovementType {
     if(force) {
         // every 2 seconds, we should cover around [playerData speedMax]*2
         // check to ensure that we've moved 1/4 of that
-        // PGLog(@"Expiration in: %.2f seconds (%@).", [self.movementExpiration timeIntervalSinceNow], self.movementExpiration);
+        PGLog(@"Expiration in: %.2f seconds (%@).", [self.movementExpiration timeIntervalSinceNow], self.movementExpiration);
         if( self.movementExpiration && ([self.movementExpiration compare: [NSDate date]] == NSOrderedAscending) ) {
             PGLog(@"[Move] **** Movement timer expired!! ****");
             // if we can't reach the unit, just bail it
@@ -1248,10 +1310,16 @@ typedef enum MovementType {
         // update the direction we're facing
 		Position *position = self.unit ? [self.unit position] : [self.destination position];
 		if ( self.unit ){
+			//PGLog(@"[Move] Refacing unit");
+			//[self moveForwardStop];
 			[self turnTowardObject:self.unit];
+			//[self moveForwardStart];
 		}
 		else{
+			//PGLog(@"[Move] Refacing waypoint");
+			//[self moveForwardStop];
 			[self turnToward: position];
+			//[self moveForwardStart];
 		}
                 
         // find distance moved since last check
@@ -1264,7 +1332,7 @@ typedef enum MovementType {
         if(self.lastSavedPosition && (distanceMoved > ([playerData speedMax]/2.0)) ) {
             float secondsFromNow = ([playerPosition distanceToPosition: position]/[playerData speedMax]) + 4.0;
             self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: secondsFromNow];
-            //PGLog(@"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
+            PGLog(@"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
         }
     } else {
         if( [[NSDate date] timeIntervalSinceDate: self.lastDirectionCorrection] > 2.0) {

@@ -27,6 +27,8 @@
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
+//range at which a waypoint is considered reached
+#define WAYPOINT_SENSITIVITY			15.0f
 // How close do we need to be to a node before we dismount?
 #define NODE_DISTANCE_UNTIL_DISMOUNT	4.5f
 // how close do we need to be to a school to fish?
@@ -56,9 +58,11 @@
     BOOL _notifyForObjectMove;
     int _patrolCount, _jumpCooldown, _waypointDoneCount;
 	int _lastInteraction;
+	float _lastDistance;
     NSDate *_lastJumpTime, *_lastDirectionCorrection, *movementExpiration;
     Position *lastSavedPosition;
     NSTimer *_movementTimer;
+	NSTimer *_proximityTimer;
     Waypoint *_destination;
     Unit *_unit;
     Route *_route;

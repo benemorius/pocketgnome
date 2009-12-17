@@ -177,7 +177,15 @@ static PlayersController *sharedPlayers = nil;
             continue;
             
         if( ![addressDict objectForKey: address] ) {
-            [dataList addObject: [Player playerWithAddress: address inMemory: memory]];
+			Player *unit = [Player playerWithAddress: address inMemory: memory];
+            [dataList addObject: unit];
+			[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"Player detected"]
+										description: [NSString stringWithFormat: @"%@ (%i)", [unit name], [unit level]]
+										notificationName: @"PlayerDetected"
+										iconData: [[unit iconForClass: [unit unitClass]] TIFFRepresentation]
+										priority: 0
+										isSticky: NO
+									   clickContext: nil];
         } else {
             [[addressDict objectForKey: address] setRefreshDate: now];
         }

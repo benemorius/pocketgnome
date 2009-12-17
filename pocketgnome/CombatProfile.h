@@ -24,6 +24,14 @@
 	float yardsBehindTarget, healingRange;
 	int healthThreshold;
 	UInt64 selectedTankGUID;
+	
+	BOOL enemyWeightEnabled;
+	int enemyWeightPlayer;
+	int enemyWeightPet;
+	int enemyWeightNPC;
+	int enemyWeightHealth;
+	int enemyWeightTarget;
+	int enemyWeightDistance;
     
     float attackRange;
     int attackLevelMin, attackLevelMax;
@@ -64,5 +72,14 @@
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) int attackLevelMin;
 @property (readwrite, assign) int attackLevelMax;
+
+@property (readwrite, assign) BOOL enemyWeightEnabled;
+@property (readwrite, assign) int enemyWeightPlayer;
+@property (readwrite, assign) int enemyWeightPet;
+@property (readwrite, assign) int enemyWeightNPC;
+@property (readwrite, assign) int enemyWeightHealth;
+@property (readwrite, assign) int enemyWeightTarget;
+@property (readwrite, assign) int enemyWeightDistance;
+
 
 @end

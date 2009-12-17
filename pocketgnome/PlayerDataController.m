@@ -20,6 +20,7 @@
 #import "NodeController.h"
 #import "OffsetController.h"
 #import "MobController.h"
+#import "BlacklistController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -1153,6 +1154,7 @@ static PlayerDataController* sharedController = nil;
 		
 		// only resort and display the table if the window is visible
 		if( [[combatTable window] isVisible]) {
+			PGLog(@"ZOMG@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!combat");
 			
 			NSArray *units = [combatController unitsAttackingMe];
 			NSArray *attackQueue = [combatController attackQueue];
@@ -1385,8 +1387,17 @@ static PlayerDataController* sharedController = nil;
 			[aCell setTextColor: [NSColor redColor]];
 			return;
 		}
+		else if ( [[combatController attackQueue] containsObject: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]]) {
+			[aCell setTextColor: [NSColor orangeColor]];
+			return;
+		}
+		//fixme //later
+		else if ( [BlacklistController isBlacklisted:[[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]] ){
+			[aCell setTextColor: [NSColor lightGrayColor]];
+			return;
+		}
 		
-		[aCell setTextColor: [NSColor darkGrayColor]];
+		[aCell setTextColor: [NSColor blackColor]];
 	}
 	else if ( aTableView == healingTable ){
 		// do text color
@@ -1400,7 +1411,7 @@ static PlayerDataController* sharedController = nil;
 			return;
 		}
 		
-		[aCell setTextColor: [NSColor darkGrayColor]];
+		[aCell setTextColor: [NSColor blueColor]];
 	}
 	
 	return;
