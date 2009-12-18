@@ -10,6 +10,7 @@
 #define log(...) if([LogController canLog:__VA_ARGS__]) PGLog(@"%@", [LogController log: __VA_ARGS__]);
 //just for autocomplete and convenience really
 #define LOG_FUNCTION "function"
+//these are intended for those temporary zomg and wtf outputs that we all seem to love
 #define LOG_DEV "dev"
 #define LOG_DEV1 "dev1"
 #define LOG_DEV2 "dev2"
