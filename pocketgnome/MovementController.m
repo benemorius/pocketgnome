@@ -898,7 +898,7 @@ typedef enum MovementType {
 	float distanceToUnit = WAYPOINT_SENSITIVITY;
 	
 	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
-	if ( isNode && !isPlayerOnGround ){
+	if ( isNode ){
 		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
 	}
 	
