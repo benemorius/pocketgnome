@@ -1009,7 +1009,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)finishCurrentProcedure: (NSDictionary*)state {
 	log(LOG_FUNCTION, @"entering function");
 	
-	log(LOG_BEHAVIOR, @"[Bot] Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
+	log(LOG_BEHAVIOR, @"Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
     
     // make sure we're done casting before we end the procedure
     if( [playerController isCasting] ) {
@@ -1017,7 +1017,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if( timeLeft <= 0 ) {
             [self performSelector: _cmd withObject: state afterDelay: 0.1];
         } else {
-            log(LOG_BEHAVIOR, @"[Bot] Still casting (%.2f remains): Delaying procedure end.", timeLeft);
+            log(LOG_BEHAVIOR, @"Still casting (%.2f remains): Delaying procedure end.", timeLeft);
             [self performSelector: _cmd withObject: state afterDelay: timeLeft];
             return;
         }
@@ -1025,7 +1025,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     //if( ![[state objectForKey: @"Procedure"] isEqualToString: CombatProcedure])
-    // PGLog(@"--- All done with procedure: %@.", [state objectForKey: @"Procedure"]);
+    log(LOG_BEHAVIOR, @"--- All done with procedure: %@.", [state objectForKey: @"Procedure"]);
     [self cancelCurrentProcedure];
     
     // when we finish PreCombat, re-evaluate the situation
@@ -1238,16 +1238,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						
 						int actionResult = [self performAction:actionID];
 						if ( [rule resultType] == ActionType_Spell ){
-							//PGLog(@"[Bot] Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
+							log(LOG_BEHAVIOR, @"Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
 							//[spellController cooldownLeftForSpellID:actionID];
 						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
-							log(LOG_BEHAVIOR, @"[Bot] Spell isn't ready! Skipping any further attempts");
+							log(LOG_BEHAVIOR, @"Spell isn't ready! Skipping any further attempts");
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
-							//PGLog(@"[Bot] Spell didn't cast on target %@, blacklisting and moving on!", target);
+							log(LOG_BEHAVIOR, @"Spell didn't cast on target %@, blacklisting and moving on!", target);
 		
 							//[self finishCurrentProcedure: state];
 							//return;
@@ -1570,7 +1570,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         if( ![[combatController attackQueue] count] ) {
 			
-			log(LOG_BEHAVIOR, @"[Bot] MORE UNITS TO ATTACK!");
+			log(LOG_BEHAVIOR, @"MORE UNITS TO ATTACK!");
 			
             // we're probably still in the middle of a combat procedure
             if(self.procedureInProgress)        // so let's cancel it
@@ -1684,7 +1684,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-        log(LOG_COMBAT, @"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
+        log(LOG_COMBAT, @"Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
         // stop and attack
         [self cancelCurrentProcedure];
         
@@ -2353,7 +2353,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if( [combatController combatEnabled] && [combatController inCombat] && !playerInAir ) {
 		
 		// scan combat
-		//PGLog(@"Bot doCombatSearch");
+		//log(LOG_COMBAT, @"Bot doCombatSearch");
 		//[combatController doCombatSearch];
         
         // attack first valid mob we find
