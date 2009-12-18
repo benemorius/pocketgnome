@@ -360,7 +360,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     Unit *unit = [mobController playerTarget];
     if(!unit) unit = [playersController playerTarget];
 
-    PGLog(@"Testing rule with target: %@", unit);
+    log(LOG_RULE, @"Testing rule with target: %@", unit);
     BOOL result = [self evaluateRule: rule withTarget: unit asTest: YES];
     NSRunAlertPanel(TRUE_FALSE(result), [NSString stringWithFormat: @"%@", rule], @"Okay", NULL, NULL);
 }
@@ -403,7 +403,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
                 int qualityValue = 0;
                 if( [condition unit] == UnitPlayer ) {
-                    //PGLog(@"Checking player... type %d", [condition type]);
+                    log(LOG_CONDITION, @"Checking player... type %d", [condition type]);
                     if( ![playerController playerIsValid:self] || ![thePlayer isValid]) goto loopEnd;
                     if( [condition quality] == QualityHealth ) {
                         qualityValue = ([condition type] == TypeValue) ? [thePlayer currentHealth] : [thePlayer percentHealth];
@@ -448,13 +448,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 // now we have the value of the quality
                 if( [condition comparator] == CompareMore) {
                     conditionEval = ( qualityValue > [[condition value] unsignedIntValue] ) ? YES : NO;
-                    //PGLog(@"  %d > %@ is %d", qualityValue, [condition value], conditionEval);
+                    log(LOG_CONDITION, @"  %d > %@ is %d", qualityValue, [condition value], conditionEval);
                 } else if([condition comparator] == CompareEqual) {
                     conditionEval = ( qualityValue == [[condition value] unsignedIntValue] ) ? YES : NO;
-                    //PGLog(@"  %d = %@ is %d", qualityValue, [condition value], conditionEval);
+                    log(LOG_CONDITION, @"  %d = %@ is %d", qualityValue, [condition value], conditionEval);
                 } else if([condition comparator] == CompareLess) {
                     conditionEval = ( qualityValue < [[condition value] unsignedIntValue] ) ? YES : NO;
-                    //PGLog(@"  %d > %@ is %d", qualityValue, [condition value], conditionEval);
+                    log(LOG_CONDITION, @"  %d > %@ is %d", qualityValue, [condition value], conditionEval);
                 } else goto loopEnd;
                 
                 break;
@@ -477,7 +477,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         } else
                             conditionEval = ( [condition comparator] == CompareIs ) ? ![playerController.pet isDead] : [playerController.pet isDead];
                     } else goto loopEnd;
-                    //PGLog(@"  Alive? %d", conditionEval);
+                    log(LOG_CONDITION, @"Alive? %d", conditionEval);
                 }
                 
                 // check combat status
@@ -489,7 +489,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     else if( [condition unit] == UnitPlayerPet)
                         conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isInCombat] : ![playerController.pet isInCombat];
                     else goto loopEnd;
-                    //PGLog(@"  Combat? %d", conditionEval);
+					log(LOG_CONDITION, @"Combat? %d", conditionEval);
                 }
                 
                 // check casting status
@@ -501,29 +501,29 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     else if( [condition unit] == UnitPlayerPet)
                         conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isCasting] : ![playerController.pet isCasting];
                     goto loopEnd;
-                    //PGLog(@"  Casting? %d", conditionEval);
+                    log(LOG_CONDITION, @"Casting? %d", conditionEval);
                 }
                 
                 // IS THE UNIT MOUNTED?
                 if( [condition state] == StateMounted ) {
-                    if(test) PGLog(@"Doing State IsMounted condition...");
+                    log(LOG_CONDITION, @"Doing State IsMounted condition...");
                     Unit *aUnit = nil;
                     if( [condition unit] == UnitPlayer)         aUnit = thePlayer;
                     else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend )    aUnit = target;
                     else if( [condition unit] == UnitPlayerPet) aUnit = playerController.pet;
-                    if(test) PGLog(@" --> Testing unit %@", aUnit);
+                    log(LOG_CONDITION, @" --> Testing unit %@", aUnit);
                     
                     if([aUnit isValid]) {
                         conditionEval = ( [condition comparator] == CompareIs ) ? [aUnit isMounted] : ![aUnit isMounted];
-                        if(test) PGLog(@" --> Unit is mounted? %@", YES_NO(conditionEval));
+                        log(LOG_CONDITION, @" --> Unit is mounted? %@", YES_NO(conditionEval));
                     } else {
-                        if(test) PGLog(@" --> Unit is invalid.");
+                        log(LOG_CONDITION, @" --> Unit is invalid.");
                     }
                 }
                 
                 // IS THE PLAYER INDOORS?
                 if( [condition state] == StateIndoors ) {
-                    if(test) PGLog(@"Doing State 'Indoors' condition...");
+                    log(LOG_CONDITION, @"Doing State 'Indoors' condition...");
                     conditionEval = ( [condition comparator] == CompareIs ) ? [playerController isIndoors] : [playerController isOutdoors];
                     if(test) {
                         if([condition comparator] == CompareIs) {
@@ -611,28 +611,28 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 spellID = 0;
                 dispelType = nil;
                 
-                if(test) PGLog(@"Doing Aura Stack condition...");
+                log(LOG_CONDITION, @"Doing Aura Stack condition...");
                 
                 // sanity checks
                 if(([condition type] != TypeValue) && ([condition type] != TypeString)) {
-                    if(test) PGLog(@" --> Invalid condition type.");
+                    log(LOG_CONDITION, @" --> Invalid condition type.");
                     goto loopEnd;
                 }
                 if( [condition type] == TypeValue) {
                     spellID = [[condition value] unsignedIntValue];
                     if(spellID == 0) { // invalid spell ID
-                        if(test) PGLog(@" --> Invalid spell number");
+                        log(LOG_CONDITION, @" --> Invalid spell number");
                         goto loopEnd;
                     } else {
-                        if(test) PGLog(@" --> Scanning for aura %u", spellID);
+                        log(LOG_CONDITION, @" --> Scanning for aura %u", spellID);
                     }
                 }
                 if( [condition type] == TypeString) {
                     if( ![[condition value] isKindOfClass: [NSString class]] || ![[condition value] length] ) {
-                        if(test) PGLog(@" --> Invalid or blank Spell name.");
+                        log(LOG_CONDITION, @" --> Invalid or blank Spell name.");
                         goto loopEnd;
                     } else {
-                        if(test) PGLog(@" --> Scanning for aura \"%@\"", [condition value]);
+                        log(LOG_CONDITION, @" --> Scanning for aura \"%@\"", [condition value]);
                     }
                 }
                 
@@ -664,7 +664,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     if([condition comparator] == CompareLess) {
                         conditionEval = (stackCount < [condition state]);
                     }
-                    if(test) PGLog(@" --> Found %d stacks for result %@", stackCount, (conditionEval ? @"TRUE" : @"FALSE"));
+                    log(LOG_CONDITION, @" --> Found %d stacks for result %@", stackCount, (conditionEval ? @"TRUE" : @"FALSE"));
                     // conditionEval = ([condition comparator] == CompareMore) ? (stackCount > [condition state]) : (([condition comparator] == CompareEqual) ? (stackCount == [condition state]) : (stackCount < [condition state]));
                 } else goto loopEnd;
                 
@@ -678,17 +678,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 
                 if( [condition unit] == UnitTarget && [condition quality] == QualityDistance && target) {
                     float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
-                    // PGLog(@"-- Checking distance condition --");
+                    log(LOG_CONDITION, @"-- Checking distance condition --");
                     
                     if( [condition comparator] == CompareMore) {
                         conditionEval = ( distanceToTarget > [[condition value] floatValue] ) ? YES : NO;
-                        //PGLog(@"  %f > %@ is %d", distanceToTarget, [condition value], conditionEval);
+                        log(LOG_CONDITION, @"  %f > %@ is %d", distanceToTarget, [condition value], conditionEval);
                     } else if([condition comparator] == CompareEqual) {
                         conditionEval = ( distanceToTarget == [[condition value] floatValue] ) ? YES : NO;
-                        //PGLog(@"  %f = %@ is %d", distanceToTarget, [condition value], conditionEval);
+                        log(LOG_CONDITION, @"  %f = %@ is %d", distanceToTarget, [condition value], conditionEval);
                     } else if([condition comparator] == CompareLess) {
                         conditionEval = ( distanceToTarget < [[condition value] floatValue] ) ? YES : NO;
-                        //PGLog(@"  %f < %@ is %d", distanceToTarget, [condition value], conditionEval);
+                        log(LOG_CONDITION, @"  %f < %@ is %d", distanceToTarget, [condition value], conditionEval);
                     } else goto loopEnd;
                 }
                 
@@ -723,11 +723,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyComboPoints:;
                 
-                if(test) PGLog(@"Doing Combo Points condition...");
+                log(LOG_CONDITION, @"Doing Combo Points condition...");
                 
                 UInt32 class = [thePlayer unitClass];
                 if( (class != UnitClass_Rogue) && (class != UnitClass_Druid) ) {
-                    if(test) PGLog(@" --> You are not a rogue or druid, noob.");
+                    log(LOG_CONDITION, @" --> You are not a rogue or druid, noob.");
                     goto loopEnd;
                 }
                 
@@ -737,17 +737,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     UInt64 cpUID = [playerController comboPointUID];
                     if( (cpUID == 0) || ([target GUID] == cpUID)) {
                         int comboPoints = [playerController comboPoints];
-                        if(test) PGLog(@" --> Found %d combo points.", comboPoints);
+                        log(LOG_CONDITION, @" --> Found %d combo points.", comboPoints);
                         
                         if( [condition comparator] == CompareMore) {
                             conditionEval = ( comboPoints > [[condition value] intValue] ) ? YES : NO;
-                            if(test) PGLog(@" --> %d > %@ is %@.", comboPoints, [condition value], TRUE_FALSE(conditionEval));
+                            log(LOG_CONDITION, @" --> %d > %@ is %@.", comboPoints, [condition value], TRUE_FALSE(conditionEval));
                         } else if([condition comparator] == CompareEqual) {
                             conditionEval = ( comboPoints == [[condition value] intValue] ) ? YES : NO;
-                            if(test) PGLog(@" --> %d = %@ is %@.", comboPoints, [condition value], TRUE_FALSE(conditionEval));
+                            log(LOG_CONDITION, @" --> %d = %@ is %@.", comboPoints, [condition value], TRUE_FALSE(conditionEval));
                         } else if([condition comparator] == CompareLess) {
                             conditionEval = ( comboPoints < [[condition value] intValue] ) ? YES : NO;
-                            if(test) PGLog(@" --> %d < %@ is %@.", comboPoints, [condition value], TRUE_FALSE(conditionEval));
+                            log(LOG_CONDITION, @" --> %d < %@ is %@.", comboPoints, [condition value], TRUE_FALSE(conditionEval));
                         } else goto loopEnd;
                     }
                 }
@@ -759,18 +759,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyTotem:;
                 
-                if(test) PGLog(@"Doing Totem condition...");
+                log(LOG_CONDITION, @"Doing Totem condition...");
                 
                 if( ![condition value] || ![[condition value] length] || ![[condition value] isKindOfClass: [NSString class]] ) {
-                    if(test) PGLog(@" --> Invalid totem name.");
+                    log(LOG_CONDITION, @" --> Invalid totem name.");
                     goto loopEnd;
                 }
                 if( ([condition unit] != UnitPlayer) || ([condition quality] != QualityTotem)) {
-                    if(test) PGLog(@" --> Invalid condition parameters.");
+                    log(LOG_CONDITION, @" --> Invalid condition parameters.");
                     goto loopEnd;
                 }
                 if( [thePlayer unitClass] != UnitClass_Shaman ) {
-                    if(test) PGLog(@" --> You are not a shaman, noob.");
+                    log(LOG_CONDITION, @" --> You are not a shaman, noob.");
                     goto loopEnd;
                 }
                 
@@ -784,14 +784,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                                           options: NSCaseInsensitiveSearch | NSAnchoredSearch | NSDiacriticInsensitiveSearch];
                         if(range.location != NSNotFound) {
                             foundTotem = YES;
-                            if(test) PGLog(@" --> Found totem %@ matching \"%@\".", mob, [condition value]);
+                            log(LOG_CONDITION, @" --> Found totem %@ matching \"%@\".", mob, [condition value]);
                             break;
                         }
                     }
                 }
                 
                 if(!foundTotem && test) {
-                    PGLog(@" --> No totem found with name \"%@\"", [condition value]);
+                    log(LOG_CONDITION, @" --> No totem found with name \"%@\"", [condition value]);
                 }
                 
                 conditionEval = ([condition comparator] == CompareExists) ? foundTotem : !foundTotem;
@@ -804,13 +804,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyTempEnchant:;
                 
-                if(test) PGLog(@"Doing Temp Enchant condition...");
+                log(LOG_CONDITION, @"Doing Temp Enchant condition...");
                 
                 Item *item = [itemController itemForGUID: [thePlayer itemGUIDinSlot: ([condition quality] == QualityMainhand) ? SLOT_MAIN_HAND : SLOT_OFF_HAND]];
-                if(test) PGLog(@" --> Got item %@.", item);
+                log(LOG_CONDITION, @" --> Got item %@.", item);
                 BOOL hadEnchant = [item hasTempEnchantment];
                 conditionEval = ([condition comparator] == CompareExists) ? hadEnchant : !hadEnchant;
-                if(test) PGLog(@" --> Had enchant? %@. Result is %@.", YES_NO(hadEnchant), TRUE_FALSE(conditionEval));
+                log(LOG_CONDITION, @" --> Had enchant? %@. Result is %@.", YES_NO(hadEnchant), TRUE_FALSE(conditionEval));
 				
                 break;
                 
@@ -820,15 +820,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyTargetType:;
                 
-                if(test) PGLog(@"Doing Target Type condition...");
+                log(LOG_CONDITION, @"Doing Target Type condition...");
                 
                 if([condition quality] == QualityNPC) {
                     conditionEval = [target isNPC];
-                    if(test) PGLog(@" --> Is NPC? %@", YES_NO(conditionEval));
+                    log(LOG_CONDITION, @" --> Is NPC? %@", YES_NO(conditionEval));
                 }
                 if([condition quality] == QualityPlayer) {
                     conditionEval = [target isPlayer];
-                    if(test) PGLog(@" --> Is Player? %@", YES_NO(conditionEval));
+                    log(LOG_CONDITION, @" --> Is Player? %@", YES_NO(conditionEval));
                 }
                 break;
                 
@@ -837,15 +837,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyTargetClass:;
                 
-                if(test) PGLog(@"Doing Target Class condition...");
+                log(LOG_CONDITION, @"Doing Target Class condition...");
                 
                 if([condition quality] == QualityNPC) {
                     conditionEval = ([target creatureType] == [condition state]);
-                    if(test) PGLog(@" --> Unit Creature Type %d == %d? %@", [condition state], [target creatureType], YES_NO(conditionEval));
+                    log(LOG_CONDITION, @" --> Unit Creature Type %d == %d? %@", [condition state], [target creatureType], YES_NO(conditionEval));
                 }
                 if([condition quality] == QualityPlayer) {
                     conditionEval = ([target unitClass] == [condition state]);
-                    if(test) PGLog(@" --> Unit Class %d == %d? %@", [condition state], [target unitClass], YES_NO(conditionEval));
+                    log(LOG_CONDITION, @" --> Unit Class %d == %d? %@", [condition state], [target unitClass], YES_NO(conditionEval));
                 }
                 break;
                 
@@ -855,20 +855,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyCombatCount:;
                 
-                if(test) PGLog(@"Doing Combat Count condition...");
+                log(LOG_CONDITION, @"Doing Combat Count condition...");
                 
                 int unitsAttackingMe = [[combatController unitsAttackingMe] count];
-                if(test) PGLog(@" --> Found %d units attacking me.", unitsAttackingMe);
+                log(LOG_CONDITION, @" --> Found %d units attacking me.", unitsAttackingMe);
                 
                 if( [condition comparator] == CompareMore) {
                     conditionEval = ( unitsAttackingMe > [condition state] ) ? YES : NO;
-                    if(test) PGLog(@" --> %d > %d is %@.", unitsAttackingMe, [condition state], TRUE_FALSE(conditionEval));
+                    log(LOG_CONDITION, @" --> %d > %d is %@.", unitsAttackingMe, [condition state], TRUE_FALSE(conditionEval));
                 } else if([condition comparator] == CompareEqual) {
                     conditionEval = ( unitsAttackingMe == [condition state] ) ? YES : NO;
-                    if(test) PGLog(@" --> %d = %d is %@.", unitsAttackingMe, [condition state], TRUE_FALSE(conditionEval));
+                    log(LOG_CONDITION, @" --> %d = %d is %@.", unitsAttackingMe, [condition state], TRUE_FALSE(conditionEval));
                 } else if([condition comparator] == CompareLess) {
                     conditionEval = ( unitsAttackingMe < [condition state] ) ? YES : NO;
-                    if(test) PGLog(@" --> %d < %d is %@.", unitsAttackingMe, [condition state], TRUE_FALSE(conditionEval));
+                    log(LOG_CONDITION, @" --> %d < %d is %@.", unitsAttackingMe, [condition state], TRUE_FALSE(conditionEval));
                 } else goto loopEnd;
                 break;
                 
@@ -877,7 +877,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* Proximity Count Condition        */
                 /* ******************************** */
             case VarietyProximityCount:;
-                if(test) PGLog(@"Doing Proximity Count condition...");
+                log(LOG_CONDITION, @"Doing Proximity Count condition...");
 
                 float distance = [[condition value] floatValue];
                 
@@ -892,7 +892,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 if(test || self.theCombatProfile.attackPlayers) {
                     [allTargets addObjectsFromArray: [playersController allPlayers]];
                 }
-                if(test) PGLog(@" --> Found %d total units.", [allTargets count]);
+                log(LOG_CONDITION, @" --> Found %d total units.", [allTargets count]);
                 
                 // extract valid targets from all targets
                 for(Unit *unit in allTargets) {
@@ -920,13 +920,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 // compare with specified number of units
                 if( [condition comparator] == CompareMore) {
                     conditionEval = ( inRangeCount > [condition state] ) ? YES : NO;
-                    if(test) PGLog(@" --> %d > %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
+                    log(LOG_CONDITION, @" --> %d > %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
                 } else if([condition comparator] == CompareEqual) {
                     conditionEval = ( inRangeCount == [condition state] ) ? YES : NO;
-                    if(test) PGLog(@" --> %d = %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
+                    log(LOG_CONDITION, @" --> %d = %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
                 } else if([condition comparator] == CompareLess) {
                     conditionEval = ( inRangeCount < [condition state] ) ? YES : NO;
-                    if(test) PGLog(@" --> %d < %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
+                    log(LOG_CONDITION, @" --> %d < %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
                 } else goto loopEnd;
                 
                 break;
@@ -935,7 +935,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* Spell Cooldown Condition        */
                 /* ******************************** */
             case VarietySpellCooldown:;
-                if(test) PGLog(@"Doing Spell Cooldown condition...");
+                log(LOG_CONDITION, @"Doing Spell Cooldown condition...");
 				
 				// checking by spell ID
 				if ( [condition type] == TypeValue ){
@@ -946,7 +946,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// check
 					conditionEval = [spellController isSpellOnCooldown:spellID];
-					if(test) PGLog(@" Spell %d is on cooldown? %d", spellID, conditionEval);
+					log(LOG_CONDITION, @"Spell %d is on cooldown? %d", spellID, conditionEval);
 				}
 				
 				// checking by spell ID
@@ -959,7 +959,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					Spell *spell = [spellController spellForName:[condition value]];
 					if ( spell && [spell ID] ){
 						conditionEval = [spellController isSpellOnCooldown:[[spell ID] unsignedIntValue]];
-						if(test) PGLog(@" Spell %@ is on cooldown? %d", spell, conditionEval);
+						log(LOG_CONDITION, @"Spell %@ is on cooldown? %d", spell, conditionEval);
 					}
 				}
 				
@@ -1144,7 +1144,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         // try to be smart about how long we wait
         float delayTime = [playerController castTimeRemaining]/2.0f;
         if(delayTime < RULE_EVAL_DELAY_SHORT) delayTime = RULE_EVAL_DELAY_SHORT;
-        PGLog(@"  Player casting. Waiting %.2f to perform next rule.", delayTime);
+        log(LOG_COMBAT, @"Player casting. Waiting %.2f to perform next rule.", delayTime);
         
         [self performSelector: _cmd
                    withObject: state 
@@ -1284,13 +1284,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                     return; // bail out of here
                                 }
                                 
-                                // PGLog(@"  %@ cast after %d attempts.", spell, attempts);
+                                log(LOG_COMBAT, @"%@ cast after %d attempts.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]], attempts);
 
                             } else {
-                                // PGLog(@"  %@ skipped for cooldown.", spell );
+                                log(LOG_COMBAT, @"  %@ skipped for cooldown.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]] );
                             }
                         } else {
-                            PGLog(@"  Using %@.", [itemController itemForID: [NSNumber numberWithInt: [rule actionID]]]);
+                            log(LOG_COMBAT, @"  Using %@.", [itemController itemForID: [NSNumber numberWithInt: [rule actionID]]]);
                         }
                         
                         NSDictionary *newState = [NSDictionary dictionaryWithObjectsAndKeys: 
@@ -1322,7 +1322,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 }
             }
         } else {
-            ;//PGLog(@"Rule %@ is FALSE.", rule);
+            log(LOG_RULE, @"Rule %@ is FALSE.", rule);
         }
     }
     
@@ -1653,9 +1653,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
     if ( [targetsWithinRange count] ) {
         for ( Unit *unit in targetsWithinRange ) {
-			//PGLog(@"Checking %@", unit);
+			log(LOG_HEAL, @"Checking %@", unit);
 			if ( [self unitValidToHeal:unit] ){
-				//PGLog(@"Valid: %@ %d %d", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
+				log(LOG_HEAL, @"Valid: %@ %d %d", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
 				if ( [unit percentHealth] < [theCombatProfile healthThreshold] ){
 					[targetsToHeal addObject: unit];
 				}
@@ -1692,17 +1692,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if(![self isBotting]) return;
 	
 	if ( [blacklistController isBlacklisted:unit] ){
-		PGLog(@"Attempting to attack a blacklisted unit, ruh-roh");
+		log(LOG_COMBAT, @"Attempting to attack a blacklisted unit, ruh-roh");
 	}
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-        PGLog(@"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
+        log(LOG_COMBAT, @"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
         // stop and attack
         [self cancelCurrentProcedure];
         
         // check to see if we are supposed to be in melee range
         if( self.theBehavior.meleeCombat) {
-			//PGLog(@"[Bot] Should be in melee range!");
+			log(LOG_MOVEMENT, @"Should be in melee range!");
 			
             // see if we are moving to this unit already
             if( ![[movementController moveToObject] isEqualToObject: unit]) {
@@ -1710,20 +1710,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 
                 if( distance > 5.0f) {
                     // if we are more than 5 yards away, move to this unit
-                    PGLog(@"[Bot] Melee range required; moving to %@ at %.2f", unit, distance);
+                    log(LOG_MOVEMENT, @"Melee range required; moving to %@ at %.2f", unit, distance);
                     [movementController moveToObject: unit andNotify: YES];
                 } else  {
                     // if we are in melee range, stop
-					PGLog(@"[Bot] In melee range!");
+					log(LOG_MOVEMENT, @"In melee range!");
                     [movementController pauseMovement];
                 }
             } else {
-                PGLog(@"[Bot] Already moving to %@", unit);
+                log(LOG_MOVEMENT, @"Already moving to %@", unit);
                 // if we are already moving to the unit, make sure we keep going
                 [movementController resumeMovement];
             }
         } else {
-			//PGLog(@"[Bot] Don't need to be in melee!");
+			log(LOG_MOVEMENT, @"Don't need to be in melee!");
             // if we don't need to be in melee, pause
             [movementController pauseMovement];
         }
@@ -1753,7 +1753,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
     if(self.isPvPing && ([[playerController position] verticalDistanceToPosition: [unit position]] > vertOffset)) {
-        PGLog(@"[Bot] Added mob is beyond vertical offset limit; ignoring.");
+        log(LOG_TARGET, @"Added mob is beyond vertical offset limit; ignoring.");
         return;
     }
 	
@@ -1762,7 +1762,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
     
-    PGLog(@"[Bot] Adding %@", unit);
+    log(LOG_TARGET, @"Adding %@", unit);
     
     if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
         NSString *unitName = ([unit name]) ? [unit name] : nil;
@@ -1800,7 +1800,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if( [unit isNPC] ) {
         if(wasInQueue) {
             if([movementController moveToObject] == unit) {
-                PGLog(@"finishUnit says stop moving to this unit.");
+                log(LOG_MOVEMENT, @"finishUnit says stop moving to this unit.");
                 [movementController finishMovingToObject: unit];
             }
             
@@ -1870,7 +1870,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
     // if it's a player, or a non-dead NPC, we must be doing melee combat
     if( [unit isPlayer] || ([unit isNPC] && ![(Unit*)unit isDead])) {
-        PGLog(@"[Bot] Reached melee range with %@", unit);
+        log(LOG_MOVEMENT, @"Reached melee range with %@", unit);
         return;
     }
 	
@@ -1886,7 +1886,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		float vertDist = [playerPosition verticalDistanceToPosition:[unit position]];
 
 		
-		PGLog(@"[Bot] 3D:%0.2f   2D:%0.2f   Vertical:%0.2f", distance, distance2D, vertDist);
+		log(LOG_MOVEMENT, @"3D:%0.2f   2D:%0.2f   Vertical:%0.2f", distance, distance2D, vertDist);
 		
 		// Get off our mount (this could be called if our movement failed, we don't want to get off our mount!)!
 		if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
@@ -1915,12 +1915,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     if(self.theRoute) {
         if(route == [self.theRoute routeForKey: CorpseRunRoute]) {
-            PGLog(@"Finished Corpse Run. Begin search for body...");
+            log(LOG_GENERAL, @"Finished Corpse Run. Begin search for body...");
             [controller setCurrentStatus: @"Bot: Searching for body..."];
             [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
             [movementController beginPatrol: 1 andAttack: NO];
         } else {
-            //PGLog(@"Finished something else...");
+            log(LOG_GENERAL, @"Finished something else...");
         }
 	}
 }
@@ -1958,8 +1958,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // if we are, pause movement and perform it.
     if(performPatrolProc) {
-        //if(needToPause)  PGLog(@"[Bot] Pausing to perform Patrol Procedure.");
-        //if(!needToPause) PGLog(@"[Bot] NOT pausing to perform Patrol Procedure.");
+        if(needToPause)  log(LOG_BEHAVIOR, @"Pausing to perform Patrol Procedure.");
+        if(!needToPause) log(LOG_BEHAVIOR, @"NOT pausing to perform Patrol Procedure.");
         
         // only pause if we are performing something non instant
         if(needToPause) [movementController pauseMovement];
@@ -1983,11 +1983,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     Unit *player = [playerController player];
     if([auraController unit: player hasBuffNamed: @"Drink"]) {
         drink = YES;
-        PGLog(@"[Regen] Player started drinking.");
+        log(LOG_BEHAVIOR, @"[Regen] Player started drinking.");
     }
     if([auraController unit: player hasBuffNamed: @"Food"]) {
         eat = YES;
-        PGLog(@"[Regen] Player started eating.");
+        log(LOG_BEHAVIOR, @"[Regen] Player started eating.");
     }
     NSDictionary *regenDict = [NSDictionary dictionaryWithObjectsAndKeys: 
                                [NSDate date],                       @"RegenStart",
@@ -2025,7 +2025,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     if(!health && !mana) {
         // we're done here
-        PGLog(@"[Regen] Finished early after %.2f seconds!", [[NSDate date] timeIntervalSinceDate: start]);
+        log(LOG_BEHAVIOR, @"[Regen] Finished early after %.2f seconds!", [[NSDate date] timeIntervalSinceDate: start]);
         if([playerController isSitting] && ![controller isWoWChatBoxOpen]) {
             [chatController jump];
         }
@@ -2054,7 +2054,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
             if(mobToLoot && [mobToLoot isValid]) { // removed [mobToLoot isLootable] here, as sometimes a mob isn't lootable but we want to skin it!
-                PGLog(@"[mobToLoot] Acquired a mob to loot: %@", mobToLoot);
+                log(LOG_LOOT, @"Acquired a mob to loot: %@", mobToLoot);
                 return mobToLoot;
             }
         }
@@ -2162,13 +2162,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		Position *pos = nil;
 		
 		if ( onLeftBoat ){
-			PGLog(@"[PvP] Moving off of left boat!");
+			log(LOG_PVP, @"Moving off of left boat!");
 			pos = [Position positionWithX:1609.5f Y:49.6f Z:7.6f];
 			pos = [Position positionWithX:6.23f Y:20.94f Z:4.97f];
 			
 		}
 		else{
-			PGLog(@"[PvP] Moving off of right boat!");
+			log(LOG_PVP, @"Moving off of right boat!");
 			pos = [Position positionWithX:1597.2f Y:-101.4f Z:8.9f];
 			pos = [Position positionWithX:5.88f Y:-25.1f Z:5.3f];
 		}
@@ -2213,7 +2213,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				_reviveAttempt = 15;
 			}
             
-            PGLog(@"Waiting %d seconds to resurrect.", _reviveAttempt);
+            log(LOG_GENERAL, @"Waiting %d seconds to resurrect.", _reviveAttempt);
             [self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
             return YES;
         }
@@ -2226,13 +2226,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
 			if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
 				usleep(200000);
-				PGLog(@"[Bot] Player on ground, jumping!");
+				log(LOG_MOVEMENT, @"Player flying on ground, jumping!");
 				[chatController jump];
 				usleep(10000);
 			}
 			
 			if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
-			PGLog(@"Jump skip number: %d", _jumpAttempt);
+			log(LOG_MOVEMENT, @"Jump skip number: %d", _jumpAttempt);
 		}
 	//}
 	
@@ -2280,12 +2280,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		if ( tank != nil ){
 			
-			PGLog(@"We have a tank to heal! %@", tank);
+			log(LOG_HEAL, @"We have a tank to heal! %@", tank);
 			
 			// We only want to heal this guy if his health is low!
 			if ( ![tank isDead] && [tank percentHealth] < [theCombatProfile healthThreshold] ){
 				healUnit = tank;
-				PGLog(@"Healing tank!  %@", tank);
+				log(LOG_HEAL, @"Healing tank!  %@", tank);
 			}
 		}
 		
@@ -2342,7 +2342,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			Position *playerPosition = [[playerController player] position];
 			float range = [playerPosition distanceToPosition: [followUnit position]];
 			if(range >= [theCombatProfile yardsBehindTarget]) {
-				PGLog(@"[Healing] Not within %0.2f yards of target, %0.2f away, moving closer", [theCombatProfile yardsBehindTarget], range);
+				log(LOG_HEAL, @"Not within %0.2f yards of target, %0.2f away, moving closer", [theCombatProfile yardsBehindTarget], range);
 				
 				if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
 					[movementController followObject: followUnit];
@@ -2355,7 +2355,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 		
-		//PGLog(@"[Heal] Nothing required to do! Moving down the list!");
+		//log(LOG_HEAL, @"Nothing required to do! Moving down the list!");
 	}
     
     // check to see if we are moving to attack a unit and bail if we are
@@ -2387,7 +2387,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         // attack unit with highest weight
 		Unit *bestUnit = [combatController findBestUnitToAttack];
 		if ( bestUnit ){
-			PGLog(@"Found existing combat, attacking: %@", bestUnit);
+			log(LOG_COMBAT, @"Found existing combat, attacking: %@", bestUnit);
 			//[movementController pauseMovement]; //why?
 			[combatController disposeOfUnit: bestUnit];
 			
@@ -2396,7 +2396,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		//([[unit position] verticalDistanceToPosition: playerPosition] <= vertOffset)
     }
 	else if ( playerInAir && [combatController combatEnabled] && [combatController inCombat] ){
-		PGLog(@"[Combat] Player is in the air, ignoring combat");
+		log(LOG_COMBAT, @"Player is in the air, ignoring combat");
 	}
 
     /* *** if we get here, we aren't in combat *** */
@@ -2427,7 +2427,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					[_mobsToLoot removeObject: self.unitToLoot];
 				}
 				else{
-					PGLog(@"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
+					log(LOG_LOOT, @"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
 					if(mobToLootDist <= 5.0)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
 					else                        [movementController moveToObject: mobToLoot andNotify: YES];
 					return YES;
@@ -2463,8 +2463,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             self.preCombatUnit = nil;
             
             // turn and attack
-            PGLog(@"[Bot] Found %@ and attacking.", unitToAttack);
+            log(LOG_COMBAT, @"Found %@ and attacking.", unitToAttack);
             //[movementController turnTowardObject: unitToAttack]; //surely this is covered elsewhere too?
+            log(LOG_COMBAT, @"Found %@ and attacking.", unitToAttack);
             [combatController disposeOfUnit: unitToAttack];
             return YES;
         } else {
@@ -2489,7 +2490,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             for(nodeToLoot in nodes) {
 				
 				if ( [blacklistController isBlacklisted:nodeToLoot] ){
-					PGLog(@"[Bot] Node %@ blacklisted, ignoring", nodeToLoot);
+					log(LOG_NODE, @"Node %@ blacklisted, ignoring", nodeToLoot);
 				}
 				
                 if(nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot]) {
@@ -2506,7 +2507,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[controller setCurrentStatus: @"Bot: Moving to node"];
 				
 				[movementController pauseMovement];
-				log(LOG_LOOT, @"Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
+				log(LOG_NODE, @"Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
 				if(nodeDist <= NODE_DISTANCE_UNTIL_DISMOUNT){
 					if ( self.lastAttemptedUnitToLoot == nodeToLoot && _lootAttempt >= 3 ){
 						log(LOG_LOOT, @"Unable to loot %@, blacklisting for 30 seconds", self.lastAttemptedUnitToLoot);
@@ -2536,7 +2537,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ![movementController moveToObject] ){
 		if ( _doFishing ){
 			
-			PGLog(@"[Bot] Fishing scan!");
+			log(LOG_FISHING, @"Fishing scan!");
 			
 			// fishing only in schools! (probably have a route we're following)
 			if ( _fishingOnlySchools ){
@@ -2553,7 +2554,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					for(nodeToFish in nodes) {
 						
 						if ( [blacklistController isBlacklisted:nodeToFish] ){
-							PGLog(@"[Bot] Node %@ blacklisted, ignoring", nodeToFish);
+							log(LOG_FISHING, @"Node %@ blacklisted, ignoring", nodeToFish);
 							continue;
 						}
 						
@@ -2569,7 +2570,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					if ( [nodeToFish isValid] && (nodeDist != INFINITY) && !nearbyScaryUnits ) {
 						[movementController pauseMovement];
 						
-						PGLog(@"[Bot] Found closest school %@ at dist %.2f", nodeToFish, nodeDist);
+						log(LOG_FISHING, @"Found closest school %@ at dist %.2f", nodeToFish, nodeDist);
 						if(nodeDist <= NODE_DISTANCE_UNTIL_FISH){
 							
 							// turn toward
@@ -2580,10 +2581,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							
 							// now we fish!
 							
-							PGLog(@"[Bot] We are near %@, time to fish!", nodeToFish);
+							log(LOG_FISHING, @"We are near %@, time to fish!", nodeToFish);
 							
 							if ( [[playerController player] isMounted] ){
-								PGLog(@"[Bot] Dismounting...");
+								log(LOG_FISHING, @"Dismounting...");
 								[movementController dismount]; 
 							}
 							
@@ -2612,12 +2613,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 				}
 				
-				PGLog(@"[Fishing] Didn't find a node, so we're doing nothing...");
+				log(LOG_FISHING, @"Didn't find a node, so we're doing nothing...");
 			}
 			
 			// fish where we are
 			else{
-				PGLog(@"[Fishing] Just fishing from wherever we are!");
+				log(LOG_FISHING, @"Just fishing from wherever we are!");
 				
 				[fishController fish: _fishingApplyLure
 						  withRecast:NO
@@ -2660,7 +2661,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)mountNow{
 	log(LOG_FUNCTION, @"entering function");
 	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state] ) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
-		PGLog(@"[Bot] Mounting!");
+		log(LOG_GENERAL, @"Mounting!");
 		usleep(100000);
 		
 		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
@@ -2696,7 +2697,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (IBAction)updateStatus: (id)sender {
     CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
 	
-	PGLog(@"Updating status... %@", profile);
+	log(LOG_GENERAL, @"Updating status... %@", profile);
 	
     NSString *status = [NSString stringWithFormat: @"%@ (%@). ", 
                         [[[behaviorPopup selectedItem] representedObject] name],    // behavior
@@ -2743,7 +2744,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
     self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
-	PGLog(@"[Bot] Starting with attack range of %0.2f", [self.theCombatProfile attackRange]);
+	log(LOG_GENERAL, @"Starting with attack range of %0.2f", [self.theCombatProfile attackRange]);
 	    
     // get hotkey settings
     KeyCombo hotkey = [shortcutRecorder keyCombo];
@@ -2760,14 +2761,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_pvpMarks = [itemController pvpMarks];
     
 	if ( ([self isHotKeyInvalid] & HotKeyPrimary) == HotKeyPrimary ){
-        PGLog(@"Primary hotkey is not valid.");
+        log(LOG_ERROR, @"Primary hotkey is not valid.");
         NSBeep();
         NSRunAlertPanel(@"Invalid Hotkey", @"You must choose a valid primary hotkey, or the bot will be unable to use any spells or abilities.", @"Okay", NULL, NULL);
         return;
     }
 	
 	if ( self.doLooting && ([self isHotKeyInvalid] & HotKeyInteractMouseover) == HotKeyInteractMouseover ){
-        PGLog(@"Interact with MouseOver hotkey is not valid.");
+        log(LOG_ERROR, @"Interact with MouseOver hotkey is not valid.");
         NSBeep();
         NSRunAlertPanel(@"Invalid Looting Hotkey", @"You must choose a valid Interact with MouseOver hotkey, or the bot will be unable to loot bodies.", @"Okay", NULL, NULL);
         return;
@@ -2775,14 +2776,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // check that we have valid conditions
     if( ![controller isWoWOpen]) {
-        PGLog(@"WoW is not open. Bailing.");
+        log(LOG_ERROR, @"WoW is not open. Bailing.");
         NSBeep();
         NSRunAlertPanel(@"WoW is not open", @"WoW is not open...", @"Okay", NULL, NULL);
         return;
     }
     
     if( ![playerController playerIsValid:self]) {
-        PGLog(@"[Bot] The player is not valid. Bailing.");
+        log(LOG_ERROR, @"The player is not valid. Bailing.");
         NSBeep();
         NSRunAlertPanel(@"Player not valid or cannot be detected", @"You must be logged into the game before you can start the bot.", @"Okay", NULL, NULL);
         return;
@@ -2790,21 +2791,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     if( !self.theRoute && !ignoreRoute ) {
         NSBeep();
-        PGLog(@"[Bot] The current route is not valid.");
+        log(LOG_ERROR, @"The current route is not valid.");
         NSRunAlertPanel(@"Route is not valid", @"You must select a valid route before starting the bot.  If you removed or renamed a route, please select an alternative.", @"Okay", NULL, NULL);
         
         return;
     }
     
     if( !self.theBehavior ) {
-        PGLog(@"[Bot] The current behavior is not valid.");
+        log(LOG_ERROR, @"The current behavior is not valid.");
         NSBeep();
         NSRunAlertPanel(@"Behavior is not valid", @"You must select a valid behavior before starting the bot.  If you removed or renamed a behavior, please select an alternative.", @"Okay", NULL, NULL);
         return;
     }
 
     if( !self.theCombatProfile ) {
-        PGLog(@"[Bot] The current combat profile is not valid.");
+        log(LOG_ERROR, @"The current combat profile is not valid.");
         NSBeep();
         NSRunAlertPanel(@"Combat Profile is not valid", @"You must select a valid combat profile before starting the bot.  If you removed or renamed a profile, please select an alternative.", @"Okay", NULL, NULL);
         return;
@@ -2815,7 +2816,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         [self stopBot: nil];
     
     if(self.theCombatProfile && self.theBehavior && (_currentHotkey >= 0)) {
-        PGLog(@"[Bot] Starting.");
+        log(LOG_GENERAL, @"Starting.");
         [spellController reloadPlayerSpells];
         
         // also check that the route has any waypoints
@@ -2854,7 +2855,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         } else {
             canSkinUpToLevel = (_skinLevel/5);
         }
-        PGLog(@"Starting bot with Sknning skill %d, allowing mobs up to level %d", _skinLevel, canSkinUpToLevel);
+        log(LOG_GENERAL, @"Starting bot with Sknning skill %d, allowing mobs up to level %d", _skinLevel, canSkinUpToLevel);
         
         self.isBotting = YES;
         [startStopButton setTitle: @"Stop Bot"];
@@ -2873,7 +2874,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             Route *primaryRoute  = [self.theRoute routeForKey: PrimaryRoute];
             Route *corpseRunRoute = [self.theRoute routeForKey: CorpseRunRoute];
             
-            PGLog(@"[Bot] Started the bot, but we're a ghost!");
+            log(LOG_GENERAL, @"Started the bot, but we're a ghost!");
             
             float primaryDist = primaryRoute ? [[[primaryRoute waypointClosestToPosition: playerPosition] position] distanceToPosition: playerPosition] : INFINITY;
             float corpseDist = corpseRunRoute ? [[[corpseRunRoute waypointClosestToPosition: playerPosition] position] distanceToPosition: playerPosition] : INFINITY;
@@ -2888,7 +2889,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         }
         
         if( [playerController isDead]) {
-            PGLog(@"[Bot] Started the bot, but we're dead! Will try to release. (%d:%d:%d:%d)", [playerController health], [playerController isGhost], [playerController maxHealth], [[playerController player] maxHealth] );
+            log(LOG_GENERAL, @"Started the bot, but we're dead! Will try to release. (%d:%d:%d:%d)", [playerController health], [playerController isGhost], [playerController maxHealth], [[playerController player] maxHealth] );
             [self playerHasDied: nil];
             return;
         }
@@ -2944,7 +2945,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( sender != nil ){
 		self.startDate = nil;
 	}
-	PGLog(@"Bot Stopped: %@", sender);
+	log(LOG_GENERAL, @"Bot Stopped: %@", sender);
     [self cancelCurrentProcedure];
     [movementController setPatrolRoute: nil];
     [combatController cancelAllCombat];
@@ -2954,13 +2955,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     self.preCombatUnit = nil;
     [controller setCurrentStatus: @"Bot: Stopped"];
     
-    PGLog(@"[Bot] Stopped.");
+    log(LOG_GENERAL, @"Stopped.");
 	
 	// stop our log out timer
 	[_logOutTimer invalidate];_logOutTimer=nil;
     
     if(self.isPvPing) {
-        PGLog(@"[Bot] Bot stopped but PvP is ongoing...");
+        log(LOG_GENERAL, @"Bot stopped but PvP is ongoing...");
     }
     
     [startStopButton setTitle: @"Start Bot"];
@@ -2995,7 +2996,7 @@ NSMutableDictionary *_diffDict = nil;
     UInt32 i, value;
     
     if(firstRun) {
-        PGLog(@"First run.");
+        log(LOG_GENERAL, @"First run.");
         for(i=0x900000; i< 0xFFFFFF; i+=4) {
             if([[controller wowMemoryAccess] loadDataForObject: self atAddress: i Buffer: (Byte *)&value BufLength: sizeof(value)]) {
                 if(value < 2)
@@ -3016,9 +3017,9 @@ NSMutableDictionary *_diffDict = nil;
         [_diffDict removeObjectsForKeys: removeKeys];
     }
     
-    PGLog(@"%d values.", [_diffDict count]);
+    log(LOG_GENERAL, @"%d values.", [_diffDict count]);
     if([_diffDict count] < 20) {
-        PGLog(@"%@", _diffDict);
+        log(LOG_GENERAL, @"%@", _diffDict);
     }
     
     return;
@@ -3074,7 +3075,7 @@ NSMutableDictionary *_diffDict = nil;
 		// queue then check again!
 		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
 		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:1.0f];
-		PGLog(@"[PvP] Additional join BG check executed!");
+		log(LOG_PVP, @"Additional join BG check executed!");
 	}
 }
 
@@ -3090,12 +3091,12 @@ NSMutableDictionary *_diffDict = nil;
 		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
 		float queueAfter = SSRandomFloatBetween(3.0f, 20.0f);
 		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:queueAfter];
-		PGLog(@"[PvP] Joining the BG after %0.2f seconds", queueAfter);
+		log(LOG_PVP, @"Joining the BG after %0.2f seconds", queueAfter);
 	}
 	else if ( status == BGNone ){
 		// just stop movement
 		[movementController resetMovementState];
-		PGLog(@"[PvP] Battleground is over?? Resetting movement state");
+		log(LOG_PVP, @"Battleground is over?? Resetting movement state");
 	}
 }
 
@@ -3105,11 +3106,11 @@ NSMutableDictionary *_diffDict = nil;
 	
 	if ( [playerController isInBG:[lastZone intValue]] && self.isBotting ){
 		[self stopBot:nil];
-		PGLog(@"[PvP] Left BG, stopping bot!");
+		log(LOG_PVP, @"Left BG, stopping bot!");
 		//asdfasfsafd TO FIX
 	}
 	
-	PGLog(@"[Bot] Zone change fired... to %@", lastZone);
+	log(LOG_GENERAL, @"Zone change fired... to %@", lastZone);
 }
 
 // Want to respond to some commands? o.O
@@ -3120,11 +3121,11 @@ NSMutableDictionary *_diffDict = nil;
 	//TO DO: Check to make sure you only respond to people around you that you are healing!
 	
 	if ( [[entry text] isEqualToString: @"stay"] ){
-		PGLog(@"[Heal] Stop following");
+		log(LOG_HEAL, @"Stop following");
 		_shouldFollow = NO;
 	}
 	else if ( [[entry text] isEqualToString: @"heel"] ){
-		PGLog(@"[Heal] Start following again!");
+		log(LOG_HEAL, @"Start following again!");
 		_shouldFollow = YES;
 	}
 }
@@ -3134,7 +3135,7 @@ NSMutableDictionary *_diffDict = nil;
 - (void)playerHasRevived: (NSNotification*)notification {
 	log(LOG_FUNCTION, @"entering function");
     if( ![self isBotting]) return;
-    PGLog(@"---- Player has revived!");
+    log(LOG_GENERAL, @"Player has revived!");
     [controller setCurrentStatus: @"Bot: Player has Revived"];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
     _reviveAttempt = 0;
@@ -3163,7 +3164,7 @@ NSMutableDictionary *_diffDict = nil;
     if( ![self isBotting]) return;
 	if ( ![playerController playerIsValid:self] ) return;
 	
-    PGLog(@"---- Player has died.");
+    log(LOG_GENERAL, @"Player has died.");
     [controller setCurrentStatus: @"Bot: Player has Died"];
     
     [self cancelCurrentProcedure];              // this wipes all bot state (except pvp)
@@ -3191,7 +3192,7 @@ NSMutableDictionary *_diffDict = nil;
 	// Play an alarm after we die?
 	if ( [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnDeath"] boolValue] ){
 		[[NSSound soundNamed: @"alarm"] play];
-		PGLog(@"Playing alarm, you have died!");
+		log(LOG_GENERAL, @"Playing alarm, you have died!");
 	}
 }
 
@@ -3200,19 +3201,19 @@ NSMutableDictionary *_diffDict = nil;
 	if( ![self isBotting]) return;
 	if ( ![playerController playerIsValid:self] ) return;
 
-	PGLog(@"[Bot] Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
+	log(LOG_GENERAL, @"Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
 	
 	// We need to repop!
 	if ( ![playerController isGhost] && [playerController isDead] ) {
 		int try = [count intValue];
 		// ONLY stop bot if we're not in PvP (we'll auto res in PvP!)
 		if(++try > 10 && !self.isPvPing) {
-			PGLog(@"[Bot] Repop failed after 10 tries.  Stopping bot.");
+			log(LOG_ERROR, @"Repop failed after 10 tries.  Stopping bot.");
 			[self stopBot: nil];
 			[controller setCurrentStatus: @"Bot: Failed to Release. Stopped."];
 			return;
 		}
-		PGLog(@"[Bot] Attempting to repop %d.", try);
+		log(LOG_GENERAL, @"Attempting to repop %d.", try);
 		
 		[macroController useMacroOrSendCmd:@"ReleaseCorpse"];
 		
@@ -3225,13 +3226,13 @@ NSMutableDictionary *_diffDict = nil;
 		// run back if we have a route
 		if(!self.isPvPing) {
 			if([self.theRoute routeForKey: CorpseRunRoute] && ![playerController isInBG:[playerController zone]]) {
-				PGLog(@"[Bot] Starting Corpse Run...");
+				log(LOG_GENERAL, @"Starting Corpse Run...");
 				[controller setCurrentStatus: @"Bot: Running back from graveyard..."];
 				[movementController setPatrolRoute: [self.theRoute routeForKey: CorpseRunRoute]];
 				[movementController beginPatrolAndStopAtLastPoint];
 			}
 		} else {
-			PGLog(@"[PvP] Ignoring Corpse Run route because we are PvPing.");
+			log(LOG_GENERAL, @"Ignoring Corpse Run route because we are PvPing.");
 		}
 	}
 }
@@ -3239,7 +3240,7 @@ NSMutableDictionary *_diffDict = nil;
 - (void)playerIsInvalid: (NSNotification*)not {
 	log(LOG_FUNCTION, @"entering function");
     if( [self isBotting]) {
-        PGLog(@"[Bot] Player is no longer valid, stopping bot.");
+        log(LOG_ERROR, @"Player is no longer valid, stopping bot.");
         [self stopBot: nil];
     }
 }
@@ -3313,7 +3314,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		// Just got preparation?  Lets check to see if we're in strand + should be attacking/defending
         if( spellID == PreparationSpellID ) {
-			PGLog(@"We have preparation, checking BG info!");
+			log(LOG_PVP, @"We have preparation, checking BG info!");
 			
 			// Do it in a bit, as we need to wait for our controller to update the object list!
 			[self performSelector:@selector(pvpGetBGInfo) withObject:nil afterDelay:3.1f];
@@ -3340,7 +3341,7 @@ NSMutableDictionary *_diffDict = nil;
 				// reset the delay in 10 seconds?
 				[self performSelector:@selector(pvpResetStrandDelay) withObject:nil afterDelay:10.0f];
 				
-				PGLog(@"[PvP] We are on a boat in Strand! Starting a delay until the boat stops!");
+				log(LOG_PVP, @"We are on a boat in Strand! Starting a delay until the boat stops!");
 			}
         }
     }
@@ -3350,7 +3351,7 @@ NSMutableDictionary *_diffDict = nil;
 	log(LOG_FUNCTION, @"entering function");
 	_strandDelay = NO;
 	
-	PGLog(@"[PvP] Delay reset!");
+	log(LOG_PVP, @"Delay reset!");
 	
 	[controller setCurrentStatus: @"PvP: Delay reset, am I really waiting for eval?..."];
 	
@@ -3411,7 +3412,7 @@ NSMutableDictionary *_diffDict = nil;
 				
 				int faction = [mob factionTemplate];
 				BOOL isHostile = [playerController isHostileWithFaction: faction];
-				PGLog(@"[PvP] Faction %d (%d) of Mob %@", faction, isHostile, mob);
+				log(LOG_PVP, @"Faction %d (%d) of Mob %@", faction, isHostile, mob);
 				
 				if ( isHostile ){
 					foundHostile = YES;
@@ -3422,28 +3423,28 @@ NSMutableDictionary *_diffDict = nil;
 			}
 			
 			if ( foundHostile && foundFriendly ){
-				PGLog(@"[PvP] New round for Strand! Found hostile and friendly! Were we attacking last round? %d", _attackingInStrand);
+				log(LOG_PVP, @"New round for Strand! Found hostile and friendly! Were we attacking last round? %d", _attackingInStrand);
 				_attackingInStrand = _attackingInStrand ? NO : YES;
 			}
 			else if ( foundHostile ){
 				_attackingInStrand = YES;
-				PGLog(@"[PvP] We're attacking in strand!");
+				log(LOG_PVP, @"We're attacking in strand!");
 			}
 			else if ( foundFriendly ){
 				_attackingInStrand = NO;
-				PGLog(@"[PvP] We're defending in strand!");
+				log(LOG_PVP, @"We're defending in strand!");
 			}
 		}
 		// If we don't see anything, then we're attacking!
 		else{
 			_attackingInStrand = YES;
-			PGLog(@"[PvP] We're attacking in strand!");
+			log(LOG_PVP, @"We're attacking in strand!");
 		}
 		
 		// Check to see if we're on the boat!
 		if ( _attackingInStrand && [playerController isOnBoatInStrand]){
 			_strandDelay = YES;
-			PGLog(@"[PvP] We're on a boat so lets delay our movement until it settles!");
+			log(LOG_PVP, @"We're on a boat so lets delay our movement until it settles!");
 		}
 	}
 }
@@ -3461,7 +3462,7 @@ NSMutableDictionary *_diffDict = nil;
 	if ( _pvpIsInBG && !isPlayerInBG ){
 		_pvpIsInBG = NO;
 		
-		PGLog(@"[PvP] Player has left the battleground...");
+		log(LOG_PVP, @"Player has left the battleground...");
 		
 		// Stop the bot! (this could be triggered by our marks check, but of course someone could have maxed marks)
 		if ( self.isBotting ){
@@ -3490,7 +3491,7 @@ NSMutableDictionary *_diffDict = nil;
 										   clickContext: nil];             
 			}
 			if(hasDeserter) {
-				PGLog(@"[PvP] Deserter! Waiting for deserter to go away :(");
+				log(LOG_PVP, @"Deserter! Waiting for deserter to go away :(");
 				[controller setCurrentStatus: @"PvP: Waiting for Deserter to fade..."];
 				[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 10.0];
 				return;
@@ -3524,7 +3525,7 @@ NSMutableDictionary *_diffDict = nil;
 			}
 			
 			// Start bot after 5 seconds!
-			PGLog(@"[PvP] PvP environment valid. Starting bot in 5 seconds...");
+			log(LOG_PVP, @"PvP environment valid. Starting bot in 5 seconds...");
 			[controller setCurrentStatus: @"PvP: Starting Bot in 5 seconds..."];
 			[self performSelector: @selector(startBotForPvP) withObject: nil afterDelay: 5.0f];
 		}
@@ -3539,14 +3540,14 @@ NSMutableDictionary *_diffDict = nil;
 			if( self.pvpPlayWarning ) {
 				if( [auraController unit: player hasAura: IdleSpellID] || [auraController unit: player hasAura: InactiveSpellID]) {
 					[[NSSound soundNamed: @"alarm"] play];
-					PGLog(@"[PvP] Idle/Inactive debuff detected!");
+					log(LOG_PVP, @"Idle/Inactive debuff detected!");
 				}
 			}
 			
 			// Leave BG?
 			if( [auraController unit: player hasAura: InactiveSpellID] && self.pvpLeaveInactive ) {
 				// leave the battleground
-				PGLog(@"[PvP] Leaving battleground due to Inactive debuff.");
+				log(LOG_PVP, @"Leaving battleground due to Inactive debuff.");
 				
 				[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
 			}
@@ -3559,14 +3560,14 @@ NSMutableDictionary *_diffDict = nil;
 			if ( self.isBotting ){
 				[self stopBot: nil];
 				
-				PGLog(@"[PvP] BG has ended, botting stopped. %d > %d", [itemController pvpMarks], _pvpMarks );
+				log(LOG_PVP, @"BG has ended, botting stopped. %d > %d", [itemController pvpMarks], _pvpMarks );
 				[controller setCurrentStatus: @"PvP: BG has ended, botting stopped."];
 			}
 		}
 	}
 	
 	if ( !isPlayerInBG && self.isBotting ){
-		PGLog(@"WE SHOULD NEVER BE HERE! Why are we botting outside of the BG?!?!?!");
+		log(LOG_ERROR, @"WE SHOULD NEVER BE HERE! Why are we botting outside of the BG?!?!?!");
 	}
 }
 
@@ -3589,7 +3590,7 @@ NSMutableDictionary *_diffDict = nil;
 		return;
 	}
 	
-	PGLog(@"[PvP] Still not queued, trying again!");
+	log(LOG_PVP, @"Still not queued, trying again!");
 	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
 	
 	float nextCheck = SSRandomFloatBetween(1.0f, 5.0f);
@@ -3603,7 +3604,7 @@ NSMutableDictionary *_diffDict = nil;
 	if ([playerController isInBG:[playerController zone]])	return;
 	
 	if ( [playerController battlegroundStatus] == BGQueued ){
-		PGLog(@"[PvP] Already queued, no need to try again!");
+		log(LOG_PVP, @"Already queued, no need to try again!");
 		return;
 	}
 	
@@ -3627,7 +3628,7 @@ NSMutableDictionary *_diffDict = nil;
         return;
     }
 	
-	PGLog(@"[PvP] Queueing...");
+	log(LOG_PVP, @"Queueing...");
 	
 	// Open PvP screen
 	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
@@ -3686,7 +3687,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	[_pvpTimer invalidate]; _pvpTimer = nil;
 	
-    PGLog(@"[PvP] Stopped.");
+    log(LOG_PVP, @"PvP Stopped.");
     
     [self willChangeValueForKey: @"pvpButtonTitle"];
     [self didChangeValueForKey: @"pvpButtonTitle"];
@@ -3726,7 +3727,7 @@ NSMutableDictionary *_diffDict = nil;
     self.pvpLeaveInactive = [pvpLeaveInactiveCheckbox state];
     
     // off we go...?
-    PGLog(@"[PvP] Starting...");
+    log(LOG_PVP, @"PvP Starting...");
 	[self pvpQueueBattleground];
 	
 	// Start our monitor!
@@ -3771,7 +3772,7 @@ NSMutableDictionary *_diffDict = nil;
 
 - (void)logOutTimer: (NSTimer*)timer {
 	if ( !self.isBotting )
-		PGLog(@"[Bot] We should never be here!!");
+		log(LOG_ERROR, @"We should never be here!!");
 	
 	BOOL logOutNow = NO;
 	NSString *logMessage = nil;
@@ -3807,7 +3808,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// time to stop botting + log!
 	if ( logOutNow ){
-		PGLog(@"[Bot] %@", logMessage);
+		log(LOG_GENERAL, @"%@", logMessage);
 		[self logOut];
 		[self updateStatus: [NSString stringWithFormat:@"Bot: %@", logMessage]];
 	}
@@ -3821,7 +3822,7 @@ NSMutableDictionary *_diffDict = nil;
 	if ( self.isBotting || ![playerController playerIsValid] )
 		return;
 	
-	//PGLog(@"[AFK] Attempt: %d", _afkTimerCounter);
+	log(LOG_AFK, @"Attempt: %d", _afkTimerCounter);
 	
 	
 	if ( [antiAFKButton state] ){
@@ -3844,13 +3845,13 @@ NSMutableDictionary *_diffDict = nil;
 	if ( _lastPressedWasForward ){
 		[movementController moveBackwardStop];
 		_lastPressedWasForward = NO;
-		PGLog(@"[AFK] Moving backward!");
+		log(LOG_AFK, @"Moving backward!");
 	}
 	// move forward!
 	else{
 		[movementController moveForwardStop];
 		_lastPressedWasForward = YES;
-		PGLog(@"[AFK] Moving forward!");
+		log(LOG_AFK, @"Moving forward!");
 	}
 }
 
@@ -3870,16 +3871,16 @@ NSMutableDictionary *_diffDict = nil;
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&guid BufLength: sizeof(guid)] && guid ){
 				
 				[macroController useMacroOrSendCmd:@"LeaveParty"];
-				PGLog(@"[Bot] Player is in party leaving!");				
+				log(LOG_PVP, @"Player is in party leaving!");				
 			}
 			
-			PGLog(@"[Bot] Leaving party anyways - there a leader? 0x%qX", guid);
+			log(LOG_PVP, @"Leaving party anyways - there a leader? 0x%qX", guid);
 			[macroController useMacroOrSendCmd:@"LeaveParty"];
 		}
 		
 		// only autojoin if it's 2 hours+ after a WG end
 		if ( _dateWGEnded && [currentTime timeIntervalSinceDate: _dateWGEnded] <= 7200 ){
-			PGLog(@"[Bot] Not autojoing WG since it's been %0.2f seconds", [currentTime timeIntervalSinceDate: _dateWGEnded]);
+			log(LOG_PVP, @"Not autojoing WG since it's been %0.2f seconds", [currentTime timeIntervalSinceDate: _dateWGEnded]);
 			return;
 		}
 		
@@ -3887,7 +3888,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		// click the button!
 		[macroController useMacroOrSendCmd:@"ClickFirstButton"];
-		PGLog(@"[Bot] Autojoining WG!  Seconds since last WG: %0.2f", [currentTime timeIntervalSinceDate: _dateWGEnded]);
+		log(LOG_PVP, @"Autojoining WG!  Seconds since last WG: %0.2f", [currentTime timeIntervalSinceDate: _dateWGEnded]);
 		
 		// check how many marks they have (if it went up, we need to leave the group)!
 		Item *item = [itemController itemForID:[NSNumber numberWithInt:43589]];
@@ -3896,18 +3897,18 @@ NSMutableDictionary *_diffDict = nil;
 			// it's never been set - /cry - lets set it!
 			if ( _lastNumWGMarks == 0 ){
 				_lastNumWGMarks = [item count];
-				PGLog(@"[Bot] Setting wintegrasp mark counter to %d", _lastNumWGMarks);
+				log(LOG_PVP, @"Setting wintegrasp mark counter to %d", _lastNumWGMarks);
 			}
 			
 			// the player has more!
 			if ( _lastNumWGMarks != [item count] ){
 				_lastNumWGMarks = [item count];
 				
-				PGLog(@"[Bot] Wintergrasp over you now have %d marks! Leaving group!", _lastNumWGMarks);
+				log(LOG_PVP, @"Wintergrasp over you now have %d marks! Leaving group!", _lastNumWGMarks);
 				[macroController useMacroOrSendCmd:@"LeaveParty"];
 				
 				// update our time
-				PGLog(@"[Bot] It's been %0.2f:: opens seconds since we were last given marks!", [currentTime timeIntervalSinceDate: _dateWGEnded]);
+				log(LOG_PVP, @"It's been %0.2f:: opens seconds since we were last given marks!", [currentTime timeIntervalSinceDate: _dateWGEnded]);
 				[_dateWGEnded release]; _dateWGEnded = nil;
 				_dateWGEnded = [[NSDate date] retain];
 			}
@@ -3967,7 +3968,7 @@ NSMutableDictionary *_diffDict = nil;
 	_lastActionTime = [playerController currentTime];
 	
 	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] ){
-		//PGLog(@"ZOMG THERE IS AN ERROR! AHHHHHH! %@", [playerController lastErrorMessage]);
+		log(LOG_COMBAT, @"Spell cast failed: %@", [playerController lastErrorMessage]);
 	}
 	
 	// did the spell not cast?
@@ -3975,7 +3976,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		 _lastActionErrorCode = lastErrorMessage;
-		 PGLog(@"[Bot] Spell (%d) didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
+		 log(LOG_COMBAT, @"Spell (%d) didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
 
 		 // do something?
 		 if ( lastErrorMessage == ErrSpellNot_Ready){
@@ -4016,7 +4017,7 @@ NSMutableDictionary *_diffDict = nil;
 		return ErrSpellNotReady;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_FRNT] ){
-		PGLog(@"TARGET IS NOT IN FRONT OF YOU!");
+		log(LOG_COMBAT, @"TARGET IS NOT IN FRONT OF YOU!");
 		return ErrTargetNotInFrnt;
 	}
 	else if ( [errorMessage isEqualToString:CANT_MOVE] ){
@@ -4074,7 +4075,7 @@ NSMutableDictionary *_diffDict = nil;
 		[self interactWithMouseoverGUID:[nodeToInteract GUID]];
 	}
 	else{
-		PGLog(@"[Bot] Node %d not found, unable to interact", entryID);
+		log(LOG_LOOT, @"Node %d not found, unable to interact", entryID);
 	}
 }
 
@@ -4128,10 +4129,10 @@ NSMutableDictionary *_diffDict = nil;
 	// The zones *should* be different
 	if ( [logOutUseHearthstoneCheckbox state] ){
 		if ( _zoneBeforeHearth != [playerController zone] ){
-			PGLog(@"[Bot] Hearth successful from zone %d to %d", _zoneBeforeHearth, [playerController zone]);
+			log(LOG_GENERAL, @"Hearth successful from zone %d to %d", _zoneBeforeHearth, [playerController zone]);
 		}
 		else{
-			PGLog(@"[Bot] Sorry hearth failed for some reason (on CD?), still closing WoW!");
+			log(LOG_GENERAL, @"Sorry hearth failed for some reason (on CD?), still closing WoW!");
 		}
 	}
 	
@@ -4151,22 +4152,22 @@ NSMutableDictionary *_diffDict = nil;
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
 	log(LOG_FUNCTION, @"entering function");
 	if ( doMobCheck ){
-		PGLog(@"[Bot] Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
+		log(LOG_NODE, @"Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
 		NSArray *mobs = [mobController mobsWithinDistance: _nodeIgnoreMobDistance MobIDs:nil position:[node position] aliveOnly:YES];
 		if ( [mobs count] ){
-			PGLog(@"[Bot] There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], node);
+			log(LOG_NODE, @"There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], node);
 			return YES;
 		}
 	}
 	if ( doFriendlyCheck ){
 		if ( [playersController playerWithinRangeOfUnit: _nodeIgnoreFriendlyDistance Unit:(Unit*)node includeFriendly:YES includeHostile:NO] ){
-			PGLog(@"[Bot] Friendly player(s) near node, ignoring %@", node);
+			log(LOG_NODE, @"Friendly player(s) near node, ignoring %@", node);
 			return YES;
 		}
 	}
 	if ( doHostileCheck ){
 		if ( [playersController playerWithinRangeOfUnit: _nodeIgnoreHostileDistance Unit:(Unit*)node includeFriendly:NO includeHostile:YES] ){
-			PGLog(@"[Bot] Hostile player(s) near node, ignoring %@", node);
+			log(LOG_NODE, @"Hostile player(s) near node, ignoring %@", node);
 			return YES;
 		}
 	}
@@ -4509,13 +4510,13 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 	
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	if ( ![fileManager fileExistsAtPath:configFilePath] || [configData length] == 0 ){
-		PGLog(@"[Bot] Unable to find config file at path '%@'. Aborting.", configFilePath);
+		log(LOG_ERROR, @"Unable to find config file at path '%@'. Aborting.", configFilePath);
 		return;
 	}
 	// should we create a backup file?
 	if ( ![fileManager fileExistsAtPath:configFileBackup] ){
 		if ( ![configData writeToFile:configFileBackup atomically:YES encoding:NSUnicodeStringEncoding error:nil] ){
-			PGLog(@"[Bot] Unable to backup existing config file to '%@'. Aborting", configFileBackup);
+			log(LOG_ERROR, @"Unable to backup existing config file to '%@'. Aborting", configFileBackup);
 			return;
 		}
 	}
@@ -4538,11 +4539,11 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 
         // get the account name?
 		int scanSave = [scanner scanLocation];
-		PGLog(@"Location: %d", [scanner scanLocation]);
+		log(LOG_GENERAL, @"Location: %d", [scanner scanLocation]);
         if([scanner scanUpToString: ACCOUNT_NAME_SEP intoString: &beforeAccountName] && [scanner scanString: ACCOUNT_NAME_SEP intoString: nil]) {
             NSString *newName = nil;
             if ( [scanner scanUpToString: @"\"" intoString: &newName] && newName && [newName length] ) { 
-				//PGLog(@"Account name: %@", newName);
+				log(LOG_GENERAL, @"Account name: %@", newName);
 				accountNameFound = YES;
             }
         }
@@ -4554,11 +4555,11 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 		
 		// get the account list
 		scanSave = [scanner scanLocation];
-		PGLog(@"Location: %d %d", [scanner scanLocation], [beforeAccountName length]);
+		log(LOG_GENERAL, @"Location: %d %d", [scanner scanLocation], [beforeAccountName length]);
         if ( [scanner scanUpToString: ACCOUNT_LIST_SEP intoString: &beforeAccountList] && [scanner scanString: ACCOUNT_LIST_SEP intoString: nil] ) {
             NSString *newName = nil;
             if ( [scanner scanUpToString: @"\"" intoString: &newName] && newName && [newName length] ) {
-				//PGLog(@"Account list: %@", newName);
+				log(LOG_GENERAL, @"Account list: %@", newName);
 				accountListFound = YES;
             }
         }
@@ -4567,7 +4568,7 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 		if ( !accountListFound ){
 			[scanner setScanLocation: scanSave];
 		}
-		PGLog(@"Location: %d %d", [scanner scanLocation], [beforeAccountList length]);
+		log(LOG_GENERAL, @"Location: %d %d", [scanner scanLocation], [beforeAccountList length]);
 		// save what we have left in the scanner! There could be config data after our account name!
 		NSString *endOfConfigFileData = [[scanner string]substringFromIndex:[scanner scanLocation]];
 		
@@ -4627,7 +4628,7 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 
 	// write our new config file!
 	[newConfigFile writeToFile:configFileBackup atomically:YES encoding:NSUnicodeStringEncoding error:nil];
-	PGLog(@"[Bot] New config file written to '%@'", configFilePath);
+	log(LOG_GENERAL, @"New config file written to '%@'", configFilePath);
 	
 	// make sure wow is open
 	if ( [controller isWoWOpen] ){
@@ -4715,7 +4716,7 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 		[memory loadDataForObject: self atAddress: addr3 Buffer: (Byte *)&value3 BufLength: sizeof(value3)];
 		[memory loadDataForObject: self atAddress: addr4 Buffer: (Byte *)&value4 BufLength: sizeof(value4)];
 
-		PGLog(@"%d %d %d %d %@", value1, value2, value3, value4, obj);
+		log(LOG_MEMORY, @"%d %d %d %d %@", value1, value2, value3, value4, obj);
 	}
 	
 	
@@ -4723,7 +4724,7 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 		[self performSelector:@selector(monitorObject:) withObject:obj afterDelay:0.1f];
 	}
 	else{
-		PGLog(@"%@ is no longer valid...", obj);
+		log(LOG_MEMORY, @"%@ is no longer valid...", obj);
 	}
 	
 }

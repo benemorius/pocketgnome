@@ -10,7 +10,7 @@
 #define log(...) if([LogController canLog:__VA_ARGS__]) PGLog(@"%@", [LogController log: __VA_ARGS__]);
 //just for autocomplete and convenience really
 #define LOG_FUNCTION "function"
-//these are intended for those temporary zomg and wtf outputs that we all seem to love
+//I use these for those temporary zomg and wtf outputs that we all love and hate
 #define LOG_DEV "dev"
 #define LOG_DEV1 "dev1"
 #define LOG_DEV2 "dev2"
@@ -23,6 +23,15 @@
 #define LOG_LOOT "loot"
 #define LOG_HEAL "heal"
 #define LOG_COMBAT "combat"
+#define LOG_GENERAL "general"
+#define LOG_MACRO "macro"
+#define LOG_CHAT "chat"
+#define LOG_ERROR "error"
+#define LOG_PVP "pvp"
+#define LOG_NODE "node"
+#define LOG_FISHING "fishing"
+#define LOG_AFK "afk"
+#define LOG_MEMORY "memory"
 
 @interface LogController : NSObject {
 

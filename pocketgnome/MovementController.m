@@ -201,7 +201,7 @@ typedef enum MovementType {
 				Waypoint *closestWaypoint = [self closestWaypoint];
 				float newDistance = [playerPosition distanceToPosition:[closestWaypoint position]];
 				
-				PGLog(@"Searching for closer wp! %@, %0.2f route: %@", closestWaypoint, newDistance, _route);
+				log(LOG_MOVEMENT, @"Searching for closer wp! %@, %0.2f route: %@", closestWaypoint, newDistance, _route);
 				
 				if ( newDistance < distance ){
 					self.destination = closestWaypoint;
@@ -218,12 +218,12 @@ typedef enum MovementType {
 
 - (void)resumeMovement {
 	if ( _isStuck > STUCK_THRESHOLD ){
-		PGLog(@"NOT resumeMovement");
+		log(LOG_MOVEMENT, @"NOT resumeMovement");
 		return;		
 	}
 	
     if([self shouldResume]) {
-		PGLog(@"resumeMovement");
+		log(LOG_MOVEMENT, @"resumeMovement");
         // if we were moving to a unit, go there
         // otherwise, resume to the next waypoint
         [self moveToPosition: (self.unit ? [self.unit position] : [[self destination] position])];
@@ -232,12 +232,12 @@ typedef enum MovementType {
 
 - (void)resumeMovementToNearestWaypoint {
 	if ( _isStuck > STUCK_THRESHOLD ){
-		PGLog(@"NOT resumeMovementToNearestWaypoint");
+		log(LOG_MOVEMENT, @"NOT resumeMovementToNearestWaypoint");
 		return;		
 	}
 	
     if([self shouldResume]) {
-		PGLog(@"resumeMovementToNearestWaypoint");
+		log(LOG_MOVEMENT, @"resumeMovementToNearestWaypoint");
 
 		if ( self.unit ){
 			Position *position = [self.unit position];
@@ -477,7 +477,7 @@ typedef enum MovementType {
 		return;
 	}
 	
-	//PGLog(@"[Move] %d   Speed: %0.2f   Distance:  %0.2f", _movementChecks, averageSpeed, averageDistance);
+	//log(LOG_MOVEMENT, @"%d   Speed: %0.2f   Distance:  %0.2f", _movementChecks, averageSpeed, averageDistance);
 	
 	[self performSelector:_cmd withObject:position afterDelay:0.1f];
 }
@@ -518,7 +518,7 @@ typedef enum MovementType {
 			if ( [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnStuck"] boolValue] ){
 				int stuckThreshold = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnStuckAttempts"] intValue];
 				if ( _unstickAttempt > stuckThreshold ){
-					PGLog(@"[Bot] We're stuck, playing an alarm!");
+					log(LOG_GENERAL, @"We're stuck, playing an alarm!");
 					[[NSSound soundNamed: @"alarm"] play];
 				}
 			}
@@ -528,7 +528,7 @@ typedef enum MovementType {
 				int stuckTries = [logOutStuckAttemptsTextField intValue];
 				
 				if ( _unstickAttempt > stuckTries ){
-					PGLog(@"[Bot] We're stuck, closing wow!");
+					log(LOG_GENERAL, @"We're stuck, closing wow!");
 					[botController logOut];
 					[controller setCurrentStatus: @"Bot: Logged out due to being stuck"];
 					return;
@@ -551,7 +551,7 @@ typedef enum MovementType {
 
 - (void)moveToWaypoint: (Waypoint*)waypoint {
 	if ( _isStuck > STUCK_THRESHOLD ){
-		PGLog(@"NOT moveToWaypoint %@", waypoint);
+		log(LOG_MOVEMENT, @"NOT moveToWaypoint %@", waypoint);
 		return;		
 	}
 	
@@ -570,7 +570,7 @@ typedef enum MovementType {
     //    return;
     //}
 	if ( _isStuck > STUCK_THRESHOLD ){
-		PGLog(@"NOT moveToObject %@", unit);
+		log(LOG_MOVEMENT, @"NOT moveToObject %@", unit);
 		return;		
 	}
     
@@ -587,7 +587,7 @@ typedef enum MovementType {
             [self resumeMovement];
         }
     } else {
-        PGLog(@"Cannot move to invalid unit %@ (%d)", self.unit, notify);
+        log(LOG_MOVEMENT, @"Cannot move to invalid unit %@ (%d)", self.unit, notify);
         self.unit = nil;
         self.shouldNotify = NO;
 		
@@ -629,7 +629,7 @@ typedef enum MovementType {
 	//[self resetSpeedDistanceCheck];
     [self finishMovingToObject: unit];
     
-    PGLog(@"finishAlt: %@", unit);
+    log(LOG_MOVEMENT, @"finishAlt: %@", unit);
     
     if(notify)
         [botController reachedUnit: unit];
@@ -739,7 +739,7 @@ typedef enum MovementType {
 	else if ( [[self destination] action].type == ActionType_Jump ) {
 		// send escape to close chat box if it's open!
 		if ( [controller isWoWChatBoxOpen] ){
-			PGLog(@"[Macro] Sending escape!");
+			log(LOG_MACRO, @"Sending escape!");
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}
@@ -795,7 +795,7 @@ typedef enum MovementType {
     int min = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"MovementMinJumpTime"] intValue];
     int max = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"MovementMaxJumpTime"] intValue];
     self.jumpCooldown = SSRandomIntBetween(min, max);
-    //PGLog(@"Set jump cooldown to %d (between %d, and %d)", self.jumpCooldown, min, max);
+    log(LOG_MOVEMENT, @"Set jump cooldown to %d (between %d, and %d)", self.jumpCooldown, min, max);
     
     // jump!
     if(![controller isWoWChatBoxOpen]) {
@@ -878,7 +878,7 @@ typedef enum MovementType {
         return;
     }
 
-	//PGLog(@"Distance: %0.2f %0.2f", distance, distance2d);
+	//log(LOG_MOVEMENT, @"Distance: %0.2f %0.2f", distance, distance2d);
     
     // poll the bot controller
     if([botController isBotting]) {
@@ -950,7 +950,7 @@ typedef enum MovementType {
 }
 
 - (void)resetMovementState {
-	PGLog(@"resetMovementState");
+	log(LOG_FUNCTION, @"entering function");
 	if ( [movementType selectedTag] == MOVE_CTM ){
 		[self setClickToMove:nil andType:ctmIdle andGUID:0x0];
 	}
@@ -971,7 +971,7 @@ typedef enum MovementType {
 }
 
 - (void)moveUpStart {
-	PGLog(@"Moving up...");
+	log(LOG_MOVEMENT, @"Moving up...");
     [self setIsMoving: YES];
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_Space, TRUE);
@@ -1177,8 +1177,8 @@ typedef enum MovementType {
                 // 2.25 rad/sec is an approximate turning speed
                 float compensationFactor = ([controller refreshDelay]/2000000.0f) * 2.25f;
                 
-                if(printTurnInfo) PGLog(@"[Turn] ------");
-                if(printTurnInfo) PGLog(@"[Turn] %.3f rad turn with %.2f error (lim %.2f) for distance %.2f.", absAngleTo, errorStart, errorLimit, startDistance);
+                log(LOG_MOVEMENT, @"[Turn] ------");
+                log(LOG_MOVEMENT, @"[Turn] %.3f rad turn with %.2f error (lim %.2f) for distance %.2f.", absAngleTo, errorStart, errorLimit, startDistance);
                 
                 NSDate *date = [NSDate date];
                 ( angleTo > 0) ? [self turnLeft: YES] : [self turnRight: YES];
@@ -1210,18 +1210,18 @@ typedef enum MovementType {
                     errorNow = (fabsf(currDiff) < M_PI_2) ? (currentDistance * sinf(modifiedDiff)) : INFINITY;
                     
                     if( (errorNow < errorLimit) ) {
-                        if(printTurnInfo) PGLog(@"[Turn] [Range is Good] %.2f < %.2f", errorNow, errorLimit);
-                        PGLog(@"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
+                        log(LOG_MOVEMENT, @"[Turn] [Range is Good] %.2f < %.2f", errorNow, errorLimit);
+                        log(LOG_MOVEMENT, @"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
                         break;
                     }
                     
                     if( (delayCount > 250) ) {
                         if( (signbit(lastDiff) != signbit(currDiff)) ) {
-                            if(printTurnInfo) PGLog(@"[Turn] [Sign Diff] %.3f vs. %.3f (Error: %.2f vs. %.2f)", lastDiff, currDiff, errorNow, errorPrev);
+                            log(LOG_MOVEMENT, @"[Turn] [Sign Diff] %.3f vs. %.3f (Error: %.2f vs. %.2f)", lastDiff, currDiff, errorNow, errorPrev);
                             break;
                         }
                         if( (errorNow > (errorPrev + errorLimit)) ) {
-                            if(printTurnInfo) PGLog(@"[Turn] [Error Growing] %.2f > %.2f", errorNow, errorPrev);
+                            log(LOG_MOVEMENT, @"[Turn] [Error Growing] %.2f > %.2f", errorNow, errorPrev);
                             break;
                         }
                     }
@@ -1258,16 +1258,16 @@ typedef enum MovementType {
                     else                                savedDirection += (M_PI*2);
                 }
                 float interval = -1*[date timeIntervalSinceNow], turnRad = fabsf(savedDirection - finalFacing);
-                if(printTurnInfo) PGLog(@"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
+                if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
                 
             }
         } else /*if ( [movementType selectedTag] == MOVE_MOUSE )*/{
-            if(printTurnInfo) PGLog(@"Doing sharp turn to %.2f", [playerPosition angleTo: position]);
+            log(LOG_MOVEMENT, @"Doing sharp turn to %.2f", [playerPosition angleTo: position]);
             [playerData faceToward: position];
             usleep([controller refreshDelay]);
         }
     } else {
-        if(printTurnInfo) PGLog(@"Skipping turn because right mouse button is down.");
+        log(LOG_MOVEMENT, @"Skipping turn because right mouse button is down.");
     }
     
 }
@@ -1281,7 +1281,7 @@ typedef enum MovementType {
     if(force) {
         // every 2 seconds, we should cover around [playerData speedMax]*2
         // check to ensure that we've moved 1/4 of that
-        PGLog(@"Expiration in: %.2f seconds (%@).", [self.movementExpiration timeIntervalSinceNow], self.movementExpiration);
+        log(LOG_MOVEMENT_CORRECTION, @"Expiration in: %.2f seconds (%@).", [self.movementExpiration timeIntervalSinceNow], self.movementExpiration);
         if( self.movementExpiration && ([self.movementExpiration compare: [NSDate date]] == NSOrderedAscending) ) {
             log(LOG_MOVEMENT_CORRECTION, @"**** Movement timer expired!! ****");
             // if we can't reach the unit, just bail it
@@ -1334,7 +1334,7 @@ typedef enum MovementType {
         if(self.lastSavedPosition && (distanceMoved > ([playerData speedMax]/2.0)) ) {
             float secondsFromNow = ([playerPosition distanceToPosition: position]/[playerData speedMax]) + 4.0;
             self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: secondsFromNow];
-            PGLog(@"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
+            log(LOG_MOVEMENT_CORRECTION, @"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
         }
     } else {
         if( [[NSDate date] timeIntervalSinceDate: self.lastDirectionCorrection] > 2.0) {
@@ -1446,7 +1446,7 @@ typedef enum MovementType {
 	// mount found! "use" it!
 	if ( mountID > 0 ){
 		
-		PGLog(@"[Movement] Dismounting from %d", mountID);
+		log(LOG_MOVEMENT, @"Dismounting from %d", mountID);
 		
 		[botController performAction: mountID];
 		
@@ -1457,7 +1457,7 @@ typedef enum MovementType {
 	
 	// just in case people have problems, we'll print something to their log file
 	if ( ![playerData isOnGround] ) {
-		PGLog(@"[Movement] Unable to dismount player! In theory we should never be here! Mount ID: %d", mountID);
+		log(LOG_MOVEMENT, @"Unable to dismount player! In theory we should never be here! Mount ID: %d", mountID);
     }
 	
 	return NO;	
