@@ -23,6 +23,9 @@
 #define LOG_LOOT "loot"
 #define LOG_HEAL "heal"
 #define LOG_COMBAT "combat"
+#define LOG_GENERAL "general"
+#define LOG_MACRO "macro"
+#define LOG_CHAT "chat"
 
 @interface LogController : NSObject {
 
