@@ -193,7 +193,7 @@ static Controller* sharedController = nil;
             }
         }
         if(!foundChatLog) {
-            PGLog(@"Inserting Chat Log toolbar item.");
+            log(LOG_GENERAL, @"Inserting Chat Log toolbar item.");
             [mainToolbar insertItemWithItemIdentifier: [chatLogToolbarItem itemIdentifier] atIndex: 1];
         }
         [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedChatLogToolbarItem"];
@@ -393,7 +393,7 @@ typedef struct NameObjectStruct{
 		}
 	}
 	
-	PGLog(@"[Controller] Player names updated after %d memory reads", [memory loadCount]);
+	log(LOG_MEMORY, @"Player names updated after %d memory reads", [memory loadCount]);
 }
 
 #pragma mark -
@@ -484,7 +484,7 @@ typedef struct NameObjectStruct{
 				if ( [memory loadDataForObject: self atAddress: (objectAddress + OBJECT_GUID_LOW32) Buffer: (Byte*)&guid BufLength: sizeof(guid)] && guid == GUID_LOW32(_globalGUID) ){
 					if ( objectAddress != [playerData baselineAddress] ){
 						
-						PGLog(@"[Controller] Player base address 0x%X changed to 0x%X, verifying change...", [playerData baselineAddress], objectAddress);
+						log(LOG_MEMORY, @"Player base address 0x%X changed to 0x%X, verifying change...", [playerData baselineAddress], objectAddress);
 						
 						// reset mobs, nodes, and inventory for the new player address
 						[mobController resetAllMobs];
@@ -495,13 +495,13 @@ typedef struct NameObjectStruct{
 						// tell our player controller its new address
 						[playerData setStructureAddress: objAddress];
 						Player *player = [playerData player];
-						PGLog(@"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
+						log(LOG_MEMORY, @"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
 						
 						[self setCurrentState: playerValidState];
 					}			
 				}
 				
-				//PGLog(@"[Controller] Player GUID: 0x%X Yours: 0x%X 0x%qX", guid, GUID_LOW32(_globalGUID), _globalGUID);
+				log(LOG_MEMORY, @"[Controller] Player GUID: 0x%X Yours: 0x%X 0x%qX", guid, GUID_LOW32(_globalGUID), _globalGUID);
 
 				[_players addObject: objAddress];
 				continue;
@@ -560,7 +560,7 @@ typedef struct NameObjectStruct{
 			// our object manager has changed (wonder if this happens often?)
 			if ( _currentObjectManager > 0x0 && _currentObjectManager != objectManager ){
 				_validObjectListManager = NO;
-				PGLog(@"[Controller] Object manager changed from 0x%X to 0x%X", _currentObjectManager, objectManager);
+				log(LOG_MEMORY, @"[Controller] Object manager changed from 0x%X to 0x%X", _currentObjectManager, objectManager);
 			}
 			
 			_currentObjectManager = objectManager;
@@ -909,7 +909,7 @@ typedef struct NameObjectStruct{
         [self willChangeValueForKey: @"wowMemoryAccess"];
 
         // send notification of invalidity
-        PGLog(@"Memory access is invalid.");
+        log(LOG_ERROR, @"Memory access is invalid.");
         [self setCurrentState: memoryInvalidState];
 
         [_wowMemoryAccess release];
@@ -944,23 +944,23 @@ typedef struct NameObjectStruct{
                 
                 // send notification of validity
                 if(_wowMemoryAccess && [_wowMemoryAccess isValid]) {
-                    PGLog(@"Memory access is valid for PID %d.", wowPID);
+                    log(LOG_MEMORY, @"Memory access is valid for PID %d.", wowPID);
                     [self setCurrentState: memoryValidState];
                     [[NSNotificationCenter defaultCenter] postNotificationName: MemoryAccessValidNotification object: nil];
                     return [[_wowMemoryAccess retain] autorelease];
                 } else {
-                    PGLog(@"Even after re-creation, memory access is nil (wowPID = %d).", wowPID);
+                    log(LOG_ERROR, @"Even after re-creation, memory access is nil (wowPID = %d).", wowPID);
                     return nil;
                 }
             } else {
-                PGLog(@"Error %d while retrieving WoW's PID.", err);
+                log(LOG_ERROR, @"Error %d while retrieving WoW's PID.", err);
             }
         } else {
             [self setCurrentState: wowNotOpenState];
         }
     }
     
-    //PGLog(@"Unable to get a handle on WoW's memory.");
+    log(LOG_ERROR, @"Unable to get a handle on WoW's memory.");
     return nil;
 }
 
@@ -1268,7 +1268,7 @@ typedef struct NameObjectStruct{
     CGRect windowRect;
 	int Connection = _CGSDefaultConnection();
 	int windowID = [self getWOWWindowID];
-	PGLog(@"Connection: %d, Window id: %d", Connection, windowID);
+	log(LOG_GENERAL, @"Connection: %d, Window id: %d", Connection, windowID);
     CGSGetWindowBounds(Connection, windowID, &windowRect);
     windowRect.origin.y += 22;      // cut off the title bar
     windowRect.size.height -= 22;
@@ -1312,46 +1312,46 @@ typedef struct NameObjectStruct{
     float ay = -[gP zPosition];
     float az = [gP yPosition];
     
-    PGLog(@"Game position: { %.2f, %.2f, %.2f } (%@)", ax, ay, az, gP);
+    log(LOG_GENERAL, @"Game position: { %.2f, %.2f, %.2f } (%@)", ax, ay, az, gP);
     
     float cx = -[cP xPosition];
     float cy = -[cP zPosition];
     float cz = [cP yPosition];
 
-    PGLog(@"Camera position: { %.2f, %.2f, %.2f } (%@)", cx, cy, cz, cP);
+    log(LOG_GENERAL, @"Camera position: { %.2f, %.2f, %.2f } (%@)", cx, cy, cz, cP);
     
     float facing = [self cameraFacing];
     if(facing > M_PI) facing -= 2*M_PI;
-    PGLog(@"Facing: %.2f (%.2f), tilt = %.2f", facing, [self cameraFacing], [self cameraTilt]);
+    log(LOG_GENERAL, @"Facing: %.2f (%.2f), tilt = %.2f", facing, [self cameraFacing], [self cameraTilt]);
     
     float ox = [self cameraTilt];
     float oy = -facing;
     float oz = 0;
     
-    PGLog(@"Camera direction: { %.2f, %.2f, %.2f }", ox, oy, oz);
+    log(LOG_GENERAL, @"Camera direction: { %.2f, %.2f, %.2f }", ox, oy, oz);
 
     
     float dx = cosf(oy) * ( sinf(oz) * (ay - cy) + cosf(oz) * (ax - cx)) - sinf(oy) * (az - cz);
     float dy = sinf(ox) * ( cosf(oy) * (az - cz) + sinf(oy) * ( sinf(oz) * (ay - cy) + cosf(oz) * (ax - cx))) + cosf(ox) * ( cosf(oz) * (ay - cy) - sinf(oz) * (ax - cx) );
     float dz = cosf(ox) * ( cosf(oy) * (az - cz) + sinf(oy) * ( sinf(oz) * (ay - cy) + cosf(oz) * (ax - cx))) - sinf(ox) * ( cosf(oz) * (ay - cy) - sinf(oz) * (ax - cx) );
     
-    PGLog(@"Calcu position: { %.2f, %.2f, %.2f }", dx, dy, dz);
+    log(LOG_GENERAL, @"Calcu position: { %.2f, %.2f, %.2f }", dx, dy, dz);
     
     float bx = (dx - cx) * (cz/dz);
     float by = (dy - cy) * (cz/dz);
 
-    PGLog(@"Projected 2d position: { %.2f, %.2f }", bx, by);
+    log(LOG_GENERAL, @"Projected 2d position: { %.2f, %.2f }", bx, by);
     
     if(dz <= 0) {
-        PGLog(@"behind the camera1");
+        log(LOG_GENERAL, @"behind the camera1");
         //return CGPointMake(-1, -1);
     }
     
     CGRect wowSize = [self wowWindowRect];
     CGPoint wowCenter = CGPointMake( wowSize.origin.x+wowSize.size.width/2.0f, wowSize.origin.y+wowSize.size.height/2.0f);
     
-    PGLog(@"WowWindowSize: %@", NSStringFromRect(NSRectFromCGRect(wowSize)));
-    PGLog(@"WoW Center: %@", NSStringFromPoint(NSPointFromCGPoint(wowCenter)));
+    log(LOG_GENERAL, @"WowWindowSize: %@", NSStringFromRect(NSRectFromCGRect(wowSize)));
+    log(LOG_GENERAL, @"WoW Center: %@", NSStringFromPoint(NSPointFromCGPoint(wowCenter)));
     
     float FOV1 = 0.1;
     float FOV2 = 3 /* 7.4 */ * wowSize.size.width;
@@ -1360,7 +1360,7 @@ typedef struct NameObjectStruct{
     
     // ensure on screen
     if(sx < wowSize.origin.x || sy < wowSize.origin.y || sx >= wowSize.origin.x+wowSize.size.width || sy >= wowSize.origin.y+wowSize.size.height) {
-        PGLog(@"behind the camera2");
+        log(LOG_GENERAL, @"behind the camera2");
         //return CGPointMake(-1, -1);
     }
     return CGPointMake(sx, sy);
@@ -1591,11 +1591,11 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
     NSString *pkgInfoPath = [[appPath stringByAppendingPathComponent: @"Contents"] stringByAppendingPathComponent: @"PkgInfo"];
     NSMutableDictionary *infoDict = [NSMutableDictionary dictionaryWithContentsOfFile: infoPath];
     
-    PGLog(@"AppPath: %@", appPath);
+    log(LOG_GENERAL, @"AppPath: %@", appPath);
     
     // verify everything is in working order
     if(!infoDict || ![[NSFileManager defaultManager] fileExistsAtPath: appPath] || ![[NSFileManager defaultManager] fileExistsAtPath: infoPath]) {
-        PGLog(@"[Rename] Error locating correct files."); 
+        log(LOG_ERROR, @"[Rename] Error locating correct files."); 
         NSBeep();
         [self doQuickAlertSheetWithTitle: @"Rename Failed"
                                     text: @"The correct files to modify could not be located.  Nothing was changed." 
@@ -1606,7 +1606,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
     BOOL doMove = NO;
     NSString *execPath = nil, *newExecPath = nil, *newAppPath = nil;
     if([[newNameField stringValue] length] && ![[newNameField stringValue] isEqualToString: [infoDict objectForKey: @"CFBundleName"]]) {
-        PGLog(@"[Rename] Setting application name to \"%@\".", [newNameField stringValue]);
+        log(LOG_GENERAL, @"[Rename] Setting application name to \"%@\".", [newNameField stringValue]);
         [infoDict setObject: [newNameField stringValue] forKey: @"CFBundleDisplayName"];
         [infoDict setObject: [newNameField stringValue] forKey: @"CFBundleExecutable"];
         [infoDict setObject: [newNameField stringValue] forKey: @"CFBundleName"];
@@ -1616,7 +1616,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
         newExecPath = [[execPath stringByDeletingLastPathComponent] stringByAppendingPathComponent: [newNameField stringValue]];
         newAppPath = [[[appPath stringByDeletingLastPathComponent] stringByAppendingPathComponent: [newNameField stringValue]] stringByAppendingPathExtension: @"app"];
         
-        PGLog(@"newAppPath: %@", newAppPath);
+        log(LOG_GENERAL, @"newAppPath: %@", newAppPath);
         
         doMove = YES;
         madeModifications = YES;
@@ -1624,7 +1624,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
         // sanity check the new paths
         if([[NSFileManager defaultManager] fileExistsAtPath: newAppPath]) {
             if(self.matchExistingApp && [newAppPath moveToTrash]) {
-                PGLog(@"[Reaname] Matched application moved to trash.");
+                log(LOG_GENERAL, @"[Reaname] Matched application moved to trash.");
             } else {
                 NSAlert *alert = [NSAlert alertWithMessageText: @"File Already Exists" 
                                                  defaultButton: @"Okay" 
@@ -1637,13 +1637,13 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
             }
         }
     } else {
-        PGLog(@"[Rename] No changes to application name.");
+        log(LOG_GENERAL, @"[Rename] No changes to application name.");
     }
     
     // set new signature
     if(![[newSignatureField stringValue] isEqualToString: [infoDict objectForKey: @"CFBundleSignature"]]) {
         NSString *newSig = [[newSignatureField stringValue] stringByPaddingToLength: 4 withString: @"?" startingAtIndex: 0];
-        PGLog(@"[Rename] Changing the signature to \"%@\".", newSig);
+        log(LOG_GENERAL, @"[Rename] Changing the signature to \"%@\".", newSig);
         [infoDict setObject: newSig forKey: @"CFBundleSignature"];
         
         // write out the new Pkginfo file
@@ -1651,24 +1651,24 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
         
         madeModifications = YES;
     } else {
-        PGLog(@"[Rename] No changes to application signature.");
+        log(LOG_GENERAL, @"[Rename] No changes to application signature.");
     }
     
     // set new identifier
     NSString *newIdentifier = [newIdentifierField stringValue];
     NSString *oldIdentifier = [[[infoDict objectForKey: @"CFBundleIdentifier"] retain] autorelease];
     if([newIdentifier length] && ![newIdentifier isEqualToString: oldIdentifier]) {
-        PGLog(@"[Rename] Changing app identifier from \"%@\" to \"%@\".", oldIdentifier, newIdentifier);
+        log(LOG_GENERAL, @"[Rename] Changing app identifier from \"%@\" to \"%@\".", oldIdentifier, newIdentifier);
         [infoDict setObject: newIdentifier forKey: @"CFBundleIdentifier"];
         madeModifications = YES;
     } else {
         oldIdentifier = nil;
-        PGLog(@"[Rename] No changes to application identifier.");
+        log(LOG_GENERAL, @"[Rename] No changes to application identifier.");
     }
     
     // did we even change anything?
     if(!madeModifications) {
-        PGLog(@"[Rename] No action necessary.");
+        log(LOG_GENERAL, @"[Rename] No action necessary.");
         NSAlert *alert = [NSAlert alertWithMessageText: @"No Action Taken" 
                                          defaultButton: @"Okay" 
                                        alternateButton: nil
@@ -1682,7 +1682,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
     // remove the old info.plist
     id permissions = [[NSFileManager defaultManager] fileAttributesAtPath: infoPath traverseLink: YES];
     if(![[NSFileManager defaultManager] removeFileAtPath: infoPath handler: nil]) {
-        PGLog(@"[Rename] Rename failed.");
+        log(LOG_ERROR, @"[Rename] Rename failed.");
         NSAlert *alert = [[[NSAlert alloc] init] autorelease]; 
         [alert addButtonWithTitle: @"Okay"];
         [alert setMessageText: @"Rename Failed"]; 
@@ -1699,14 +1699,14 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
             [[NSFileManager defaultManager] changeFileAttributes: permissions atPath: infoPath];
             permissions = nil;
         }
-        PGLog(@"[Rename] Wrote out info dict.");
+        log(LOG_GENERAL, @"[Rename] Wrote out info dict.");
         if(doMove) {
             // rename executable
-            PGLog(@"[Rename] Renaming executable to: %@", [newExecPath lastPathComponent]);
+            log(LOG_GENERAL, @"[Rename] Renaming executable to: %@", [newExecPath lastPathComponent]);
             
             permissions = [[NSFileManager defaultManager] fileAttributesAtPath: execPath traverseLink: YES];
             if(![[NSFileManager defaultManager] moveItemAtPath: execPath toPath: newExecPath error: NULL]) {
-                PGLog(@"[Rename] Rename failed.");
+                log(LOG_ERROR, @"[Rename] Rename failed.");
                 NSAlert *alert = [[[NSAlert alloc] init] autorelease]; 
                 [alert addButtonWithTitle: @"Okay"];
                 [alert setMessageText: @"Rename Failed"]; 
@@ -1723,10 +1723,10 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
             }
             
             // rename application
-            PGLog(@"[Rename] Renaming application to: %@", [newAppPath lastPathComponent]);
+            log(LOG_GENERAL, @"[Rename] Renaming application to: %@", [newAppPath lastPathComponent]);
             permissions = [[NSFileManager defaultManager] fileAttributesAtPath: appPath traverseLink: YES];
             if(![[NSFileManager defaultManager] moveItemAtPath: appPath toPath: newAppPath error: NULL]) {
-                PGLog(@"[Rename] Rename failed.");
+                log(LOG_ERROR, @"[Rename] Rename failed.");
                 NSAlert *alert = [[[NSAlert alloc] init] autorelease]; 
                 [alert addButtonWithTitle: @"Okay"];
                 [alert setMessageText: @"Rename Failed"]; 
@@ -1751,7 +1751,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
             NSString *prefFolderPath = [[[@"~/" stringByExpandingTildeInPath] stringByAppendingPathComponent: @"Library"] stringByAppendingPathComponent: @"Preferences"];
             NSString *prefPath = [[prefFolderPath stringByAppendingPathComponent: oldIdentifier] stringByAppendingPathExtension: @"plist"];
             NSString *newPrefPath = [[prefFolderPath stringByAppendingPathComponent: [infoDict objectForKey: @"CFBundleIdentifier"]] stringByAppendingPathExtension: @"plist"];
-            PGLog(@"Copying prefs file at %@ to %@", prefPath, newPrefPath);
+            log(LOG_GENERAL, @"Copying prefs file at %@ to %@", prefPath, newPrefPath);
             
             // does the preference file exist?
             if([[NSFileManager defaultManager] fileExistsAtPath: prefPath]) {
@@ -1759,7 +1759,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
                 if([[NSFileManager defaultManager] fileExistsAtPath: newPrefPath]) {
                     // move the old one to the trash
                     if([newPrefPath moveToTrash]) {
-                        PGLog(@"[Rename] Old preference file moved to the trash.");
+                        log(LOG_GENERAL, @"[Rename] Old preference file moved to the trash.");
                     } else {
                         NSAlert *alert = [NSAlert alertWithMessageText: @"Error Moving Preferences" 
                                                          defaultButton: @"Okay" 
@@ -1775,7 +1775,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
                 
                 // copy the preferences file
                 if(![[NSFileManager defaultManager] copyPath: prefPath toPath: newPrefPath handler: NULL]) {
-                    PGLog(@"[Rename] Error moving prefs.");
+                    log(LOG_ERROR, @"[Rename] Error moving prefs.");
                     NSAlert *alert = [NSAlert alertWithMessageText: @"Error Moving Preferences" 
                                                      defaultButton: @"Okay" 
                                                    alternateButton: nil
@@ -1792,7 +1792,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
                 }
             } else {
                 // could not find prefs
-                PGLog(@"[Rename] Can't find old preferences.");
+                log(LOG_GENERAL, @"[Rename] Can't find old preferences.");
                 NSAlert *alert = [[[NSAlert alloc] init] autorelease]; 
                 [alert addButtonWithTitle: @"Okay"];
                 [alert setMessageText: @"Error Locating Preferences"]; 
@@ -1806,7 +1806,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
             
         }
     } else {
-        PGLog(@"Error writing new Info.plist.");
+        log(LOG_ERROR, @"Error writing new Info.plist.");
         NSAlert *alert = [NSAlert alertWithMessageText: @"Rename Failed" 
                                          defaultButton: @"Okay" 
                                        alternateButton: nil
@@ -1864,7 +1864,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
                 return;
             } else {
                 // not valid
-                PGLog(@"Selected application does not have the appropriate keys necessary to match.");
+                log(LOG_ERROR, @"Selected application does not have the appropriate keys necessary to match.");
                 NSBeep();
             }
         }

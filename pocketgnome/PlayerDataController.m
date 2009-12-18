@@ -310,7 +310,7 @@ static PlayerDataController* sharedController = nil;
     if(memory && _baselineAddress && [self baselineAddress]) {
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&playerAddress BufLength: sizeof(playerAddress)];
-		log(LOG_GENERAL, @"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
+		log(LOG_MEMORY, @"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
     }
 	
 	log(LOG_GENERAL, @"loading state...");

@@ -86,38 +86,38 @@
 	
 	float angle = [self angleTo:playerPosition];
 	
-	PGLog(@"Angle to player: %0.2f", angle);
+	log(LOG_POSITION, @"Angle to player: %0.2f", angle);
 	
 	
 	// Q I
 	if ( angle <= M_PI/2 ){
 		// do nothing
-		PGLog(@"Q I");
+		log(LOG_POSITION, @"Q I");
 	}
 	// Q II
 	else if ( angle <= M_PI ){
 		//angle -= M_PI/2;
-		PGLog(@"Q II");
+		log(LOG_POSITION, @"Q II");
 		
 	}
 	// Q III
 	else if ( angle <= (3*M_PI)/2 ){
-		PGLog(@"Q III");
+		log(LOG_POSITION, @"Q III");
 	}
 	
 	// Q VI
 	else{
 		//angle -= (3*M_PI)/2;
-		PGLog(@"Q VI");
+		log(LOG_POSITION, @"Q VI");
 	}
 	
-	PGLog(@"Angle to destination corrected: %0.2f", angle);
+	log(LOG_POSITION, @"Angle to destination corrected: %0.2f", angle);
 	
 	float x = distance * cosf(angle);
 	float y = distance * sinf(angle);
 	float z = [self zPosition];
 	
-	PGLog(@"x: %0.2f y: %0.2f", x, y);
+	log(LOG_POSITION, @"x: %0.2f y: %0.2f", x, y);
 	
 	Position *newPosition = [[Position alloc] initWithX:x+[self xPosition] Y:y+[self yPosition] Z:z];
 	return newPosition;

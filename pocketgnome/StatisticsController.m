@@ -94,7 +94,7 @@
 			UInt32 currentCopper = [playerController copper];
 			if ( _startCopper != currentCopper && _startCopper > 0 ){
 				int32_t difference = (currentCopper - _startCopper);
-				PGLog(@"%d - %d = %d", currentCopper, _startCopper, difference);
+				log(LOG_GENERAL, @"%d - %d = %d", currentCopper, _startCopper, difference);
 				
 				// no gold gained, we don't want to display the current amount!
 				if ( difference - currentCopper == 0 )

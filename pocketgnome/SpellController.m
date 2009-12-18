@@ -198,7 +198,7 @@ static SpellController *sharedSpells = nil;
 						// create a new spell if necessary
 						spell = [Spell spellWithID: [NSNumber numberWithUnsignedInt: value]];
 						if ( !spell ){
-							PGLog(@"[Spell] Mount %d not found!", value );
+							log(LOG_ERROR, @"Mount %d not found!", value );
 							continue;
 						}
 						[self addSpellAsRecognized: spell];

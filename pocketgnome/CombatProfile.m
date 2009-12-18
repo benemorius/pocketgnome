@@ -45,7 +45,7 @@
         self.attackLevelMin = 2;
         self.attackLevelMax = 70;
     }
-	PGLog(@"CombatProfile created with name %@", self.name);
+	log(LOG_COMBAT, @"CombatProfile created with name %@", self.name);
     return self;
 }
 

@@ -77,7 +77,7 @@ static CombatProfileEditor *sharedEditor = nil;
 	UInt64 tankGUID = [_currentCombatProfile selectedTankGUID];
 	Player *tank = [playersController playerWithGUID:tankGUID];
 	
-	PGLog(@"Selected Tank: %@", tank );	
+	log(LOG_GENERAL, @"Selected Tank: %@", tank );	
 }
 
 - (void)populatePlayerList{
@@ -112,13 +112,13 @@ static CombatProfileEditor *sharedEditor = nil;
 
 - (void)showEditorOnWindow: (NSWindow*)window forProfileNamed: (NSString*)profileName {
 	
-	PGLog(@"Old: %@", self.currentCombatProfile);
+	log(LOG_GENERAL, @"Old: %@", self.currentCombatProfile);
 
     if([profileName length]) {
         for(CombatProfile *profile in [self combatProfiles]) {
             if( [profileName isEqualToString: [profile name]] ) {
                 self.currentCombatProfile = profile;
-				PGLog(@"new: %@", profile);
+				log(LOG_GENERAL, @"new: %@", profile);
                 break;
             }
         }
@@ -282,7 +282,7 @@ static CombatProfileEditor *sharedEditor = nil;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject: self.currentCombatProfile];
         if(!data || ![data writeToFile: saveLocation atomically: YES]) {
             NSBeep();
-            PGLog(@"Error while exporting %@", self.currentCombatProfile);
+            log(LOG_ERROR, @"Error while exporting %@", self.currentCombatProfile);
         }
     }
 }

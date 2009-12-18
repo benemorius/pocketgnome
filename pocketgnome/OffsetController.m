@@ -50,7 +50,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		
 		_offsetDictionary = [[NSDictionary dictionaryWithContentsOfFile: [[NSBundle mainBundle] pathForResource: @"OffsetSignatures" ofType: @"plist"]] retain];
 		if ( !_offsetDictionary ){
-			PGLog(@"[Offsets] Error, offset dictionary not found!");
+			log(LOG_MEMORY, @"[Offsets] Error, offset dictionary not found!");
 		}
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(memoryIsValid:) name: MemoryAccessValidNotification object: nil];
     }
@@ -184,7 +184,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				
 			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
 			if ( offset > 0x0 )
-				PGLog(@"%@: 0x%X", key, offset);
+				log(LOG_MEMORY, @"%@: 0x%X", key, offset);
 		}
 		
 		// hard-code some as i'm lazy + can't test on PPC yet :(
@@ -247,7 +247,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	}
 	// technically should never be here
 	else{
-		PGLog(@"[Offsets] No offset dictionary found, PG will be unable to function!");
+		log(LOG_ERROR, @"[Offsets] No offset dictionary found, PG will be unable to function!");
 	}
 }
 
@@ -406,7 +406,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				return offset;
 			}
 			else if ( offset > 0x0 ){
-				PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
+				log(LOG_MEMORY, @"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
 			}
 		}
 	}
@@ -453,7 +453,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				return offset;
 			}
 			else if ( offset > 0x0 ){
-				PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
+				log(LOG_MEMORY, @"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
 			}
 		}
 	}

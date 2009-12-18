@@ -527,11 +527,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     conditionEval = ( [condition comparator] == CompareIs ) ? [playerController isIndoors] : [playerController isOutdoors];
                     if(test) {
                         if([condition comparator] == CompareIs) {
-                            if(conditionEval)   PGLog(@" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
-                            else                PGLog(@" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
+                            if(conditionEval){
+								log(LOG_CONDITION, @" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
+							}
+                            else{
+								log(LOG_CONDITION, @" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
+							}
                         } else {
-                            if(conditionEval)   PGLog(@" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
-                            else                PGLog(@" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
+                            if(conditionEval){
+								log(LOG_CONDITION, @" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
+							}
+                            else{
+								log(LOG_CONDITION, @" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
+							}
                         }
                     }
                 }
@@ -542,7 +550,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* Aura Condition                   */
                 /* ******************************** */
             case VarietyAura:;
-                //PGLog(@"-- Checking aura condition --");
+                log(LOG_CONDITION, @"-- Checking aura condition --");
                 
                 unsigned spellID = 0;
                 NSString *dispelType = nil;
@@ -700,7 +708,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyInventory:;
                 if( [condition unit] == UnitPlayer && [condition quality] == QualityInventory) {
-                    //PGLog(@"-- Checking inventory condition --");
+                    log(LOG_CONDITION, @"-- Checking inventory condition --");
                     Item *item = ([condition type] == TypeValue) ? [itemController itemForID: [condition value]] : [itemController itemForName: [condition value]];
                     
                     int totalCount = [itemController collectiveCountForItemInBags: item];
@@ -902,9 +910,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 }
                 
                 if(test) {
-                    PGLog(@" --> Test mode checks all units; normal mode will validate units against your combat profile.");
-                    if([condition unit] == UnitPlayer) PGLog(@" --> Checking %.2fy around player...", distance);
-                    if([condition unit] == UnitTarget) PGLog(@" --> Checking %.2fy around target...", distance); 
+                    log(LOG_CONDITION, @" --> Test mode checks all units; normal mode will validate units against your combat profile.");
+                    if([condition unit] == UnitPlayer) log(LOG_CONDITION, @" --> Checking %.2fy around player...", distance);
+                    if([condition unit] == UnitTarget) log(LOG_CONDITION, @" --> Checking %.2fy around target...", distance); 
                 }
                 
                 // count the units in range
@@ -912,7 +920,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 for(Unit *unit in validTargets) {
                     float range = [basePosition distanceToPosition: [unit position]];
                     if(range <= distance) {
-                        //PGLog(@" ----> In Range (%.2fy): %@", range, unit);
+                        log(LOG_CONDITION, @" ----> In Range (%.2fy): %@", range, unit);
                         inRangeCount++;
                     }
                 }
@@ -990,7 +998,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     //    return YES;
     //if(![rule isMatchAll] && (numMatched > 0))
     //    return YES;
-    //PGLog(@"    Matched %d of %d", numMatched, needToMatch);
+    log(LOG_CONDITION, @"    Matched %d of %d", numMatched, needToMatch);
 
     if(numMatched >= needToMatch)
         return YES;

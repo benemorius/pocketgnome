@@ -33,6 +33,8 @@
 #define LOG_AFK "afk"
 #define LOG_MEMORY "memory"
 #define LOG_BLACKLIST "blacklist"
+#define LOG_WAYPOINT "waypoint"
+#define LOG_POSITION "position"
 
 @interface LogController : NSObject {
 

@@ -71,7 +71,7 @@ enum AutomatorIntervalType {
             }
             
             if([_newRoutes count]) {
-                PGLog(@"Updated %d routes to routesets.", [_newRoutes count]);
+                log(LOG_WAYPOINT, @"Updated %d routes to routesets.", [_newRoutes count]);
                 [_routes removeAllObjects];
                 [_routes addObjectsFromArray: _newRoutes];
             }
@@ -235,7 +235,7 @@ enum AutomatorIntervalType {
     [self setCurrentRouteSet: routeSet];
     [waypointTable reloadData];
     
-    // PGLog(@"Added route: %@", [routeSet name]);
+    log(LOG_WAYPOINT, @"Added route: %@", [routeSet name]);
 }
 
 - (IBAction)createRoute: (id)sender {
@@ -421,7 +421,7 @@ enum AutomatorIntervalType {
 	
 	if ( closestWaypointRow > 0 ){
 		[waypointTable selectRow:closestWaypointRow byExtendingSelection:NO];
-		PGLog(@"[Waypoint] Closest waypoint is %0.2f yards away", minDist);
+		log(LOG_WAYPOINT, @"Closest waypoint is %0.2f yards away", minDist);
 	}
 }
 
@@ -463,7 +463,7 @@ enum AutomatorIntervalType {
     [[self currentRoute] addWaypoint: newWP];
     [waypointTable reloadData];
     changeWasMade = YES;
-    PGLog(@"Added: %@", newWP);
+    log(LOG_WAYPOINT, @"Added: %@", newWP);
     NSString *readableRoute =  ([routeTypeSegment selectedTag] == 0) ? @"Primary" : @"Corpse Run";
     
     BOOL dontGrowl = (!sender && self.disableGrowl); // sender is nil when this is called by the automator
@@ -499,7 +499,7 @@ enum AutomatorIntervalType {
     // make sure the clicked row is valid
     if([waypointTable clickedRow] < 0 || [waypointTable clickedRow] >= [[self currentRoute] waypointCount]) {
         NSBeep();
-        PGLog(@"Error: invalid row (%d), cannot change action.", [waypointTable clickedRow]);
+		log(LOG_ERROR, @"Error: invalid row (%d), cannot change action.", [waypointTable clickedRow]);
         return;
     }
     
@@ -508,7 +508,7 @@ enum AutomatorIntervalType {
     _editWaypoint = wp;
 	wp.action.type = [sender tag];
 	
-	PGLog(@"Modifying WP %@ to %d", wp, wp.action.type);
+	log(LOG_WAYPOINT, @"Modifying WP %@ to %d", wp, wp.action.type);
     
 	int type = 0;
 	if(wp.action.type == ActionType_None)
@@ -571,7 +571,7 @@ enum AutomatorIntervalType {
         [wpActionIDPopUp setMenu: menu];
         [wpActionIDPopUp selectItemWithTag: [wp.action.value unsignedIntValue]];
     } else {
-        PGLog(@"Error creating menu for type %d, action %d", [sender selectedTag], [wp.action.value unsignedIntValue]);
+        log(LOG_ERROR, @"Error creating menu for type %d, action %d", [sender selectedTag], [wp.action.value unsignedIntValue]);
     }
     
 }
@@ -583,7 +583,7 @@ enum AutomatorIntervalType {
     
     Waypoint *wp = _editWaypoint;
     if(!wp) {
-        PGLog(@"Error editing waypoint action; there is no selected row!");
+        log(LOG_ERROR, @"Error editing waypoint action; there is no selected row!");
         return;
     }
     
@@ -696,7 +696,7 @@ enum AutomatorIntervalType {
 - (IBAction)startStopAutomator: (id)sender {
 	// OK stop automator!
 	if ( self.isAutomatorRunning ) {
-		PGLog(@"Waypoint recording stopped");
+		log(LOG_WAYPOINT, @"Waypoint recording stopped");
 		self.isAutomatorRunning = NO;
         [automatorSpinner stopAnimation: nil];
         [automatorStartStopButton setState: NSOffState];
@@ -704,7 +704,7 @@ enum AutomatorIntervalType {
         [automatorStartStopButton setImage: [NSImage imageNamed: @"off"]];
 	}
 	else {
-		PGLog(@"Waypoint recording started");
+		log(LOG_WAYPOINT, @"Waypoint recording started");
         [automatorPanel makeFirstResponder: [automatorPanel contentView]];
 		self.isAutomatorRunning = YES;
         [automatorSpinner startAnimation: nil];
@@ -958,11 +958,11 @@ enum AutomatorIntervalType {
     if(!data) return NO;
     NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData: data];
     if(!rowIndexes ) {
-        PGLog(@"Error dragging waypoints. Indexes invalid.");
+        log(LOG_ERROR, @"Error dragging waypoints. Indexes invalid.");
         return NO;
     }
 
-    // PGLog(@"Draggin %d rows to above row %d", [rowIndexes count], row);
+    log(LOG_WAYPOINT, @"Draggin %d rows to above row %d", [rowIndexes count], row);
     
     Waypoint *targetWP = [[self currentRoute] waypointAtIndex: row];
     NSMutableArray *wpToInsert = [NSMutableArray arrayWithCapacity: [rowIndexes count]];

@@ -58,7 +58,7 @@ typedef enum {
             _miningDict = [[gatheringDict objectForKey: @"Mining"] retain];
             _herbalismDict = [[gatheringDict objectForKey: @"Herbalism"] retain];
         } else {
-            PGLog(@"Unable to load Gathering information.");
+            log(LOG_ERROR, @"Unable to load Gathering information.");
         }
         
         // load in node names
@@ -262,11 +262,11 @@ typedef enum {
 - (BOOL)removeFinishedNode: (Node*)node{
 	if ( [_finishedNodes containsObject:node] ){
 		[_finishedNodes removeObject:node];
-		PGLog(@"[Node] Node %@ removed from blacklist", node);
+		log(LOG_NODE, @"Node %@ removed from blacklist", node);
 		return YES;
 	}
 	
-	PGLog(@"[Node] Node %@ not found in blacklist", node);
+	log(LOG_NODE, @"Node %@ not found in blacklist", node);
 	
 	return NO;	
 }
@@ -407,7 +407,7 @@ typedef enum {
 			for ( NSNumber *entryID in nodeIDs ){
 				if ( [node entryID] == [entryID intValue] ){
 					float distance = [position distanceToPosition: [node position]];
-					PGLog(@"Found %d == %d with distance of %0.2f", [node entryID], [entryID intValue], distance);
+					log(LOG_NODE, @"Found %d == %d with distance of %0.2f", [node entryID], [entryID intValue], distance);
 					if((distance != INFINITY) && (distance <= nodeDistance)) {
 						[nearbyNodes addObject: node];
 					}
@@ -421,12 +421,12 @@ typedef enum {
 
 - (NSArray*)nodesWithinDistance: (float)nodeDistance EntryID: (int)entryID position:(Position*)position{
 	
-	PGLog(@"Searching for %d", entryID);
+	log(LOG_NODE, @"Searching for %d", entryID);
 	NSMutableArray *nearbyNodes = [NSMutableArray array];
     for(Node *node in _nodeList) {
 		if ( [node entryID] == entryID ){
 			float distance = [position distanceToPosition: [node position]];
-			PGLog(@"Found %d == %d with distance of %0.2f", [node entryID], entryID, distance);
+			log(LOG_NODE, @"Found %d == %d with distance of %0.2f", [node entryID], entryID, distance);
 			if((distance != INFINITY) && (distance <= nodeDistance)) {
 				[nearbyNodes addObject: node];
 			}
@@ -477,16 +477,16 @@ typedef enum {
     for(Node* node in nodeList) {
 		
 		if ( [node entryID]==entryID ){
-			PGLog(@"Node id found! %d", [node entryID]);
+			log(LOG_NODE, @"Node id found! %d", [node entryID]);
 			
-			PGLog(@"%d %d %d", [node isValid], [node isUseable], ([playerPosition distanceToPosition: [node position]] <= 10) );
+			log(LOG_NODE, @"%d %d %d", [node isValid], [node isUseable], ([playerPosition distanceToPosition: [node position]] <= 10) );
 		}
 		
 		if( [node isValid] && [node entryID]==entryID && [node isUseable] && ([playerPosition distanceToPosition: [node position]] <= 10) ) {
             return node;
         }
     }
-	PGLog(@"[Node] No node for interaction");
+	log(LOG_NODE, @"[Node] No node for interaction");
     return nil;
 }
 
@@ -635,7 +635,7 @@ typedef enum {
                                       [NSNumber numberWithFloat: distance],                 @"Distance", nil]];
             }
         }
-        PGLog(@"Found %d nodes of type %d.", [nodeList count], tag);
+        log(LOG_NODE, @"Found %d nodes of type %d.", [nodeList count], tag);
         
         // sort the list by distance
         [nodeList sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey: @"Distance" ascending: YES] autorelease]]];
@@ -649,7 +649,7 @@ typedef enum {
         // !!!: remove this hack when 10.5.7 ships
         //[controller makeWoWFront];
         
-        PGLog(@"Moving to node: %@", nodeToMove);
+        log(LOG_NODE, @"Moving to node: %@", nodeToMove);
 		
         [movementController moveToObject: nodeToMove andNotify: NO];
         //Position *nodePosition = [nodeToMove position];

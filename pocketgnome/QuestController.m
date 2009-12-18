@@ -159,13 +159,13 @@ typedef struct QuestInfo {
 		return;
 	}
 	
-	NSLog(@"Total quests: %i", [_playerQuests count] );
+	log(LOG_GENERAL, @"Total quests: %i", [_playerQuests count] );
 	for(Quest *quest in _playerQuests) {
 		
-		PGLog(@"Quest: %@ %@", [quest questID], [quest name]);
+		log(LOG_GENERAL, @"Quest: %@ %@", [quest questID], [quest name]);
 		
         for(QuestItem *questItem in quest.itemRequirements){
-            PGLog(@"  Required Item: %@ Quantity: %@", [questItem item], [questItem quantity]);
+            log(LOG_GENERAL, @"Required Item: %@ Quantity: %@", [questItem item], [questItem quantity]);
         }
 	}
 }
