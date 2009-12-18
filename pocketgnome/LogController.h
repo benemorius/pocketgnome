@@ -32,6 +32,7 @@
 #define LOG_FISHING "fishing"
 #define LOG_AFK "afk"
 #define LOG_MEMORY "memory"
+#define LOG_BLACKLIST "blacklist"
 
 @interface LogController : NSObject {
 

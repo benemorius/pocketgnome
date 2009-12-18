@@ -263,14 +263,14 @@ static PlayerDataController* sharedController = nil;
 	// is the player still valid?
     if ( GUID_LOW32(globalGUID) == selfGUID && objectType == TYPEID_PLAYER && previousPtr > 0x0 ) {
 		if ( !_lastState ) {
-			PGLog(@"[Player] Player is valid. %@", [sender class]);
+			log(LOG_GENERAL, @"Player is valid. %@", [sender class]);
 			[self loadState];
 		}
 		return YES;
 	}
 
     if ( _lastState ) {
-        PGLog(@"[Player] Player is invalid. %@", [sender class]);
+        log(LOG_GENERAL, @"Player is invalid. %@", [sender class]);
         [self resetState];
     }
     return NO;
@@ -310,10 +310,10 @@ static PlayerDataController* sharedController = nil;
     if(memory && _baselineAddress && [self baselineAddress]) {
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&playerAddress BufLength: sizeof(playerAddress)];
-		PGLog(@"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
+		log(LOG_GENERAL, @"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
     }
 	
-	PGLog(@"loading state...");
+	log(LOG_GENERAL, @"loading state...");
     
     // if we got a ~~~~
     // 1) valid player address
@@ -341,7 +341,7 @@ static PlayerDataController* sharedController = nil;
         return;
     }
     
-    PGLog(@"Error: Attemping to load invalid player; bailing. Address: 0x%X Type: %d", playerAddress, objectType);
+    log(LOG_ERROR, @"Attemping to load invalid player; bailing. Address: 0x%X Type: %d", playerAddress, objectType);
     [self resetState];
 }
 
@@ -650,7 +650,7 @@ static PlayerDataController* sharedController = nil;
 	
 	// is target valid
 	if ( !target || ![target isValid] ){
-		PGLog(@"[Player] Unable to target %@", target);
+		log(LOG_TARGET, @"Unable to target %@", target);
 		[mobController clearTargets];
 		return [self setTarget:0];
 	}
@@ -1024,7 +1024,7 @@ static PlayerDataController* sharedController = nil;
         // check pet
         if( self.pet && (![self.pet isValid] || ([player petGUID] == 0))) {
             self.pet = nil;
-            PGLog(@"[Player] Pet is no longer valid.");
+            log(LOG_GENERAL, @"Pet is no longer valid.");
         }
         
         // player has a pet, but we don't know which mob it is
@@ -1035,7 +1035,7 @@ static PlayerDataController* sharedController = nil;
             // this mob is really our pet, right?
             if( [pet isValid] && ((playerGUID == [pet summonedBy]) || (playerGUID == [pet createdBy]) || (playerGUID == [pet charmedBy]))) {
                 self.pet = pet;
-                PGLog(@"[Player] Found pet: %@", pet);
+                log(LOG_GENERAL, @"Found pet: %@", pet);
             } else {
                 // [[MobController sharedController] enumerateAllMobs];
             }
@@ -1046,7 +1046,7 @@ static PlayerDataController* sharedController = nil;
             savedLevel = level;
         } else {
             if(level == (savedLevel+1)) {
-                PGLog(@"[Player] Level up! You have reached level %d", level);
+                log(LOG_GENERAL, @"Level up! You have reached level %d", level);
                 savedLevel = level;
                 
                 if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
@@ -1134,12 +1134,12 @@ static PlayerDataController* sharedController = nil;
         BOOL combatState = [self isInCombat];
         if( !_lastCombatState && combatState) {
             // we were not in combat, now we are
-            PGLog(@"[PlayerData] ------ Player Entering Combat ------");
+            log(LOG_GENERAL, @"------ Player Entering Combat ------");
             [[NSNotificationCenter defaultCenter] postNotificationName: PlayerEnteringCombatNotification object: nil];
         }
         if( _lastCombatState && !combatState) {
             // we were in combat, now we are not
-			PGLog(@"[PlayerData] ------ Player Leaving Combat ------");
+			log(LOG_GENERAL, @"------ Player Leaving Combat ------");
             [[NSNotificationCenter defaultCenter] postNotificationName: PlayerLeavingCombatNotification object: nil];
         }
         _lastCombatState = combatState;
@@ -1377,7 +1377,7 @@ static PlayerDataController* sharedController = nil;
 		
 		// do text color
 		if( ![aCell respondsToSelector: @selector(setTextColor:)] ){
-			PGLog(@"can't do color :(");
+			log(LOG_ERROR, @"can't do color :(");
 			return;
 		}
 		
@@ -1391,7 +1391,7 @@ static PlayerDataController* sharedController = nil;
 	else if ( aTableView == healingTable ){
 		// do text color
 		if( ![aCell respondsToSelector: @selector(setTextColor:)] ){
-			PGLog(@"can't do color :(");
+			log(LOG_ERROR, @"can't do color :(");
 			return;
 		}
 		
