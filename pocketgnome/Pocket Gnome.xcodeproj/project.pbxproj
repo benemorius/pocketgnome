@@ -25,6 +25,8 @@
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
+		7C18816410DB5A8300B6C9AB /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C18816310DB5A8300B6C9AB /* BlacklistController.m */; };
+		7CB3C3CA10DB27A300793410 /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CB3C3C910DB27A300793410 /* LogController.m */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
 		7D0C43F80DF20B0D005F3940 /* TransparentWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43F70DF20B0D005F3940 /* TransparentWindow.m */; };
@@ -350,6 +352,10 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* PocketGnome_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketGnome_Prefix.pch; sourceTree = "<group>"; };
+		7C18816210DB5A8300B6C9AB /* BlacklistController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistController.h; sourceTree = "<group>"; };
+		7C18816310DB5A8300B6C9AB /* BlacklistController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistController.m; sourceTree = "<group>"; };
+		7CB3C3C810DB27A300793410 /* LogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogController.h; sourceTree = "<group>"; };
+		7CB3C3C910DB27A300793410 /* LogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogController.m; sourceTree = "<group>"; };
 		7D06F0400D23058B00DA4E99 /* AuraController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuraController.h; sourceTree = "<group>"; };
 		7D06F0410D23058B00DA4E99 /* AuraController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuraController.m; sourceTree = "<group>"; };
 		7D0C43CF0DF2089E005F3940 /* ScanGridView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScanGridView.h; sourceTree = "<group>"; };
@@ -700,7 +706,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -725,6 +731,10 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				7C18816210DB5A8300B6C9AB /* BlacklistController.h */,
+				7C18816310DB5A8300B6C9AB /* BlacklistController.m */,
+				7CB3C3C810DB27A300793410 /* LogController.h */,
+				7CB3C3C910DB27A300793410 /* LogController.m */,
 				7DAAE7180D148972003F1E3C /* Controller.h */,
 				7DAAE7190D148972003F1E3C /* Controller.m */,
 				7DB2C4480D3BFE4100100B4D /* BotController.h */,
@@ -805,7 +815,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
+				8D1107320486CEB800E47090 /* ggteabag.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1400,7 +1410,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
+			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1708,6 +1718,8 @@
 				03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */,
 				0313B4D810BAEA0B009E74E4 /* EventController.m in Sources */,
 				0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */,
+				7CB3C3CA10DB27A300793410 /* LogController.m in Sources */,
+				7C18816410DB5A8300B6C9AB /* BlacklistController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -32,6 +32,7 @@
 #import "CombatProfileEditor.h"
 #import "EventController.h"
 #import "BlacklistController.h"
+#import "LogController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -356,6 +357,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 
 - (void)testRule: (Rule*)rule {
+	log(LOG_FUNCTION, @"entering function");
     Unit *unit = [mobController playerTarget];
     if(!unit) unit = [playersController playerTarget];
 
@@ -365,6 +367,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test {
+	log(LOG_FUNCTION, @"entering function");
     //PGLog(@"Checking rule %@.", rule);
     //BOOL eval = [rule isMatchAll] ? YES : NO;
 
@@ -1005,6 +1008,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)finishCurrentProcedure: (NSDictionary*)state {
+	log(LOG_FUNCTION, @"entering function");
 	
 	PGLog(@"[Bot] Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
     
@@ -1067,6 +1071,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)performProcedureWithState: (NSDictionary*)state {
+	log(LOG_FUNCTION, @"entering function");
 	
     // if there's another procedure running, we gotta stop it
     if( self.procedureInProgress && ![self.procedureInProgress isEqualToString: [state objectForKey: @"Procedure"]]) {
@@ -1317,6 +1322,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark Loot Helpers
 
 - (void)lootNode: (WoWObject*) unit{
+	log(LOG_FUNCTION, @"entering function");
 	
 	// Loot if we're on the ground!
 	if ( [playerController isOnGround] ){
@@ -1333,6 +1339,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 - (void)lootUnit: (WoWObject*) unit{
+	log(LOG_FUNCTION, @"entering function");
     BOOL isNode = [unit isKindOfClass: [Node class]];
 	
     if ( self.doLooting || isNode ) {
@@ -1380,6 +1387,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
 - (void)verifyLootSuccess{
+	log(LOG_FUNCTION, @"entering function");
 	
 	// Check if the player is casting still (herbalism/mining/skinning)
 	if ( [playerController isCasting] ){
@@ -1410,6 +1418,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // This is called when all items have actually been looted (the loot window will NOT be open at this point)
 - (void)itemsLooted: (NSNotification*)notification {
+	log(LOG_FUNCTION, @"entering function");
 	
 	if ( !self.isBotting )
 		return;
@@ -1451,6 +1460,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)skinOrFinish{
+	log(LOG_FUNCTION, @"entering function");
 	
 	if ( [fishController isFishing] )
 		return;
@@ -1501,6 +1511,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // It actually takes 1.2 - 2.0 seconds for [mob isSkinnable] to change to the correct status, this makes me very sad as a human, seconds wasted!
 - (void)skinMob: (Mob*)mob {
+	log(LOG_FUNCTION, @"entering function");
     float distanceToUnit = [[playerController position] distanceToPosition2D: [mob position]];
 	 
 	// We tried for 2.0 seconds, lets bail
@@ -1538,6 +1549,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // This method is pure notification.  It's up to EvaluateSituation or an incomming AddingUnit to initiate any attacking.
 - (void)playerEnteringCombat {
+	log(LOG_FUNCTION, @"entering function");
     // if we're not even botting, bail
     if(![self isBotting]) return;
     
@@ -1547,6 +1559,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)playerLeavingCombat {
+	log(LOG_FUNCTION, @"entering function");
     // if we're not even botting, bail
     if(![self isBotting]) return;
 
@@ -1587,6 +1600,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark Healing
 
 - (BOOL)unitValidToHeal: (Unit*)unit{
+	log(LOG_FUNCTION, @"entering function");
 	Position *playerPosition = [playerController position];
 	
 	if ( [playerPosition distanceToPosition: [unit position]] < [theCombatProfile healingRange] && ![unit isDead] && [unit currentHealth] != 1 && [playerController isFriendlyWithFaction: [unit factionTemplate]] ){
@@ -1597,6 +1611,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)healUnit: (Unit*)unit{
+	log(LOG_FUNCTION, @"entering function");
 	if(![self isBotting]) return;
     
     if( ![[self procedureInProgress] isEqualToString: HealingProcedure] ) {
@@ -1614,6 +1629,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (NSArray*)availableUnitsToHeal{
+	log(LOG_FUNCTION, @"entering function");
 	
 	// get list of all targets
     NSMutableArray *targetsWithinRange = [NSMutableArray array];
@@ -1640,6 +1656,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (Unit*)unitToHeal{
+	log(LOG_FUNCTION, @"entering function");
 	// Find one nearby to heal (lowest health target)!
 	Unit *lowestHealthTarget = nil;
 	UInt32 lowestHealth = 10000000;
@@ -1660,6 +1677,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark Combat
 
 - (void)attackUnit: (Unit*)unit {
+	log(LOG_FUNCTION, @"entering function");
     if(![self isBotting]) return;
 	
 	if ( [blacklistController isBlacklisted:unit] ){
@@ -1714,6 +1732,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // this is called when any unit enters combat
 - (void)addingUnit: (Unit*)unit {
+	log(LOG_FUNCTION, @"entering function");
     if(![self isBotting]) return;
     
     //if( ![[self procedureInProgress] isEqualToString: CombatProcedure] && [unit isValid] ) {
@@ -1750,6 +1769,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue {
+	log(LOG_FUNCTION, @"entering function");
     
     // we only need to loot this if it's a mob and if was one we were directed to attack
     if( [unit isNPC] ) {
@@ -1818,6 +1838,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark [Input] MovementController
 
 - (void)reachedUnit: (WoWObject*)unit {
+	log(LOG_FUNCTION, @"entering function");
     
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: unit];
     [movementController pauseMovement];
@@ -1864,6 +1885,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)finishedRoute: (Route*)route {
+	log(LOG_FUNCTION, @"entering function");
     if( ![self isBotting]) return;
     
     if(self.theRoute) {
@@ -1879,6 +1901,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint {
+	log(LOG_FUNCTION, @"entering function");
     if( ![self isBotting]) return YES;
     if( [playerController isDead]) return YES;
     
@@ -1930,6 +1953,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 
 - (void)preRegen {
+	log(LOG_FUNCTION, @"entering function");
     BOOL drink = NO, eat = NO;
     Unit *player = [playerController player];
     if([auraController unit: player hasBuffNamed: @"Drink"]) {
@@ -1950,6 +1974,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)evaluateRegen: (NSDictionary*)regenDict {
+	log(LOG_FUNCTION, @"entering function");
     NSDate *start = [regenDict objectForKey: @"RegenStart"];
     BOOL health   = [[regenDict objectForKey: @"WatchHealth"] boolValue];
     BOOL mana     = [[regenDict objectForKey: @"WatchMana"] boolValue];
@@ -1993,6 +2018,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (Mob*)mobToLoot {
+	log(LOG_FUNCTION, @"entering function");
     if([_mobsToLoot count]) {
     
         Mob *mobToLoot = nil;
@@ -2013,6 +2039,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)isUnitValidToAttack: (Unit*)unit fromPosition: (Position*)position ignoreDistance: (BOOL)ignoreDistance {
+	log(LOG_FUNCTION, @"entering function");
     
     float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
     
@@ -2028,6 +2055,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (Unit*)unitToAttack {
+	log(LOG_FUNCTION, @"entering function");
     // scan for valid, in-range targets to attack
     
     // determine level range
@@ -2093,6 +2121,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateSituation {
+	log(LOG_FUNCTION, @"entering function");
     if(![self isBotting])						return NO;
     if(![playerController playerIsValid:self])  return NO;
 	
@@ -2608,6 +2637,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)mountNow{
+	log(LOG_FUNCTION, @"entering function");
 	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state] ) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
 		
 		PGLog(@"[Bot] Mounting!");
@@ -2682,7 +2712,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 - (IBAction)startBot: (id)sender {
-     BOOL ignoreRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"IgnoreRoute"] boolValue];
+	BOOL ignoreRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"IgnoreRoute"] boolValue];
     
     // gather appropriate information to start the bot
     if(ignoreRoute) {
@@ -2693,7 +2723,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
     self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
 	PGLog(@"[Bot] Starting with attack range of %0.2f", [self.theCombatProfile attackRange]);
-    
+	    
     // get hotkey settings
     KeyCombo hotkey = [shortcutRecorder keyCombo];
     _currentHotkeyModifier = hotkey.flags;
@@ -3031,6 +3061,7 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark Notifications
 
 - (void)eventBattlegroundStatusChange: (NSNotification*)notification{
+	log(LOG_FUNCTION, @"entering function");
 	int status = [[notification object] intValue];
 	
 	// Lets join the BG!
@@ -3048,6 +3079,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)eventZoneChanged: (NSNotification*)notification{
+	log(LOG_FUNCTION, @"entering function");
 	NSNumber *lastZone = [notification object];
 	
 	if ( [playerController isInBG:[lastZone intValue]] && self.isBotting ){
@@ -3061,6 +3093,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // Want to respond to some commands? o.O
 - (void)whisperReceived: (NSNotification*)notification{
+	log(LOG_FUNCTION, @"entering function");
 	ChatLogEntry *entry = [notification object];
 	
 	//TO DO: Check to make sure you only respond to people around you that you are healing!
@@ -3078,6 +3111,7 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark AKA [Input] PlayerData
 
 - (void)playerHasRevived: (NSNotification*)notification {
+	log(LOG_FUNCTION, @"entering function");
     if( ![self isBotting]) return;
     PGLog(@"---- Player has revived!");
     [controller setCurrentStatus: @"Bot: Player has Revived"];
@@ -3103,6 +3137,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
+	log(LOG_FUNCTION, @"entering function");
     
     if( ![self isBotting]) return;
 	if ( ![playerController playerIsValid:self] ) return;
@@ -3140,6 +3175,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)rePop: (NSNumber *)count{
+	log(LOG_FUNCTION, @"entering function");
 	if( ![self isBotting]) return;
 	if ( ![playerController playerIsValid:self] ) return;
 
@@ -3180,6 +3216,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)playerIsInvalid: (NSNotification*)not {
+	log(LOG_FUNCTION, @"entering function");
     if( [self isBotting]) {
         PGLog(@"[Bot] Player is no longer valid, stopping bot.");
         [self stopBot: nil];
@@ -3190,6 +3227,7 @@ NSMutableDictionary *_diffDict = nil;
 
 - (void)toggleGlobalHotKey:(SRRecorderControl*)sender
 {
+	log(LOG_FUNCTION, @"entering function");
 	if (StartStopBotGlobalHotkey != nil) {
 		[[PTHotKeyCenter sharedCenter] unregisterHotKey: StartStopBotGlobalHotkey];
 		[StartStopBotGlobalHotkey release];
@@ -3211,6 +3249,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)shortcutRecorder:(SRRecorderControl *)recorder keyComboDidChange:(KeyCombo)newKeyCombo {
+	log(LOG_FUNCTION, @"entering function");
     if(recorder == shortcutRecorder) {
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"HotkeyCode"];
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"HotkeyFlags"];
@@ -3239,6 +3278,7 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark PvP!
 
 - (void)auraGain: (NSNotification*)notification {
+	log(LOG_FUNCTION, @"entering function");
 
 	// Player is PvPing!
     if(self.isPvPing) {
@@ -3261,6 +3301,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)auraFade: (NSNotification*)notification {
+	log(LOG_FUNCTION, @"entering function");
 	
 	// Player is PvPing!
     if(self.isPvPing) {
@@ -3285,6 +3326,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpResetStrandDelay{
+	log(LOG_FUNCTION, @"entering function");
 	_strandDelay = NO;
 	
 	PGLog(@"[PvP] Delay reset!");
@@ -3295,6 +3337,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpGetBGInfo{
+	log(LOG_FUNCTION, @"entering function");
 	
 	// Lets gets some info?
 	if ( [playerController zone] == ZoneStrandOfTheAncients ){
@@ -3386,6 +3429,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // This little guy controls most of our PvP functions!
 - (void)pvpMonitor: (NSTimer*)timer{
+	log(LOG_FUNCTION, @"entering function");
 	if(!self.isPvPing)						return;
 	if(![playerController playerIsValid:self])   return;
 	
@@ -3506,6 +3550,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)startBotForPvP{
+	log(LOG_FUNCTION, @"entering function");
 	// Make sure player is valid, sometimes it takes longer than 5 seconds :(
 	if ( self.isPvPing ){
 		if ( ![playerController playerIsValid:self] ){
@@ -3518,6 +3563,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpQueueRetry{
+	log(LOG_FUNCTION, @"entering function");
 	if ( [playerController battlegroundStatus] != BGNone ){
 		return;
 	}
@@ -3530,6 +3576,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpQueueBattleground{
+	log(LOG_FUNCTION, @"entering function");
 	if(!self.isPvPing)										return;
 	if(![playerController playerIsValid:self])				return;
 	if ([playerController isInBG:[playerController zone]])	return;
@@ -3583,6 +3630,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // this will keep us from going afk
 - (void)pvpCheck {
+	log(LOG_FUNCTION, @"entering function");
 	if(![playerController playerIsValid:self])   return;
 	
     if(self.isPvPing) {
@@ -3624,6 +3672,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpStart {
+	log(LOG_FUNCTION, @"entering function");
     Player *player = [playerController player];
     if(![player isValid]) return;
 	
@@ -3745,6 +3794,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // called every 30 seconds
 - (void)afkTimer: (NSTimer*)timer {
+	log(LOG_FUNCTION, @"entering function");
 	
 	// don't need this if we're botting since we're doing things!
 	if ( self.isBotting || ![playerController playerIsValid] )
@@ -3768,6 +3818,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // call this to prevent afk!
 - (void)noAFK{
+	log(LOG_FUNCTION, @"entering function");
 	// move backward!
 	if ( _lastPressedWasForward ){
 		[movementController moveBackwardStop];
@@ -3783,6 +3834,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)wgTimer: (NSTimer*)timer {
+	log(LOG_FUNCTION, @"entering function");
 	
 	// WG zone ID: 4197
 	if ( [autoJoinWG state] && ![playerController isDead] && [playerController zone] == 4197 && [playerController playerIsValid] ){
@@ -3843,6 +3895,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (BOOL)performAction: (int32_t) actionID{
+	log(LOG_FUNCTION, @"entering function");
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	
 	if ( !memory )
@@ -3979,6 +4032,7 @@ NSMutableDictionary *_diffDict = nil;
 
 
 - (void)interactWithMob:(UInt32)entryID {
+	log(LOG_FUNCTION, @"entering function");
 	Mob *mobToInteract = [mobController closestMobForInteraction:entryID];
 	
 	if([mobToInteract isValid]) {
@@ -3987,6 +4041,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)interactWithNode:(UInt32)entryID {
+	log(LOG_FUNCTION, @"entering function");
 	Node *nodeToInteract = [nodeController closestNodeForInteraction:entryID];
 	
 	if([nodeToInteract isValid]) {
@@ -3999,6 +4054,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // This will set the GUID of the mouseover + trigger interact with mouseover!
 - (BOOL)interactWithMouseoverGUID: (UInt64) guid{
+	log(LOG_FUNCTION, @"entering function");
 	if ( [[controller wowMemoryAccess] saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&guid BufLength: sizeof(guid)] ){
 		
 		// wow needs time to process the change
@@ -4024,6 +4080,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // Simply will log us out!
 - (void)logOut{
+	log(LOG_FUNCTION, @"entering function");
 	
 	if ( [logOutUseHearthstoneCheckbox state] && (_zoneBeforeHearth == -1) ){
 		
@@ -4066,6 +4123,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // check if units are nearby
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
+	log(LOG_FUNCTION, @"entering function");
 	if ( doMobCheck ){
 		PGLog(@"[Bot] Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
 		NSArray *mobs = [mobController mobsWithinDistance: _nodeIgnoreMobDistance MobIDs:nil position:[node position] aliveOnly:YES];
@@ -4091,6 +4149,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (UInt8)isHotKeyInvalid{
+	log(LOG_FUNCTION, @"entering function");
 	
 	// We know it's not set if flags are 0 or code is -1 then it's not set!
 	UInt8 flags = 0;
@@ -4123,6 +4182,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (char*)randomString: (int)maxLength{
+	log(LOG_FUNCTION, @"entering function");
 	// generate a random string to write
 	int i, len = SSRandomIntBetween(3,maxLength);
 	char *string = (char*)malloc(len);
@@ -4385,6 +4445,7 @@ SET accountName "myemail@hotmail.com"
 SET accountList "!ACCOUNT1|ACCOUNT2|"
  */
 - (IBAction)login: (id)sender{
+	log(LOG_FUNCTION, @"entering function");
 	//LOGIN_STATE		this will be "login", "charselect", or "charcreate"
 	//	note: it will stay in it's last state even if we are logged in + running around!
 	
@@ -4610,6 +4671,7 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 }
 
 - (void)monitorObject: (WoWObject*)obj{
+	log(LOG_FUNCTION, @"entering function");
 	
 	
 	UInt32 addr1 = [obj baseAddress] + 0x1F8;
