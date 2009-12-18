@@ -1251,7 +1251,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
-							PGLog(@"[Bot] Spell didn't cast on target %@, blacklisting and moving on!", target);
+							log(LOG_BEHAVIOR, @"Spell didn't cast on target %@, blacklisting and moving on!", target);
 		
 							//[self finishCurrentProcedure: state];
 							//return;
