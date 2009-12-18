@@ -173,7 +173,7 @@ typedef enum MovementType {
     
     if(!self.isPaused || (([playerData movementFlags] & 0x1) == 0x1)) {
         // stop movement if we haven't already
-        PGLog(@"[Move] Pause movement.");
+        log(LOG_MOVEMENT, @"Pause movement.");
 		
 		[self moveForwardStop];
         
@@ -187,11 +187,13 @@ typedef enum MovementType {
     if(self.isPaused || (([playerData movementFlags] & 0x1) == 0x0)) {
 		
         if(self.unit)
-            PGLog(@"[Move] Resume unit movement: %@", self.unit);
+		{
+			log(LOG_MOVEMENT, @"Resume unit movement: %@", self.unit);
+		}
         else{
 			Position *playerPosition = [playerData position];
 			float distance = [playerPosition distanceToPosition:[self.destination position]];
-            PGLog(@"[Move] Resume waypoint movement: %@ Distance: %0.2f", self.destination, distance );
+            log(LOG_MOVEMENT, @"Resume waypoint movement: %@ Distance: %0.2f", self.destination, distance );
 			
 			// Umm I don't like this, search for a new waypoint?
 			if ( distance > 200.0f ){
@@ -203,7 +205,7 @@ typedef enum MovementType {
 				
 				if ( newDistance < distance ){
 					self.destination = closestWaypoint;
-					PGLog(@"[Move] Found a closer waypoint! Using %@, %0.2f away!", closestWaypoint, newDistance);
+					log(LOG_MOVEMENT, @"Found a closer waypoint! Using %@, %0.2f away!", closestWaypoint, newDistance);
 				}
 			}
 		}
@@ -251,7 +253,7 @@ typedef enum MovementType {
 			int oldIndex = [[[self patrolRoute] waypoints] indexOfObject: [self destination]];
 			
 			if(newIndex > oldIndex && (newIndex < (oldIndex + 10))) {
-				PGLog(@"[Move] Found new, closer waypoint.");
+				log(LOG_MOVEMENT, @"Found new, closer waypoint.");
 				[self moveToWaypoint: waypoint];
 			} else {
 				[self moveToWaypoint: [self destination]];
@@ -268,7 +270,7 @@ typedef enum MovementType {
     if(self.unit == unit) {
         self.unit = nil;
         self.shouldNotify = NO;
-        PGLog(@"[Move] Finishing movement to %@", unit);
+        log(LOG_MOVEMENT, @"Finishing movement to %@", unit);
     }
 }
 
@@ -290,16 +292,16 @@ typedef enum MovementType {
         
         // reset jump timer and head to the WP
         if(startWaypoint) {
-            PGLog(@"[Move] Doing route: %@.", route);
+            log(LOG_MOVEMENT, @"Doing route: %@.", route);
             self.lastJumpTime = [NSDate date];
             [self moveToWaypoint: startWaypoint];
         } else {
-            PGLog(@"[Move] StartWaypoint was nil. Ending route %@", route);
+            log(LOG_MOVEMENT, @"StartWaypoint was nil. Ending route %@", route);
             [self resetMovementState];
             return;
         }
     } else {
-        PGLog(@"[Move] %@ has no waypoints. Ending route.", route);
+        log(LOG_MOVEMENT, @"%@ has no waypoints. Ending route.", route);
         [self resetMovementState];
         return;
     }
@@ -347,14 +349,14 @@ typedef enum MovementType {
 	//PGLog(@"[Move] Want to move %0.2f yards to %@", distance, position);
 
     if(!position || distance == INFINITY) { // sanity check
-        PGLog(@"[Move] Invalid waypoint (distance: %f). Ending patrol.", distance);
+        log(LOG_MOVEMENT, @"Invalid waypoint (distance: %f). Ending patrol.", distance);
         if(self.unit)   [self finishAlt];
         else            [self finishRoute];
         return;
     }
     
     if(!self.unit && (distance < ([playerData speedMax]/2.0f))) {
-        PGLog(@"[Move] Waypoint is too close. Moving to the next one.");
+        log(LOG_MOVEMENT, @"Waypoint is too close. Moving to the next one.");
         [self moveToNextWaypoint];
         return;
     }
@@ -372,7 +374,7 @@ typedef enum MovementType {
 		_movementChecks = 0; _totalMovementSpeed = 0.0f; _totalDistance = 0.0f;	_isStuck = 0; 
 		[self performSelector:@selector(checkSpeedDistance:) withObject:position afterDelay:0.1f];
 		
-		//PGLog(@"[Move] Checking speed/distance %@  %@", self.lastAttemptedPosition, position);
+		log(LOG_MOVEMENT, @"Checking speed/distance %@  %@", self.lastAttemptedPosition, position);
 		[checkPosition release];
 		checkPosition = [NSString stringWithFormat:@"[] Last attempt %@", self.lastAttemptedPosition];
 	}
@@ -380,7 +382,7 @@ typedef enum MovementType {
 	
 	// END - new stuck check
 	
-	//PGLog(@"[Move] Moving %0.2f yards to %@ %@", distance, position, checkPosition);
+	log(LOG_MOVEMENT, @"Moving to %@ %@", position, checkPosition);
 
     self.lastSavedPosition = playerPosition;
     self.lastDirectionCorrection = [NSDate date];
@@ -427,13 +429,13 @@ typedef enum MovementType {
 	
 	// Take a sample of our speed over a second or longer
 	if ( _movementChecks > 15 && self.averageSpeed <= 1.0f ){
-		PGLog(@"[Move] We're stuck! Found by speed check! %0.2f", self.averageSpeed);
+		log(LOG_MOVEMENT_CORRECTION, @"We're stuck! Found by speed check! %0.2f", self.averageSpeed);
 		_isStuck++;
 	}
 	
 	// Check the distance moved!
 	if ( _movementChecks > 15 && self.averageDistance < 0.25f ){
-		PGLog(@"[Move] We're stuck! Found by distance check! %0.2f", self.averageDistance);
+		log(LOG_MOVEMENT_CORRECTION, @"We're stuck! Found by distance check! %0.2f", self.averageDistance);
 		_isStuck++;
 	}
 	
@@ -448,7 +450,7 @@ typedef enum MovementType {
 		//[self setHorizontalDirectionFacing: [ourPosition angleTo: position]];
         //[self setVerticalDirectionFacing: [ourPosition verticalAngleTo: position]];
 		
-		PGLog(@"[Move] Too far away for my liking! %0.2f == %0.2f near %0.2f %0.2f", distance, horizontalAngleToward, directionFacing, [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] );
+		log(LOG_MOVEMENT_CORRECTION, @"Too far away for my liking! %0.2f == %0.2f near %0.2f %0.2f", distance, horizontalAngleToward, directionFacing, [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] );
 		
 		float difference = fabs(horizontalAngleToward - directionFacing);
 		
@@ -457,7 +459,7 @@ typedef enum MovementType {
 			[_lastResumeCorrection release]; _lastResumeCorrection = nil;
 			_lastResumeCorrection = [[NSDate date] retain];
 			
-			PGLog(@"[Move] Flying in the wrong direction, correcting");
+			log(LOG_MOVEMENT_CORRECTION, @"Flying in the wrong direction, correcting");
 			
 			[self moveUpStop];
 			
@@ -469,7 +471,7 @@ typedef enum MovementType {
 	
 	// Crap we're stuck, we need to do something now :(
 	if ( _isStuck > STUCK_THRESHOLD ){
-		PGLog(@"[Move] Stuck after %d checks, attempting to unstick!", _movementChecks);
+		log(LOG_MOVEMENT_CORRECTION, @"Stuck after %d checks, attempting to unstick!", _movementChecks);
 		[controller setCurrentStatus: @"Bot: Stuck, attempting to un-stick ourselves"];
 		[self unstick];
 		return;
@@ -486,7 +488,7 @@ typedef enum MovementType {
 	_isStuck = 0;_movementChecks = 0;	// reset these so we're able to continue check if we're stuck!
 
 	if (self.unit) { 
-		PGLog(@"[Move] ... Unable to reach unit %@; Blacklisting and resuming route.", self.unit);
+		log(LOG_MOVEMENT, @"... Unable to reach unit %@; Blacklisting and resuming route.", self.unit);
 		
 		// Blacklist the unit for a bit since we can't get to it :(
 		[blacklistController blacklistObject:self.unit];
@@ -533,7 +535,7 @@ typedef enum MovementType {
 				}
 			}
 			
-			PGLog(@"[Move] ... Moving to prevous waypoint, attempt %d", _unstickAttempt);
+			log(LOG_MOVEMENT, @"... Moving to prevous waypoint, attempt %d", _unstickAttempt);
 			[self moveToWaypoint: [waypoints objectAtIndex: index-1]];
 			self.lastTriedWaypoint = [waypoints objectAtIndex: index-1];
 		} else {
@@ -556,7 +558,7 @@ typedef enum MovementType {
     [self setDestination: waypoint];
     [self moveToPosition: [waypoint position]];
 	
-	//PGLog(@"[Move] Moving to %@", waypoint );
+	log(LOG_MOVEMENT, @"Moving to %@", waypoint );
 }
 
 - (void)moveNearPosition: (Position*)position andCloseness: (float)closeness{
@@ -574,7 +576,7 @@ typedef enum MovementType {
     
     if(unit && [unit isValid] && [unit conformsToProtocol: @protocol(UnitPosition)]) {		
         if( ![self.unit isEqualToObject: unit]) {
-            PGLog(@"[Move] Moving to: %@", unit);
+            log(LOG_MOVEMENT, @"Moving to: %@", unit);
 			
 			self.unit = unit;
             self.shouldNotify = notify;
@@ -599,7 +601,7 @@ typedef enum MovementType {
 }
 
 - (void)establishPosition {
-	PGLog(@"[Move] establishPosition");
+	log(LOG_MOVEMENT, @"establishPosition");
 	
     [self moveForwardStart];
     usleep(100000);
@@ -608,7 +610,7 @@ typedef enum MovementType {
 }
 
 - (void)backEstablishPosition {
-	PGLog(@"[Move] backEstablishPosition");
+	log(LOG_MOVEMENT, @"backEstablishPosition");
 	
     [self moveBackwardStart];
     usleep(100000);
@@ -638,7 +640,7 @@ typedef enum MovementType {
     // stop our movement
     [self resetMovementState];
     
-    PGLog(@"[Move] Finished Route: %@", finishedRoute);
+    log(LOG_MOVEMENT, @"Finished Route: %@", finishedRoute);
     
     // send route finished notification
     [botController finishedRoute: finishedRoute];
@@ -672,18 +674,18 @@ typedef enum MovementType {
             self.waypointDoneCount++;
             // check to see if we've hit our max WP
             if(_patrolCount && (self.waypointDoneCount > _patrolCount*[waypoints count]))   {
-                PGLog(@"[Move] Patrol count expired. Ending patrol.");
+                log(LOG_MOVEMENT, @"Patrol count expired. Ending patrol.");
                 [self finishRoute];
             } else {
                 [self moveToWaypoint: [waypoints objectAtIndex: index]];
             }
         } else {
-            PGLog(@"[Move] Waypoint not found. Ending route.");
+            log(LOG_MOVEMENT, @"Waypoint not found. Ending route.");
             [self finishRoute];
         }
     } else {
         // otherwise just cancel all movement
-        PGLog(@"[Move] Patrol route or waypoints invalid. Ending patrol.");
+        log(LOG_MOVEMENT, @"Patrol route or waypoints invalid. Ending patrol.");
         [self finishRoute];
     }
 
@@ -694,7 +696,7 @@ typedef enum MovementType {
 		self.lastInteraction = -1;
 	}
     // check for waypoint-initiated actions
-	//PGLog(@"[Move] Performing type %d at waypoint %d.", [[self destination] action].type, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+	log(LOG_MOVEMENT, @"Performing type %d at waypoint %d.", [[self destination] action].type, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 	
 	// NO ACTION
 	if( [[self destination] action].type == ActionType_None ) {
@@ -705,7 +707,7 @@ typedef enum MovementType {
 	}
 	// delay
 	else if( [[self destination] action].type == ActionType_Delay ) {
-        PGLog(@"[Move] Performing %.2f second delay at waypoint %d.", [[self destination] action].delay, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+        log(LOG_MOVEMENT, @"Performing %.2f second delay at waypoint %d.", [[self destination] action].delay, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
         [self pauseMovement];
         [self performSelector: @selector(realMoveToNextWaypoint)
                    withObject: nil
@@ -718,7 +720,7 @@ typedef enum MovementType {
 
 		// Stop moving
 		[self pauseMovement];
-		PGLog(@"[Move] Performing interaction %d at waypoint %d.", self.lastInteraction, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+		log(LOG_MOVEMENT, @"Performing interaction %d at waypoint %d.", self.lastInteraction, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 		NSNumber *n = [[self destination] action].value;
 		
 		// Lets interact w/the target!
@@ -743,7 +745,7 @@ typedef enum MovementType {
 		}
 		
 		[chatController jump];
-		PGLog(@"[Move] Jumping at waypoint %d", [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+		log(LOG_MOVEMENT, @"Jumping at waypoint %d", [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 		
 		[self performSelector: @selector(realMoveToNextWaypoint)
 				   withObject: nil
@@ -757,7 +759,7 @@ typedef enum MovementType {
 		
 		// Stop moving
 		[self pauseMovement];
-        PGLog(@"[Move] Performing action %d at waypoint %d.", [[self destination] action].actionID, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+        log(LOG_MOVEMENT, @"Performing action %d at waypoint %d.", [[self destination] action].actionID, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 		
 		int32_t actionID = [[self destination] action].actionID;
 		//		 BOOL canPerformAction = YES;
@@ -870,7 +872,7 @@ typedef enum MovementType {
 
     // sanity check, incase something happens
     if(distance == INFINITY) {
-        PGLog(@"[Move] Player distance == infinity. Stopping.");
+        log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
         if(self.unit)   [self finishAlt];
         else            [self finishRoute];
         return;
@@ -881,7 +883,7 @@ typedef enum MovementType {
     // poll the bot controller
     if([botController isBotting]) {
         if( [self isPatrolling] && [botController evaluateSituation]) {
-			PGLog(@"[Move] Action taken, we don't need to check anything");
+			log(LOG_MOVEMENT, @"Action taken, we don't need to check anything");
             // there was an action taken
             return;
         }
@@ -1000,7 +1002,7 @@ typedef enum MovementType {
 }
 
 - (void)moveUpStop {
-	PGLog(@"[Move] Releasing jump button!");
+	log(LOG_MOVEMENT, @"Releasing jump button!");
 
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
@@ -1139,7 +1141,7 @@ typedef enum MovementType {
 - (void)turnToward: (Position*)position {
 	
 	/*if ( [movementType selectedTag] == MOVE_CTM ){
-		PGLog(@"[Move] In theory we should never be here!");
+		log(LOG_MOVEMENT, @"In theory we should never be here!");
 		return;
 	}*/
 	
@@ -1281,10 +1283,10 @@ typedef enum MovementType {
         // check to ensure that we've moved 1/4 of that
         PGLog(@"Expiration in: %.2f seconds (%@).", [self.movementExpiration timeIntervalSinceNow], self.movementExpiration);
         if( self.movementExpiration && ([self.movementExpiration compare: [NSDate date]] == NSOrderedAscending) ) {
-            PGLog(@"[Move] **** Movement timer expired!! ****");
+            log(LOG_MOVEMENT_CORRECTION, @"**** Movement timer expired!! ****");
             // if we can't reach the unit, just bail it
             if (self.unit) { 
-                PGLog(@"[Move] ... Unable to reach unit %@; cancelling.", self.unit);
+                log(LOG_MOVEMENT_CORRECTION, @"... Unable to reach unit %@; cancelling.", self.unit);
                 [self finishAlt];
             } else {
                 // move to the previous waypoint and try this again
@@ -1294,7 +1296,7 @@ typedef enum MovementType {
                     if(index == 0) {
                         index = [waypoints count];
                     }
-                    PGLog(@"[Move] ... Moving to prevous waypoint.");
+                    log(LOG_MOVEMENT_CORRECTION, @"... Moving to prevous waypoint.");
                     [self moveToWaypoint: [waypoints objectAtIndex: index-1]];
                 } else {
                     [self finishRoute];

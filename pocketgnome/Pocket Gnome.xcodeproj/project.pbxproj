@@ -23,6 +23,7 @@
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
+		7C87A0AB10DBB85E0022352E /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C87A0AA10DBB85E0022352E /* LogController.m */; };
 		7CCA464710CE6BCB00DFAB96 /* SpellCooldown.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */; };
 		7CCA464810CE6BCB00DFAB96 /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CCA464610CE6BCB00DFAB96 /* SpellCooldownConditionController.m */; };
 		7CF06E5D10D70C4200B28C9B /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF06E5C10D70C4200B28C9B /* BlacklistController.m */; };
@@ -348,6 +349,8 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* PocketGnome_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketGnome_Prefix.pch; sourceTree = "<group>"; };
+		7C87A0A910DBB85E0022352E /* LogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogController.h; sourceTree = "<group>"; };
+		7C87A0AA10DBB85E0022352E /* LogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogController.m; sourceTree = "<group>"; };
 		7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellCooldown.xib; sourceTree = "<group>"; };
 		7CCA464510CE6BCB00DFAB96 /* SpellCooldownConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellCooldownConditionController.h; sourceTree = "<group>"; };
 		7CCA464610CE6BCB00DFAB96 /* SpellCooldownConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellCooldownConditionController.m; sourceTree = "<group>"; };
@@ -728,6 +731,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				7C87A0A910DBB85E0022352E /* LogController.h */,
+				7C87A0AA10DBB85E0022352E /* LogController.m */,
 				7CF06E5C10D70C4200B28C9B /* BlacklistController.m */,
 				7CF06E5B10D70C4200B28C9B /* BlacklistController.h */,
 				7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */,
@@ -1714,6 +1719,7 @@
 				0313B4D810BAEA0B009E74E4 /* EventController.m in Sources */,
 				7CCA464810CE6BCB00DFAB96 /* SpellCooldownConditionController.m in Sources */,
 				7CF06E5D10D70C4200B28C9B /* BlacklistController.m in Sources */,
+				7C87A0AB10DBB85E0022352E /* LogController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
