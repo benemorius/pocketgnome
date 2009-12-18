@@ -798,11 +798,11 @@ typedef enum MovementType {
 	if ( ![botController isBotting] ) return;
 	
 	if ( _isStuck > STUCK_THRESHOLD ){
-		PGLog(@"NOT checkCurrentPosition %@", timer);
+		log(LOG_MOVEMENT_CORRECTION, @"NOT checkCurrentPosition %@", timer);
 		return;		
 	}
 	
-	//PGLog(@"checkCurrentPosition");
+	log(LOG_MOVEMENT_CORRECTION, @"checkCurrentPosition");
 	
     Position *playerPosition = [playerData position];
     Position *destPosition = (self.unit) ? [self.unit position] : [[self destination] position];
@@ -844,6 +844,7 @@ typedef enum MovementType {
 	
 	// We're close enough to take action or move to the next waypoint!
 	if( distance <= distanceToUnit )  {
+		log(LOG_MOVEMENT, @"Reached waypoint. %0.2f <= %0.2f", distance, distanceToUnit);
 		// Moving to a waypoint
         if(!self.unit) {
             if([botController isBotting]) {
@@ -854,11 +855,12 @@ typedef enum MovementType {
                 [self moveToNextWaypoint];
             }
         } else {
-            PGLog(@"We're close to the unit. Stopping movement.");
+            log(LOG_MOVEMENT, @"We're close to the unit. Stopping movement.");
             [self finishAlt];
         }
         return;
     } else {
+		log(LOG_MOVEMENT, @"Not yet reached waypoint. %0.2f > %0.2f", distance, distanceToUnit);
         // if we're far enough away from our target, see if we should jump
         if( (distance > playerSpeed) && (!self.unit)) {
             if( self.shouldJump && ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown) ) {
@@ -872,7 +874,7 @@ typedef enum MovementType {
 	
     // if we're not moving forward for some reason, start moving again
     if( (([movementType selectedTag] == MOVE_CTM && ![self isCTMActive]) || [movementType selectedTag] != MOVE_CTM ) && !self.isPaused && (([playerData movementFlags] & 0x1) != 0x1)) {   // [self isPatrolling] && 
-        PGLog(@"We are stopped for some reason... starting again.");
+        log(LOG_MOVEMENT, @"We are stopped for some reason... starting again.");
         [self moveForwardStop];
         [self moveToPosition: (self.unit ? [self.unit position] : [[self destination] position])];
         return;
