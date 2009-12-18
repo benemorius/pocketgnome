@@ -7,24 +7,27 @@
 //
 
 #import <Cocoa/Cocoa.h>
-
-#define LOG_FUNCTION 1
-#define LOG_FUNCTION_S "[function]"
-#define LOG_DEV 2
-#define LOG_DEV_S "[dev]"
-#define LOG_DEV1 3
-#define LOG_DEV1_S "[dev1]"
-#define LOG_DEV2 4
-#define LOG_DEV2_S "[dev2]"
-#define LOG_TARGET_LOGIC 5
-#define LOG_TARGET_LOGIC_S "[target logic]"
-#define LOG_MOVEMENT_CORRECTION 6
-#define LOG_MOVEMENT_CORRECTION_S "[movement correction]"
+#define log(...) if([LogController canLog:__VA_ARGS__]) PGLog(@"%@", [LogController log: __VA_ARGS__]);
+//just for autocomplete and convenience really
+#define LOG_FUNCTION "function"
+#define LOG_DEV "dev"
+#define LOG_DEV1 "dev1"
+#define LOG_DEV2 "dev2"
+#define LOG_TARGET "target"
+#define LOG_MOVEMENT_CORRECTION "movement_correction"
+#define LOG_MOVEMENT "movement"
+#define LOG_RULE "rule"
+#define LOG_CONDITION "condition"
+#define LOG_BEHAVIOR "behavior"
+#define LOG_LOOT "loot"
+#define LOG_HEAL "heal"
+#define LOG_COMBAT "combat"
 
 @interface LogController : NSObject {
 
 }
 
-+ (NSString*) print:(int)type, ...;
++ (BOOL) canLog:(char*)type_s, ...;
++ (NSString*) log:(char*)type_s, ...;
 
 @end

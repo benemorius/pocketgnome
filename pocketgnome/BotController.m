@@ -32,7 +32,6 @@
 #import "CombatProfileEditor.h"
 #import "EventController.h"
 #import "BlacklistController.h"
-#import "LogController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -368,7 +367,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test {
 	log(LOG_FUNCTION, @"entering function");
-    //PGLog(@"Checking rule %@.", rule);
+    log(LOG_RULE, @"Checking rule %@.", rule);
     //BOOL eval = [rule isMatchAll] ? YES : NO;
 
     int numMatched = 0, needToMatch = 0;
@@ -382,10 +381,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     Player *thePlayer = [playerController player];
     
-    //PGLog(@"    Need to match: %d", needToMatch);
+    log(LOG_CONDITION, @"Need to match: %d", needToMatch);
     
     for(Condition *condition in [rule conditions]) {
-        //PGLog(@"Checking condition: %@", condition);
+        log(LOG_CONDITION, @"Checking condition: %@", condition);
         
         if(![condition enabled]) continue;  // skip disabled conditions
         
@@ -396,7 +395,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         switch([condition variety]) {
             case VarietyNone:;
-                PGLog(@"Error: %@ in %@ is of an unknown type.", condition, rule);
+                log(LOG_CONDITION, @"Error: %@ in %@ is of an unknown type.", condition, rule);
                 break;
             case VarietyHealth:;
                 /* ******************************** */
@@ -646,7 +645,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 }
                 
                 if( [aUnit isValid]) {
-                    //PGLog(@"Testing unit %@ for %d", aUnit, spellID);
+                    log(LOG_CONDITION, @"Testing unit %@ for %d", aUnit, spellID);
                     int stackCount = 0;
                     if( [condition quality] == QualityBuff ) {
                         if([condition type] == TypeValue)   stackCount = [auraController unit: aUnit hasBuff: spellID];
@@ -1010,7 +1009,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)finishCurrentProcedure: (NSDictionary*)state {
 	log(LOG_FUNCTION, @"entering function");
 	
-	PGLog(@"[Bot] Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
+	log(LOG_BEHAVIOR, @"[Bot] Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
     
     // make sure we're done casting before we end the procedure
     if( [playerController isCasting] ) {
@@ -1018,7 +1017,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if( timeLeft <= 0 ) {
             [self performSelector: _cmd withObject: state afterDelay: 0.1];
         } else {
-            // PGLog(@"[Bot] Still casting (%.2f remains): Delaying procedure end.", timeLeft);
+            log(LOG_BEHAVIOR, @"[Bot] Still casting (%.2f remains): Delaying procedure end.", timeLeft);
             [self performSelector: _cmd withObject: state afterDelay: timeLeft];
             return;
         }
@@ -1076,12 +1075,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if there's another procedure running, we gotta stop it
     if( self.procedureInProgress && ![self.procedureInProgress isEqualToString: [state objectForKey: @"Procedure"]]) {
         [self cancelCurrentProcedure];
-        PGLog(@"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
+        log(LOG_BEHAVIOR, @"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
     }
     
     if(![self procedureInProgress]) {
         [self setProcedureInProgress: [state objectForKey: @"Procedure"]];
-        PGLog(@"Setting current procedure: %@", self.procedureInProgress);
+        log(LOG_BEHAVIOR, @"Setting current procedure: %@", self.procedureInProgress);
         
         if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
 			NSArray *attackQueue = [combatController attackQueue];
@@ -1097,7 +1096,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             if(count == 1)  [controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d unit)", count]];
             else            [controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d units)", count]];
 			
-			PGLog(@"[Bot] In Combat: (%d:%d)", [playerController isInCombat], [combatController inCombat]);
+			log(LOG_BEHAVIOR, @"In Combat: (%d:%d)", [playerController isInCombat], [combatController inCombat]);
         } else {
             if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])
                 [controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
@@ -1159,7 +1158,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // have we exceeded our maximum attempts on this rule?
     if(attempts > 3) {
-        PGLog(@"  Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
+        log(LOG_CONDITION, @"Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
         [self performSelector: _cmd
                    withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
                                 [state objectForKey: @"Procedure"],             @"Procedure",
@@ -1178,12 +1177,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// do something special? Search for an add to CC?
 			if ( [rule target] == TargetAdd ){
-				PGLog(@"[Bot] Time to do something to an add! CC?");
+				log(LOG_TARGET, @"Time to do something to an add! CC?");
 			}
 			
 			// find someone to heal?
 			else if ( [rule target] == TargetFriend ){
-				PGLog(@"[Bot] Lets heal some1! Maybe?");
+				log(LOG_TARGET, @"Lets heal someone! Maybe?");
 				
 			}
 			
@@ -1191,7 +1190,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else if ( [rule target] != TargetSelf && target != [playerController player] ){
 				
 				if ( target != [combatController attackUnit] )
-					PGLog(@"[Bot] Switching from target %@ to %@  (count: %d)", target, [combatController attackUnit], [target retainCount]);
+					log(LOG_TARGET, @"Switching from target %@ to %@  (count: %d)", target, [combatController attackUnit], [target retainCount]);
 				
 				target = [combatController attackUnit];
 				[[target retain] autorelease];
@@ -1199,7 +1198,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 		}
 
-		PGLog(@"[Bot] Using target %@ for rule %@ RC:%d", target, rule, [target retainCount]);
+		log(LOG_TARGET, @"Using target %@ for rule %@ RC:%d", target, rule, [target retainCount]);
 		
         if( [self evaluateRule: rule withTarget: target asTest: NO] ) {
             
@@ -1227,11 +1226,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         
 						if ( [rule target] == TargetSelf ){
 							[playerController setPrimaryTarget: [playerController player]];
-							PGLog(@"SELECTING (bot) %@ self", [playerController player]);	
+							log(LOG_TARGET, @"SELECTING (bot) %@ self", [playerController player]);	
 						}
 						else if ( target != nil ){
 							[playerController setPrimaryTarget: target];
-							PGLog(@"SELECTING (bot) %@ ", target);
+							log(LOG_TARGET, @"SELECTING (bot) %@ ", target);
 						}
 						
 						// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
@@ -1244,7 +1243,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
-							PGLog(@"[Bot] Spell isn't ready! Skipping any further attempts");
+							log(LOG_BEHAVIOR, @"[Bot] Spell isn't ready! Skipping any further attempts");
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
@@ -1267,7 +1266,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                    ([rule resultType] == ActionType_Spell) &&
                                    ([[[spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]] name] isEqualToString: @"Vanish"]))
                                 {
-                                    PGLog(@"VANISH! Attemping to exit combat (cross your fingers).");
+                                    log(LOG_BEHAVIOR, @"VANISH! Attemping to exit combat (cross your fingers).");
                                     [combatController cancelAllCombat];
                                     return; // bail out of here
                                 }
@@ -1353,7 +1352,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if([unit isValid] && (distanceToUnit <= 5.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
             
 			[controller setCurrentStatus: @"Bot: Looting"];
-			PGLog(@"[Loot] Looting : %@", unit);
+			log(LOG_LOOT, @"Looting : %@", unit);
 			
 			self.lootStartTime = [NSDate date];
 			self.unitToLoot = unit;
@@ -1367,7 +1366,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
         } 
 		else {
-			PGLog(@"[Bot] Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", [unit isValid], distanceToUnit <= 5.0, unit );
+			log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", [unit isValid], distanceToUnit <= 5.0, unit );
 			
 			// This will ensure we won't try to loot this node again - /cry
 			if ( [self.unitToLoot isKindOfClass: [Node class]] ){
@@ -1398,7 +1397,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Is the loot window stuck being open?
 	if ( [lootController isLootWindowOpen] ){
-		PGLog(@"[Loot] Loot window open? ZOMG lets close it!");
+		log(LOG_LOOT, @"Loot window open? ZOMG lets close it!");
 		
 		[lootController acceptLoot];
 		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 1.0f];
@@ -1410,8 +1409,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Just fire off the notification that never went off!
 	if ( self.unitToLoot ){
-		//PGLog(@"[Loot] There weren't items to loot! Well, snapshit, lets check for skinning/herb");
-		PGLog(@"Firing off itemsLooted");
+		//log(LOG_LOOT, @"There weren't items to loot! Well, snapshit, lets check for skinning/herb");
+		log(LOG_LOOT, @"Firing off itemsLooted");
 		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
 	}
 }
@@ -1434,11 +1433,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [self.unitToLoot isKindOfClass: [Node class]] ){
 			[nodeController finishedNode: (Node*)self.unitToLoot];
 			self.mobToSkin = nil;
-			PGLog(@"[Loot] Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s");
+			log(LOG_LOOT, @"Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s");
 		}
 		else{
 			[_mobsToLoot removeObject: self.unitToLoot];
-			PGLog(@"[Loot] Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s", [_mobsToLoot count]);
+			log(LOG_LOOT, @"Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
 
 		// Not 100% sure why we need this, but it seems important?
@@ -1447,7 +1446,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Here from skinning!
 	else if ( self.mobToSkin ){
 		NSDate *currentTime = [NSDate date];
-		PGLog(@"[Loot] Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);
+		log(LOG_LOOT, @"Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);
 		
 		self.mobToSkin = nil;
 	}
@@ -1490,7 +1489,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				canSkin = YES;
 			} 
 			else {
-				PGLog(@"[Loot] The mob is above your max %@ level (%d).", ((_doSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
+				log(LOG_LOOT, @"The mob is above your max %@ level (%d).", ((_doSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
 			}
 		}
 	}
@@ -1498,7 +1497,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// We're done looting+skinning!
 	if ( !canSkin ){
 		NSDate *currentTime = [NSDate date];
-		PGLog(@"[Loot] All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
+		log(LOG_LOOT, @"All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
 		
 		// Reset our attempt variables!
 		_lootAttempt = 0;
@@ -1516,7 +1515,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	 
 	// We tried for 2.0 seconds, lets bail
 	if ( _skinAttempt++ > 20 ){
-		PGLog(@"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
+		log(LOG_LOOT, @"Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
 		self.mobToSkin = nil;
 		//[movementController finishMovingToObject: (Unit*)mob];
 		
@@ -1538,7 +1537,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	[controller setCurrentStatus: @"Bot: Skinning"];
 	
-	PGLog(@"[Loot] Skinning!");
+	log(LOG_LOOT, @"Skinning!");
 	
 	// Lets interact w/the mob!
 	[self interactWithMouseoverGUID: [mob GUID]];
@@ -1565,13 +1564,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     _didPreCombatProcedure = NO;
 	usleep(100000);
-	PGLog(@"Player is dead:%d  Real in combat:%d", [playerController isDead], [playerController isInCombat]);
+	log(LOG_BEHAVIOR, @"Player is dead:%d  Real in combat:%d", [playerController isDead], [playerController isInCombat]);
 	
     if ( ![playerController isDead] ) {
         
         if( ![[combatController attackQueue] count] ) {
 			
-			PGLog(@"[Bot] MORE UNITS TO ATTACK!");
+			log(LOG_BEHAVIOR, @"[Bot] MORE UNITS TO ATTACK!");
 			
             // we're probably still in the middle of a combat procedure
             if(self.procedureInProgress)        // so let's cancel it
@@ -1591,7 +1590,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                        afterDelay: (vanished ? 5.0 : 0.1)];
             return;
         } else {
-			PGLog(@"We are out of combat, but there are more units in the attack queue:%d", [[combatController attackQueue] count]);
+			log(LOG_BEHAVIOR, @"We are out of combat, but there are more units in the attack queue:%d", [[combatController attackQueue] count]);
             [self evaluateSituation];
         }
     }
@@ -1615,7 +1614,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if(![self isBotting]) return;
     
     if( ![[self procedureInProgress] isEqualToString: HealingProcedure] ) {
-		PGLog(@"Healing %@ %d", unit, [unit lowGUID]);
+		log(LOG_HEAL, @"Healing %@ %d", unit, [unit lowGUID]);
 		
         // stop other procedures
         [self cancelCurrentProcedure];
@@ -1786,19 +1785,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     usleep(500000);
                     if([(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable]) {
                         if ([_mobsToLoot containsObject: unit]) {
-                            PGLog(@"[Loot] %@ was already in the loot list, removing first", unit);
+                            log(LOG_LOOT, @"%@ was already in the loot list, removing first", unit);
                             [_mobsToLoot removeObject: unit];
                         }
-                        PGLog(@"[Loot] Adding %@ to loot list.", unit);
+                        log(LOG_LOOT, @"Adding %@ to loot list.", unit);
                         [_mobsToLoot addObject: (Mob*)unit];
                     }
 					else{
-						PGLog(@"[Loot] Mob %@ isn't lootable, ignoring", unit);
+						log(LOG_LOOT, @"Mob %@ isn't lootable, ignoring", unit);
 					}
                 }
             }
 			else{
-				PGLog(@"[Loot] Unit %@ finished, but not dead! Health: %d", unit, [unit currentHealth]);
+				log(LOG_LOOT, @"Unit %@ finished, but not dead! Health: %d", unit, [unit currentHealth]);
 			}
             
             // if we're in the middle of a combat procedure, end it
@@ -2396,7 +2395,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				
 				// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
 				if ( self.lastAttemptedUnitToLoot == mobToLoot && _lootAttempt >= 3 ){
-					PGLog(@"[Loot] Unable to loot %@, removing from loot list", self.lastAttemptedUnitToLoot);
+					log(LOG_LOOT, @"Unable to loot %@, removing from loot list", self.lastAttemptedUnitToLoot);
 					[_mobsToLoot removeObject: self.unitToLoot];
 				}
 				else{
@@ -2407,11 +2406,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
             }
 			else{
-				PGLog(@"[Loot] Mob found, but either isn't valid (%d), is too far away (%d) or is blacklisted (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY), [blacklistController isBlacklisted:mobToLoot] );
+				log(LOG_LOOT, @"Mob found, but either isn't valid (%d), is too far away (%d) or is blacklisted (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY), [blacklistController isBlacklisted:mobToLoot] );
 			}
         }
 		else{
-			PGLog(@"[Loot] We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
+			log(LOG_LOOT, @"We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
 		}
     }
     
@@ -2485,10 +2484,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[controller setCurrentStatus: @"Bot: Moving to node"];
 				
 				[movementController pauseMovement];
-				PGLog(@"[Loot] Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
+				log(LOG_LOOT, @"Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
 				if(nodeDist <= NODE_DISTANCE_UNTIL_DISMOUNT){
 					if ( self.lastAttemptedUnitToLoot == nodeToLoot && _lootAttempt >= 3 ){
-						PGLog(@"[Loot] Unable to loot %@, blacklisting for 30 seconds", self.lastAttemptedUnitToLoot);
+						log(LOG_LOOT, @"Unable to loot %@, blacklisting for 30 seconds", self.lastAttemptedUnitToLoot);
 						[nodeController finishedNode: nodeToLoot];
 						[nodeController performSelector:@selector(removeFinishedNode:) withObject:nodeToLoot afterDelay:30.0f];
 					}
