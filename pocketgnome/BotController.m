@@ -527,11 +527,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     conditionEval = ( [condition comparator] == CompareIs ) ? [playerController isIndoors] : [playerController isOutdoors];
                     if(test) {
                         if([condition comparator] == CompareIs) {
-                            if(conditionEval)   PGLog(@" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
-                            else                PGLog(@" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
+                            if(conditionEval){
+								log(LOG_CONDITION, @" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
+							}
+                            else{
+								log(LOG_CONDITION, @" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
+							}
                         } else {
-                            if(conditionEval)   PGLog(@" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
-                            else                PGLog(@" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
+                            if(conditionEval){
+								log(LOG_CONDITION, @" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
+							}
+                            else{
+								log(LOG_CONDITION, @" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
+							}
                         }
                     }
                 }
@@ -542,7 +550,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* Aura Condition                   */
                 /* ******************************** */
             case VarietyAura:;
-                //PGLog(@"-- Checking aura condition --");
+                log(LOG_CONDITION, @"-- Checking aura condition --");
                 
                 unsigned spellID = 0;
                 NSString *dispelType = nil;
@@ -700,7 +708,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* ******************************** */
             case VarietyInventory:;
                 if( [condition unit] == UnitPlayer && [condition quality] == QualityInventory) {
-                    //PGLog(@"-- Checking inventory condition --");
+                    log(LOG_CONDITION, @"-- Checking inventory condition --");
                     Item *item = ([condition type] == TypeValue) ? [itemController itemForID: [condition value]] : [itemController itemForName: [condition value]];
                     
                     int totalCount = [itemController collectiveCountForItemInBags: item];
@@ -902,9 +910,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 }
                 
                 if(test) {
-                    PGLog(@" --> Test mode checks all units; normal mode will validate units against your combat profile.");
-                    if([condition unit] == UnitPlayer) PGLog(@" --> Checking %.2fy around player...", distance);
-                    if([condition unit] == UnitTarget) PGLog(@" --> Checking %.2fy around target...", distance); 
+                    log(LOG_CONDITION, @" --> Test mode checks all units; normal mode will validate units against your combat profile.");
+                    if([condition unit] == UnitPlayer) log(LOG_CONDITION, @" --> Checking %.2fy around player...", distance);
+                    if([condition unit] == UnitTarget) log(LOG_CONDITION, @" --> Checking %.2fy around target...", distance); 
                 }
                 
                 // count the units in range
@@ -912,7 +920,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 for(Unit *unit in validTargets) {
                     float range = [basePosition distanceToPosition: [unit position]];
                     if(range <= distance) {
-                        //PGLog(@" ----> In Range (%.2fy): %@", range, unit);
+                        log(LOG_CONDITION, @" ----> In Range (%.2fy): %@", range, unit);
                         inRangeCount++;
                     }
                 }
@@ -990,7 +998,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     //    return YES;
     //if(![rule isMatchAll] && (numMatched > 0))
     //    return YES;
-    //PGLog(@"    Matched %d of %d", numMatched, needToMatch);
+    log(LOG_CONDITION, @"    Matched %d of %d", numMatched, needToMatch);
 
     if(numMatched >= needToMatch)
         return YES;
@@ -1009,7 +1017,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)finishCurrentProcedure: (NSDictionary*)state {
 	log(LOG_FUNCTION, @"entering function");
 	
-	log(LOG_BEHAVIOR, @"[Bot] Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
+	log(LOG_BEHAVIOR, @"Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
     
     // make sure we're done casting before we end the procedure
     if( [playerController isCasting] ) {
@@ -1017,7 +1025,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if( timeLeft <= 0 ) {
             [self performSelector: _cmd withObject: state afterDelay: 0.1];
         } else {
-            log(LOG_BEHAVIOR, @"[Bot] Still casting (%.2f remains): Delaying procedure end.", timeLeft);
+            log(LOG_BEHAVIOR, @"Still casting (%.2f remains): Delaying procedure end.", timeLeft);
             [self performSelector: _cmd withObject: state afterDelay: timeLeft];
             return;
         }
@@ -1025,7 +1033,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     //if( ![[state objectForKey: @"Procedure"] isEqualToString: CombatProcedure])
-    PGLog(@"--- All done with procedure: %@.", [state objectForKey: @"Procedure"]);
+    log(LOG_BEHAVIOR, @"--- All done with procedure: %@.", [state objectForKey: @"Procedure"]);
     [self cancelCurrentProcedure];
     
     // when we finish PreCombat, re-evaluate the situation
@@ -1242,12 +1250,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						
 						int actionResult = [self performAction:actionID];
 						if ( [rule resultType] == ActionType_Spell ){
-							PGLog(@"[Bot] Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
+							log(LOG_BEHAVIOR, @"Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
 							//[spellController cooldownLeftForSpellID:actionID];
 						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
-							log(LOG_BEHAVIOR, @"[Bot] Spell isn't ready! Skipping any further attempts");
+							log(LOG_BEHAVIOR, @"Spell isn't ready! Skipping any further attempts");
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
@@ -1581,7 +1589,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         if( ![[combatController attackQueue] count] ) {
 			
-			log(LOG_BEHAVIOR, @"[Bot] MORE UNITS TO ATTACK!");
+			log(LOG_BEHAVIOR, @"MORE UNITS TO ATTACK!");
 			
             // we're probably still in the middle of a combat procedure
             if(self.procedureInProgress)        // so let's cancel it
@@ -1696,7 +1704,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-        log(LOG_COMBAT, @"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
+        log(LOG_COMBAT, @"Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
         // stop and attack
         [self cancelCurrentProcedure];
         
@@ -2381,7 +2389,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if( [combatController combatEnabled] && ([combatController inCombat] || newUnits) && !playerInAir ) {
 		
 		// scan combat
-		PGLog(@"Bot doCombatSearch");
+		log(LOG_COMBAT, @"Bot doCombatSearch");
 		//[combatController doCombatSearch];
         
         // attack unit with highest weight

@@ -375,7 +375,7 @@ static PlayersController *sharedPlayers = nil;
 
 - (BOOL)playerWithinRangeOfUnit: (float)distance Unit:(Unit*)unit includeFriendly:(BOOL)friendly includeHostile:(BOOL)hostile {
 	
-	PGLog(@"checking distance %0.2f  %@ %d %d", distance, unit, friendly, hostile);
+	log(LOG_POSITION, @"checking distance %0.2f  %@ %d %d", distance, unit, friendly, hostile);
 	Position *position = [unit position];
 	
 	// loop through all players
@@ -390,7 +390,7 @@ static PlayersController *sharedPlayers = nil;
 			(!friendly || (friendly && !isHostile)) &&	// 2 - friendly
 			(!hostile || (hostile && isHostile))		// 3 - hostile
 			){
-			PGLog(@"[Loot] Player %@ found %0.2f yards away! I scared! Friendly?(%d)  Hostile?(%d)", player, range, friendly, hostile);
+			log(LOG_TARGET, @"Player %@ found %0.2f yards away! I scared! Friendly?(%d)  Hostile?(%d)", player, range, friendly, hostile);
 			return YES;
 		}
 	}

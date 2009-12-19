@@ -44,7 +44,7 @@ static SecureUserDefaults* secureDefaults = nil;
             [[UKKQueue sharedFileWatcher] setDelegate: self];
             [[UKKQueue sharedFileWatcher] addPathToQueue: prefPath];
         } else {
-            PGLog(@"Preferences cannot be secured because the file cannot be found.");
+            log(LOG_ERROR, @"Preferences cannot be secured because the file cannot be found.");
         }
         
     }
@@ -104,7 +104,7 @@ static SecureUserDefaults* secureDefaults = nil;
             // reset permissions
             NSError *error;
             if(![[NSFileManager defaultManager] setAttributes: newPermissions ofItemAtPath: self.prefPath error: &error]) {
-                PGLog(@"Error %@ setting permissions on preferences file.", error);
+                log(LOG_ERROR, @"Error %@ setting permissions on preferences file.", error);
                 return NO;
             }
             // PGLog(@"Secured preferences.");

@@ -70,7 +70,7 @@
 
 		// hit escape to close the chat window if it's open
 		if ( [controller isWoWChatBoxOpen] ){
-			PGLog(@"[Macro] Sending escape to close open chat!");
+			log(LOG_MACRO, @"Sending escape to close open chat!");
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}
@@ -86,7 +86,7 @@
 		usleep(100000);
 		[chatController sendKeySequence: [NSString stringWithFormat: @"%@%c", macroCommand, '\n']];
 		
-		PGLog(@"[Macro] I just typed the '%@' command. Set up a macro so I don't have to type it in! Check the settings tab.", key);
+		log(LOG_ERROR, @"[Macro] I just typed the '%@' command. Set up a macro so I don't have to type it in! Check the settings tab.", key);
 	}
 }
 
@@ -158,7 +158,7 @@
 	if ( macro ){
 		UInt32 macroID = [[macro number] unsignedIntValue];
 		
-		//PGLog(@"[Macro] Executing macro '%@' with id 0x%X", key, macroID);
+		log(LOG_MACRO, @"Executing macro '%@' with id 0x%X", key, macroID);
 		
 		[botController performAction:USE_MACRO_MASK + macroID];
 		usleep(100000);
@@ -194,7 +194,7 @@
 			// search for partial match!
 			NSRange range = [[macro body] rangeOfString : macroCommand];
 			if ( range.location != NSNotFound ) {
-				PGLog(@"[Macro] Found partial match! '%@'", macroCommand);
+				log(LOG_MACRO, @"Found partial match! '%@'", macroCommand);
 				return macro;
 			}
 		}

@@ -65,11 +65,11 @@
 	
 	// new object, add it!
 	if ( blackCount == 0) {
-		PGLog(@"[Blacklist] Adding object %@", obj);
+		log(LOG_BLACKLIST, @"Adding object %@", obj);
 	}
 	// object is already blacklisted! increase count
 	else{
-		PGLog(@"[Blacklist] Increasing count for object %@ to %d", obj, blackCount + 1);	
+		log(LOG_BLACKLIST, @"Increasing count for object %@ to %d", obj, blackCount + 1);	
 	}
 	
 	[self removeFromBlacklist:obj];
@@ -96,14 +96,14 @@
 			// time to remove our object if it's been 45 seconds
 			if ( timeSinceBlacklisted > 45.0f ){
 				[self removeFromBlacklist:obj];
-				PGLog(@"[Blacklist] Removing object %@ from blacklist after 45 seconds", obj);
+				log(LOG_BLACKLIST, @"Removing object %@ from blacklist after 45 seconds", obj);
 			}
 			
 			// mob/player checks
 			if ( [obj isNPC] || [obj isPlayer] ){
 				if ( ![obj isValid] || [(Unit*)obj isDead] ){
 					[self removeFromBlacklist:obj];
-					PGLog(@"[Blacklist] Removing object %@ from blacklist after 45 seconds for being dead(%d) or invalid(%d)", obj, [(Unit*)obj isDead], ![obj isValid]);
+					log(LOG_BLACKLIST, @"Removing object %@ from blacklist after 45 seconds for being dead(%d) or invalid(%d)", obj, [(Unit*)obj isDead], ![obj isValid]);
 				}
 			}
 		}
@@ -127,7 +127,7 @@
 			int count = [[black objectForKey: @"Count"] intValue];
 			if ( count < 1 ) count = 1;
 			
-			PGLog(@"[Blacklist] %0.2f > %0.2f", [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0, (15.0*count) );
+			log(LOG_BLACKLIST, @"%0.2f > %0.2f", [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0, (15.0*count) );
 			
 			if ( [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0 > (15.0*count) ) 
 				return NO;
@@ -137,7 +137,7 @@
 }
 
 - (void)removeAllUnits{
-	PGLog(@"[Blacklist] Removing all units...");
+	log(LOG_BLACKLIST, @"Removing all units...");
 }
 
 @end

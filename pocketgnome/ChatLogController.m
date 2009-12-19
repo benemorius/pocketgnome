@@ -358,20 +358,20 @@
                     }
                 }
                 @catch (NSException * e) {
-                    PGLog(@"Could not send chat message: %@", e);
+					log(LOG_ERROR, @"Could not send chat message: %@", e);
                     return NO;
                 }
                 
                 return YES;
                 
             } else {
-                PGLog(@"Could not locate buddy \"%@\"!", buddyName);
+                log(LOG_ERROR, @"Could not locate buddy \"%@\"!", buddyName);
             }
         }
     }
     
     if(!foundService) {
-        PGLog(@"Could not find active iChat service!");
+        log(LOG_ERROR, @"Could not find active iChat service!");
     }
     
     return NO;
@@ -415,15 +415,15 @@
             if([emailMessage send]) {
                 return YES;
             } else {
-                PGLog(@"Email message could not be sent!");
+                log(LOG_ERROR, @"Email message could not be sent!");
             }
         }
         @catch (NSException * e) {
-            PGLog(@"Email message could not be sent! %@", e);
+            log(LOG_ERROR, @"Email message could not be sent! %@", e);
             return NO;
         }
     } else {
-        PGLog(@"No account is configured in Mail!");
+        log(LOG_ERROR, @"No account is configured in Mail!");
     }
     return NO;
 }
@@ -528,7 +528,7 @@
             }
         }
     } else {
-        PGLog(@"Mail delivery is NOT configured.");
+        log(LOG_ERROR, @"Mail delivery is NOT configured.");
     }
 }
 
@@ -557,7 +557,7 @@
 	if ( checkWhispers ){
 		if ( [numWhispers intValue] >= [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmWhisperedTimes"] intValue] ){
 			[[NSSound soundNamed: @"alarm"] play];
-			PGLog(@"[Chat] You have been whispered %@ times by %@. Last message: %@", numWhispers, [entry playerName], [entry text] );
+			log(LOG_GENERAL, @"You have been whispered %@ times by %@. Last message: %@", numWhispers, [entry playerName], [entry text] );
 			[GrowlApplicationBridge notifyWithTitle: @"Whispered too much!"
 										description: [NSString stringWithFormat: @"%@ times by %@. Last Message:\n%@", numWhispers, [entry playerName], [entry text]]
 								   notificationName: @"ReceivedManyMessages"

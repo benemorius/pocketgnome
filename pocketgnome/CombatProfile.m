@@ -53,7 +53,7 @@
 		self.enemyWeightTarget = 25;
 		self.enemyWeightDistance = 25;
     }
-	PGLog(@"CombatProfile created with name %@", self.name);
+	log(LOG_COMBAT, @"CombatProfile created with name %@", self.name);
     return self;
 }
 

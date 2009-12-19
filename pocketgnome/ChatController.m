@@ -355,7 +355,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
         if(keyUp)  CFRelease(keyUp);
         // CFRelease(source);
     } else {
-        PGLog(@"invalid source with hotkey %d", hotkey);
+        log(LOG_ERROR, @"invalid source with hotkey %d", hotkey);
     }
 }
 

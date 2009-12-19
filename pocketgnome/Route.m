@@ -104,7 +104,7 @@
         }
     }
 
-	PGLog(@"[Move] Closest WP found at a distance of %0.2f  Vertical Distance: %0.2f Total waypoints searched: %d", minDist, [position verticalDistanceToPosition:[closestWP position]], [[self waypoints] count]);
+	log(LOG_MOVEMENT, @"Closest WP found at a distance of %0.2f  Vertical Distance: %0.2f Total waypoints searched: %d", minDist, [position verticalDistanceToPosition:[closestWP position]], [[self waypoints] count]);
 	
     return [[closestWP retain] autorelease];
 }
@@ -113,14 +113,14 @@
     if(waypoint != nil)
         [_waypoints addObject: waypoint];
     else
-        PGLog(@"addWaypoint: failed; waypoint is nil");
+        log(LOG_ERROR, @"addWaypoint: failed; waypoint is nil");
 }
 
 - (void)insertWaypoint: (Waypoint*)waypoint atIndex: (unsigned)index {
     if(waypoint != nil && index >= 0 && index <= [_waypoints count])
         [_waypoints insertObject: waypoint atIndex: index];
     else
-        PGLog(@"insertWaypoint:atIndex: failed; either waypoint is nil or index is out of bounds");
+        log(LOG_ERROR, @"insertWaypoint:atIndex: failed; either waypoint is nil or index is out of bounds");
 }
 
 - (void)removeWaypoint: (Waypoint*)waypoint {

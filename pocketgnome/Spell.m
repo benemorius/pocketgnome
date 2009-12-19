@@ -70,7 +70,7 @@
         if(self.name) {
             NSRange range = [self.name rangeOfString: @"html>"];
             if( ([self.name length] == 0) || (range.location != NSNotFound)) {
-                // PGLog(@"Name for spell %@ is invalid.", self.ID);
+                log(LOG_ERROR, @"Name for spell %@ is invalid.", self.ID);
                 self.name = nil;
             }
         }
@@ -395,7 +395,7 @@
     [_downloadData release]; _downloadData = nil;
  
     // inform the user
-    PGLog(@"Connection failed! Error - %@ %@",
+    log(LOG_ERROR, @"Connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey:NSErrorFailingURLStringKey]);
 }
@@ -436,12 +436,12 @@
                     break;
             }
             
-            PGLog(@"Spell %d does not exist on wowhead.", spellID);
+            log(LOG_ERROR, @"Spell %d does not exist on wowhead.", spellID);
             return;
         } else {
             if( [scanner scanUpToString: @"Bad Request" intoString: nil] && ![scanner isAtEnd]) {
                 int spellID = [[self ID] intValue];
-                PGLog(@"Error loading spell %d.", spellID);
+                log(LOG_ERROR, @"Error loading spell %d.", spellID);
                 return;
             } else {
                 [scanner setScanLocation: 0];
@@ -632,7 +632,7 @@
 		[scanner setScanLocation: scanSave];
 		
 		if ( [self.mount intValue] > 0 ){
-			PGLog(@"mount: %@  %@ %@", [self ID], self.mount, self.mechanic);
+			log(LOG_GENERAL, @"mount: %@  %@ %@", [self ID], self.mount, self.mechanic);
 		}
 		
 		// get if this is a fast mount
@@ -659,7 +659,7 @@
 		}
     }
 	else{
-		PGLog(@"[Spell] Error grabbing data for Spell ID: %@", [self ID]);
+		log(LOG_ERROR, @"Error grabbing data for Spell ID: %@", [self ID]);
 	}
 }
 

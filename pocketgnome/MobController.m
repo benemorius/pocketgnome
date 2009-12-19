@@ -97,7 +97,7 @@ static MobController* sharedController = nil;
 - (void)memoryAccessValid: (NSNotification*)notification {
     MemoryAccess *memory = [controller wowMemoryAccess];
     if(!memory) return;
-    //PGLog(@"Reloading memory access for %d mobs.", [_mobList count]);
+    log(LOG_MEMORY, @"Reloading memory access for %d mobs.", [_mobList count]);
     for(Mob *mob in _mobList) {
         [mob setMemoryAccess: memory];
     }
@@ -351,7 +351,7 @@ static MobController* sharedController = nil;
                                      [NSNumber numberWithFloat: distance],                 @"Distance", nil]];
             }
         }
-        PGLog(@"Found %d mobs of type %d.", [mobList count], tag);
+        log(LOG_TARGET, @"Found %d mobs of type %d.", [mobList count], tag);
         
         // sort the list by distance
         [mobList sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey: @"Distance" ascending: YES] autorelease]]];
@@ -381,7 +381,7 @@ static MobController* sharedController = nil;
         //if(tag == 23311)    // adjust the height for peons
         //    [mobPosition setZPosition: [mobPosition zPosition] + 20.0f];
         
-        // PGLog(@"Moving to mob: %@", mobToMove);
+        log(LOG_MOVEMENT, @"Moving to mob: %@", mobToMove);
         
         [movementController moveToObject: mobToMove andNotify: NO];
     }
@@ -403,7 +403,7 @@ static MobController* sharedController = nil;
 		if ( mobIDs == nil ){
 			float distance = [position distanceToPosition: [mob position]];
 			if((distance != INFINITY) && (distance <= mobDistance)) {
-				PGLog(@"[Mob] Mob %@ is %0.2f away", mob, distance);
+				log(LOG_TARGET, @"Mob %@ is %0.2f away", mob, distance);
 				
 				// Living check?
 				if ( !aliveOnly || (aliveOnly && ![mob isDead]) ){
@@ -494,7 +494,7 @@ static MobController* sharedController = nil;
         }
     }
 	
-    PGLog(@"[Mob] No mob for interaction");
+    log(LOG_TARGET, @"No mob for interaction");
     return nil;
 }
 
@@ -510,7 +510,7 @@ static MobController* sharedController = nil;
 		for(Mob *mob in _mobList) {
 			if ( [mob entryID] == nearbyEntryID && ![mob isDead] ){
 				[[NSSound soundNamed: @"alarm"] play];
-				PGLog(@"[Combat] Found %d nearby! Playing alarm!", nearbyEntryID);
+				log(LOG_TARGET, @"Found %d nearby! Playing alarm!", nearbyEntryID);
 			}
 		}
 	}
