@@ -129,7 +129,7 @@ static SpellController *sharedSpells = nil;
     }
     
     if(numLoaded > 0) {
-        PGLog(@"[Spells] Loading %d unknown spells from wowhead.", numLoaded);
+        log(LOG_GENERAL, @"Loading %d unknown spells from wowhead.", numLoaded);
     }
 }
 
