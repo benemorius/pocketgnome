@@ -28,9 +28,9 @@
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
 //range at which a waypoint is considered reached
-#define WAYPOINT_SENSITIVITY			15.0f
+#define WAYPOINT_SENSITIVITY			9.0f
 // How close do we need to be to a node before we dismount?
-#define NODE_DISTANCE_UNTIL_DISMOUNT	4.5f
+#define NODE_DISTANCE_UNTIL_DISMOUNT	2.0f
 // how close do we need to be to a school to fish?
 #define NODE_DISTANCE_UNTIL_FISH		17.0f
 

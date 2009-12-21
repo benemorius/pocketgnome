@@ -1255,22 +1255,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
-							log(LOG_BEHAVIOR, @"Spell isn't ready! Skipping any further attempts");
+							log(LOG_BEHAVIOR, @"Spell %@ isn't ready! Skipping any further attempts", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
-							log(LOG_BEHAVIOR, @"Spell didn't cast on target %@, blacklisting and moving on!", target);
+							log(LOG_BEHAVIOR, @"Spell %@ didn't cast on target %@, !(blacklisting and moving on!)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
 		
 							//[self finishCurrentProcedure: state];
 							//return;
 						}
 						else {
-							PGLog(@"[Bot] Spell didn't cast on target %@ (%i)", target, actionResult);
+							log(LOG_COMBAT, @"Spell %@ didn't cast on target %@ (%i)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, actionResult);
 						}
 						if(actionResult != ErrNotFound && actionResult != ErrSpellNotReady && actionResult != ErrSpellNot_Ready && [rule resultType] == ActionType_Spell)
 						{
 							//more multitasking //the world probably isn't ready for this much yet
-							PGLog(@"[Bot] Succesfully cast a spell. Ending combat procedure");
+							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Ending combat procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
 							[self finishCurrentProcedure: state]; //but I am
 						}
                     }

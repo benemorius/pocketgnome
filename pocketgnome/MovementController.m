@@ -824,7 +824,8 @@ typedef enum MovementType {
 	float distanceToUnit = WAYPOINT_SENSITIVITY;
 	
 	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
-	if ( isNode && !isPlayerOnGround ){
+	if (isNode)
+	{
 		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
 	}
 	// We're close enough to take action or move to the next waypoint!
@@ -856,14 +857,14 @@ typedef enum MovementType {
 	//the plethora of flyaway checks isn't really necessary when we do this
 	if ([self lastDistance]) {
 		if (distance > [self lastDistance]) {
-			log(LOG_MOVEMENT_CORRECTION, @"We're moving away from our destination! %0.2f > %0.2f !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", distance, self.lastDistance);
+			log(LOG_MOVEMENT_CORRECTION, @"We're moving away from our destination! %0.2f > %0.2f", distance, self.lastDistance);
 			[self moveForwardStop];
 			[self correctDirection: YES];
 			[self moveForwardStart];
 		}
 	}
 	else {
-		log(LOG_MOVEMENT_CORRECTION, @"lastDistance not set@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		log(LOG_MOVEMENT_CORRECTION, @"lastDistance not set");
 	}
 
 	
