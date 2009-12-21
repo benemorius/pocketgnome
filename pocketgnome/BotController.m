@@ -2378,7 +2378,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	while ([newUnit isValid]) {
 		float newUnitDist  = newUnit ? [[newUnit position] distanceToPosition: playerPosition] : INFINITY;
 		if([newUnit isValid] && (newUnitDist < INFINITY)) {
-			PGLog(@"Found %@ and adding to queue.", newUnit);
+			log(LOG_COMBAT, @"Found %@ and adding to queue.", newUnit);
 			[combatController disposeOfUnit: newUnit];
 			newUnits = YES;
 		}
