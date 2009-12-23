@@ -1490,6 +1490,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// No longer need this unit!
 	[blacklistController blacklistObject:self.unitToLoot];
+	[_mobsToLoot removeObject:self.unitToLoot];
 	self.unitToLoot = nil;
 }
 
