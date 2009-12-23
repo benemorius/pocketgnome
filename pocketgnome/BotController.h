@@ -104,7 +104,7 @@
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
-    BOOL _didPreCombatProcedure;
+	BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
     Mob *_mobToSkin;
     Unit *preCombatUnit;
@@ -247,6 +247,8 @@
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 @property (assign) BOOL isBotting;
+@property (assign) BOOL didPreCombatProcedure;
+
 @property (retain) NSString *procedureInProgress;
 
 @property (readonly, retain) RouteSet *theRoute;
@@ -255,14 +257,12 @@
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
 
-
 - (void)testRule: (Rule*)rule;
 
 // Input from CombatController
 - (void)playerEnteringCombat;
 - (void)playerLeavingCombat;
 - (void)attackUnit: (Unit*)unit;
-- (void)addingUnit: (Unit*)unit;
 - (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue;
 
 // Input from MovementController;

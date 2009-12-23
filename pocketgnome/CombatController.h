@@ -39,7 +39,8 @@
 }
 
 @property BOOL combatEnabled;
-@property (readonly, retain) Unit *attackUnit;
+@property BOOL inCombat;
+@property (readwrite, retain) Unit *attackUnit;
 
 // combat status
 - (BOOL)inCombat;
@@ -49,12 +50,11 @@
 - (NSArray*)attackQueue;
 - (NSArray*)unitsAttackingMe;
 
-// mob status
-- (BOOL)isUnitBlacklisted: (Unit*)unit;
-
 // action initiation
-- (void)disposeOfUnit: (Unit*)unit;
+- (void)attackBestTarget;
 - (void)cancelAllCombat;
+- (void)finishUnit: (Unit*)mob;
+
 
 // get all units we're in combat with!
 - (void)doCombatSearch;
@@ -62,6 +62,10 @@
 // new combat search
 - (Unit*)findBestUnitToAttack;
 - (UInt32)unitWeight: (Unit*)unit PlayerPosition:(Position*)playerPosition;
+
+// attack queue
+- (BOOL)addUnitToAttackQueue: (Unit*)unit;
+- (BOOL)removeUnitFromAttackQueue: (Unit*)unit;
 
 //    float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
 //([[unit position] verticalDistanceToPosition: position] <= vertOffset)  

@@ -201,7 +201,7 @@
                                                    object: nil];
 		
         _procedureInProgress = nil;
-        _didPreCombatProcedure = NO;
+        self.didPreCombatProcedure = NO;
 		_lastSpellCastGameTime = 0;
 		self.startDate = nil;
 		_unitToLoot = nil;
@@ -311,6 +311,7 @@
 @synthesize logOutAfterStuckCheckbox;
 @synthesize view;
 @synthesize isBotting = _isBotting;
+@synthesize didPreCombatProcedure = _didPreCombatProcedure;
 @synthesize procedureInProgress = _procedureInProgress;
 @synthesize mobToSkin = _mobToSkin;
 @synthesize unitToLoot = _unitToLoot;
@@ -1197,7 +1198,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				log(LOG_TARGET, @"Lets heal someone! Maybe?");
 				
 			}
-			
+			/* wtf is this for?
 			// set the attack unit assuming we shouldn't be doing something to ourself!
 			else if ( [rule target] != TargetSelf && target != [playerController player] ){
 				
@@ -1207,13 +1208,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				target = [combatController attackUnit];
 				[[target retain] autorelease];
 			}
+			*/
 			
 		}
 
-		log(LOG_TARGET, @"Using target %@ for rule %@ RC:%d", target, rule, [target retainCount]);
+		log(LOG_RULE, @"Using target %@ for rule %@ RC:%d", target, rule, [target retainCount]);
 		
         if( [self evaluateRule: rule withTarget: target asTest: NO] ) {
-            
             if( [rule resultType] > 0) {
                 int32_t actionID = [rule actionID];
                 if(actionID > 0) {
@@ -1238,11 +1239,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         
 						if ( [rule target] == TargetSelf ){
 							[playerController setPrimaryTarget: [playerController player]];
-							log(LOG_TARGET, @"SELECTING (bot) %@ self", [playerController player]);	
+							log(LOG_TARGET, @"SELECTING %@ self for rule %@", [playerController player], rule);
 						}
 						else if ( target != nil ){
 							[playerController setPrimaryTarget: target];
-							log(LOG_TARGET, @"SELECTING (bot) %@ ", target);
+							log(LOG_TARGET, @"SELECTING %@ for rule %@", target, rule);
 						}
 						
 						// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
@@ -1265,7 +1266,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							//return;
 						}
 						else {
-							log(LOG_COMBAT, @"Spell %@ didn't cast on target %@ (%i)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, actionResult);
+							//log(LOG_COMBAT, @"Spell %@ didn't cast on target %@ (%i)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, actionResult);
 						}
 						if(actionResult != ErrNotFound && actionResult != ErrSpellNotReady && actionResult != ErrSpellNot_Ready && [rule resultType] == ActionType_Spell)
 						{
@@ -1279,8 +1280,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     // for now we have to ignore items, since they cast spells that are different from their own ID
                     if( ([rule resultType] == ActionType_Item) || ([rule resultType] == ActionType_Macro) || ([spellController lastAttemptedActionID] == 0) || !canPerformAction ) {
                         
-                        if([rule resultType] == ActionType_Spell) {
-                            if(canPerformAction) {
+                        if([rule resultType] == ActionType_Spell)
+						{
+                            if(canPerformAction)
+							{
                                 
                                 // special rule for Vanish
                                 if(([[self procedureInProgress] isEqualToString: CombatProcedure]) && 
@@ -1294,12 +1297,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                 
                                 log(LOG_COMBAT, @"%@ cast after %d attempts.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]], attempts);
 
-                            } else {
+                            }
+							else
+							{
                                 log(LOG_COMBAT, @"  %@ skipped for cooldown.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]] );
                             }
-                        } else {
-                            log(LOG_COMBAT, @"  Using %@.", [itemController itemForID: [NSNumber numberWithInt: [rule actionID]]]);
                         }
+						else if([rule resultType] == ActionType_Item)
+						{
+                            log(LOG_COMBAT, @"Using %@.", [itemController itemForID: [NSNumber numberWithInt: [rule actionID]]]);
+                        }
+						else if([rule resultType] == ActionType_Macro)
+						{
+                            log(LOG_COMBAT, @"Running macro %d.", [rule actionID]);
+                        }
+						
                         
                         NSDictionary *newState = [NSDictionary dictionaryWithObjectsAndKeys: 
                                                   [state objectForKey: @"Procedure"],     @"Procedure",
@@ -1581,7 +1593,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if we're not even botting, bail
     if(![self isBotting]) return;
 
-    _didPreCombatProcedure = NO;
+    self.didPreCombatProcedure = NO;
 	usleep(100000);
 	log(LOG_BEHAVIOR, @"Player is dead:%d  Real in combat:%d", [playerController isDead], [playerController isInCombat]);
 	
@@ -1661,10 +1673,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
     if ( [targetsWithinRange count] ) {
         for ( Unit *unit in targetsWithinRange ) {
-			log(LOG_HEAL, @"Checking %@", unit);
+			//log(LOG_HEAL, @"Checking %@", unit);
 			if ( [self unitValidToHeal:unit] ){
-				log(LOG_HEAL, @"Valid: %@ %d %d", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
+				//log(LOG_HEAL, @"Valid: %@ %d %d", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
 				if ( [unit percentHealth] < [theCombatProfile healthThreshold] ){
+					log(LOG_HEAL, @"Need to heal: %@ (%d%% < %d%%)", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
 					[targetsToHeal addObject: unit];
 				}
 			}
@@ -1703,14 +1716,79 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_COMBAT, @"Attempting to attack a blacklisted unit, ruh-roh");
 	}
 	
-    if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
+	if(![unit isValid] || [unit isDead] || [unit isEvading] || [blacklistController isBlacklisted:unit])
+	{
+		log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Dead? (%d)  Evading? (%d)  Blacklisted? (%d)", ![unit isValid], [unit isDead], [unit isEvading], [blacklistController isBlacklisted:unit]);
+		[combatController finishUnit:unit];
+		return;
+	}
+	if ([playerController isDead])
+	{
+		log(LOG_COMBAT, @"You died, stopping attack.");
+		return;
+	}
+    
+    BOOL isCasting = [playerController isCasting];
+    
+    // check player facing vs. unit position
+    float playerDirection = [playerController directionFacing];
+    float theAngle = [[playerController position] angleTo: [unit position]];
+    
+    // compensate for the 2pi --> 0 crossover
+    if(fabsf(theAngle - playerDirection) > M_PI) {
+        if(theAngle < playerDirection)  theAngle        += (M_PI*2);
+        else                            playerDirection += (M_PI*2);
+    }
+    
+    // find the difference between the angles
+    float angleTo = fabsf(theAngle - playerDirection);
+    
+    // if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
+    if( (angleTo > 0.261f) ) {  // changed to be ~15 degrees
+        log(LOG_COMBAT, @"Unit is behind us (%.2f). Repositioning.", angleTo);
+        
+        // set player facing and establish position
+        BOOL useSmooth = [movementController useSmoothTurning];
+        
+        if(!isCasting) [movementController pauseMovement];
+        [movementController turnTowardObject: unit];
+        if(!isCasting && !useSmooth) {
+            [movementController backEstablishPosition];
+        }
+    }
+	
+    if( !isCasting ) {
+        // ensure unit is our target
+        UInt64 unitUID = [unit GUID];
+        if ( ( [playerController targetID] != unitUID) || [unit isFeignDeath] ) {
+			Position *playerPosition = [playerController position];
+			log(LOG_COMBAT, @"SELECTING (com) %@  Weight: %d", unit, [combatController unitWeight:unit PlayerPosition:playerPosition] );
+            
+            [playerController setPrimaryTarget: unit];
+            usleep([controller refreshDelay]);
+        }
+    }
+	
+    if( ![[self procedureInProgress] isEqualToString: CombatProcedure] )
+	{
+		if(!self.didPreCombatProcedure)
+		{
+			log(LOG_COMBAT, @"Starting precombat procedure (current: %@) for target %@", [self procedureInProgress], unit);
+			self.didPreCombatProcedure = YES;
+			[self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
+											  PreCombatProcedure,               @"Procedure",
+											  [NSNumber numberWithInt: 0],      @"CompletedRules",
+											  unit,                     @"Target",  nil]];
+			
+			return;
+		}
         log(LOG_COMBAT, @"Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
         // stop and attack
         [self cancelCurrentProcedure];
         
         // check to see if we are supposed to be in melee range
         if( self.theBehavior.meleeCombat) {
-			log(LOG_MOVEMENT, @"Should be in melee range!");
+			//log(LOG_MOVEMENT, @"Should be in melee range!");
 			
             // see if we are moving to this unit already
             if( ![[movementController moveToObject] isEqualToObject: unit]) {
@@ -1718,7 +1796,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 
                 if( distance > 5.0f) {
                     // if we are more than 5 yards away, move to this unit
-                    log(LOG_MOVEMENT, @"Melee range required; moving to %@ at %.2f", unit, distance);
+                    log(LOG_MOVEMENT, @"Melee range required; moving to %@ at %.2f yards", unit, distance);
                     [movementController moveToObject: unit andNotify: YES];
                 } else  {
                     // if we are in melee range, stop
@@ -1731,12 +1809,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 [movementController resumeMovement];
             }
         } else {
-			log(LOG_MOVEMENT, @"Don't need to be in melee!");
+			//log(LOG_MOVEMENT, @"Don't need to be in melee!");
             // if we don't need to be in melee, pause
             [movementController pauseMovement];
         }
         
         // start the combat procedure
+		[combatController setAttackUnit:unit];
+
         [self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
                                           CombatProcedure,                  @"Procedure",
                                           [NSNumber numberWithInt: 0],      @"CompletedRules",
@@ -1749,46 +1829,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 }
 
-// this is called when any unit enters combat
-- (void)addingUnit: (Unit*)unit {
-	log(LOG_FUNCTION, @"entering function");
-    if(![self isBotting]) return;
-    
-    //if( ![[self procedureInProgress] isEqualToString: CombatProcedure] && [unit isValid] ) {
-    //    PGLog(@"[Bot] Add! Stopping current procedure to attack.", unit);
-    //    [self cancelCurrentProcedure];
-    //}
-    
-    float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
-    if(self.isPvPing && ([[playerController position] verticalDistanceToPosition: [unit position]] > vertOffset)) {
-        log(LOG_TARGET, @"Added mob is beyond vertical offset limit; ignoring.");
-        return;
-    }
-	
-	// Don't attack if the player is mounted and in the air!
-	if ( ![playerController isOnGround] && [[playerController player] isMounted] ){
-		return;
-	}
-    
-    log(LOG_TARGET, @"Adding %@", unit);
-    
-    if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
-        NSString *unitName = ([unit name]) ? [unit name] : nil;
-        // [GrowlApplicationBridge setGrowlDelegate: @""];
-        [GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"%@ Entering Combat", [unit isPlayer] ? @"Player" : @"Mob"]
-                                    description: ( unitName ? [NSString stringWithFormat: @"[%d] %@ at %d%%", [unit level], unitName, [unit percentHealth]] : ([unit isPlayer]) ? [NSString stringWithFormat: @"[%d] %@ %@, %d%%", [unit level], [Unit stringForRace: [unit race]], [Unit stringForClass: [unit unitClass]], [unit percentHealth]] : [NSString stringWithFormat: @"[%d] %@, %d%%", [unit level], [Unit stringForClass: [unit unitClass]], [unit percentHealth]])
-                               notificationName: @"AddingUnit"
-                                       iconData: [[unit iconForClass: [unit unitClass]] TIFFRepresentation]
-                                       priority: 0
-                                       isSticky: NO
-                                   clickContext: nil];             
-    }
-    
-    [combatController disposeOfUnit: unit];
-}
-
 - (void)addLootMob: (Unit*)unit {
-	if((/*[(Mob*)unit isTappedByMe] ||*/ [(Mob*)unit isLootable]) && [[[playerController player] position] distanceToPosition: [unit position]] <= [theCombatProfile attackRange]) {
+	if(([(Mob*)unit isSkinnable] || [(Mob*)unit isLootable]) && [[[playerController player] position] distanceToPosition: [unit position]] <= [theCombatProfile attackRange]) {
 		if ([_mobsToLoot containsObject: unit]) {
 			//PGLog(@"[Loot] Discovered mob %@ was already in the loot list, removing first", unit);
 			[_mobsToLoot removeObject: unit];
@@ -2052,10 +2094,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (Mob*)mobToLoot {
 	log(LOG_FUNCTION, @"entering function");
-    if([_mobsToLoot count]) {
-    
+	
+	NSArray *mobs = [mobController allMobs];
+	for ( Mob *mob in mobs )
+	{
+		[self addLootMob: mob];
+	}
+	
+    if([_mobsToLoot count])
+	{
         Mob *mobToLoot = nil;
-        
+        		
         // sort the loot list by distance
         [_mobsToLoot sortUsingFunction: DistanceFromPositionCompare context: [playerController position]];
         
@@ -2096,7 +2145,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	NSMutableArray *knownUnits = [NSMutableArray array];
 	[knownUnits addObjectsFromArray:[combatController unitsAttackingMe]];
 	for ( Unit *unit in [combatController attackQueue] ){
-		if ( ![knownUnits containsObject:unit] ){
+		if ( ![knownUnits containsObject:unit] )
+		{
+			log(LOG_TARGET, @"Adding %@ known unit", unit);
 			[knownUnits addObject:unit];
 		}
 	}
@@ -2120,13 +2171,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if([targetsWithinRange count] || [self.preCombatUnit isValid]) {
         Unit *unit = self.preCombatUnit;
         for(unit in targetsWithinRange) {   // find a valid mob we don't yet know of
-            if( [self isUnitValidToAttack: unit fromPosition: playerPosition ignoreDistance: NO]) {
-				if ( ![knownUnits containsObject:unit] ) {
-					break;
-				}
-            }
+            if([self isUnitValidToAttack: unit fromPosition: playerPosition ignoreDistance: NO] && ![knownUnits containsObject:unit])
+			{
+				log(LOG_TARGET, @"Found unit %@ to attack.", unit);
+				return unit;
+			}
+			if([knownUnits containsObject:unit])
+			{
+				log(LOG_TARGET, @"Skipping unit %@ already known.");
+			}
         }
-        return unit;
     }
     
     return nil;
@@ -2244,69 +2298,54 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	//}
 	
-	//*** HEALING PROCESS
-	//	1. Find a nearby player
-	//	2. Heal said player
-	//	3. Move to follow if we need to?
-	
+	//check for someone to follow, otherwise move along
+	Unit *followUnit = nil;
+	if ( [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f ){
+		UInt64 followGUID = [playerController focusGUID];
+		if ( followGUID )
+		{
+			for ( Unit *unit in [playersController allPlayers] )
+			{
+				if ([unit GUID] == followGUID)
+				{
+					followUnit = unit;
+					//cancel the route if we found someone to follow
+					self.theRoute = nil;
+					break;
+				}
+			}
+			for(Unit *unit in [mobController allMobs])
+			{
+				if ([unit GUID] == followGUID)
+				{
+					followUnit = unit;
+					//cancel the route if we found a mob to follow
+					self.theRoute = nil;
+					break;
+				}
+			}
+		}
+	}
+
 	// Check to see if we should be healing!
 	if ( [theCombatProfile healingEnabled] ){
 		
 		Unit *healUnit = nil;
-		Unit *followUnit = nil;
-		// We have a follow target already!
-		if ( [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f ){
-			// Lets make sure we're not trying to use a route too!
-			self.theRoute = nil;
-			
-			UInt64 followGUID = [playerController focusGUID];
-			
-			// Check to see if someone is focused!
-			if ( followGUID ){
-				for ( Unit *unit in [playersController allPlayers] ) {
-					if ( [unit GUID] == followGUID ){
-						followUnit = unit;
-						
-						// We only want to heal this guy if his health is low!
-						if ( ![unit isDead] && [unit percentHealth] < [theCombatProfile healthThreshold] ){
-							//healUnit = unit;
-						}
-						
-						break;
-					}
-				}
-			}
-			else{
-				[controller setCurrentStatus: @"Bot: Unable to follow, please set a focus target"];
-				return YES;
-			}
-		}
+		
 		
 		// We could have our follow unit as who we should heal right now, but psh tank gets priority!
 		UInt64 tankGUID = [theCombatProfile selectedTankGUID];
 		Unit *tank = [playersController playerWithGUID:tankGUID];
 		
-		if ( tank != nil ){
-			
-			log(LOG_HEAL, @"We have a tank to heal! %@", tank);
-			
-			// We only want to heal this guy if his health is low!
-			if ( ![tank isDead] && [tank percentHealth] < [theCombatProfile healthThreshold] ){
-				healUnit = tank;
-				log(LOG_HEAL, @"Healing tank!  %@", tank);
-			}
+		if ([tank isValid] && ![tank isDead] && [tank percentHealth] < [theCombatProfile healthThreshold])
+		{			
+			healUnit = tank;
+			log(LOG_HEAL, @"Tank needs heals: %@", tank);
 		}
-		
-		// No tank or following target to heal?  Sad, lets find someone else?
-		if ( !healUnit ){
+		else
+		{
 			healUnit = [self unitToHeal];
 		}
-		
-		//if([[playerController player] percentHealth] < [theCombatProfile healthThreshold])
-		//{
-		//	PGLog(@"Wait! We need heals and we get priority!");
-		//	healUnit = [playerController player];
-		//}
 		
 		// Time to heal! We don't want to heal if no LOS! We should follow the target! (PS this isn't smart lul)
 		BOOL isTargetUnavailable = _lastActionErrorCode == ErrTargetNotInLOS || _lastActionErrorCode == ErrTargetOutRange;
@@ -2315,117 +2354,80 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			isTargetUnavailable = NO;
 		}
 		
-		if ( healUnit && !isTargetUnavailable ){
-			// Should stop moving :-)
-			//[movementController pauseMovement]; //testing without this
+		if ([healUnit isValid] && !isTargetUnavailable)
+		{
+			log(LOG_HEAL, @"Need to heal: %@", healUnit);
 			[self healUnit:healUnit];
 			_lastUnitAttemptedToHealed = healUnit;
+			return YES;
+		}
+	}
+    
+	// Should we auto follow the focus target?
+	if ( _shouldFollow && followUnit && [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f )
+	{
+		
+		// Is our target mounted?  Are we? If not lets!
+		if ( [theCombatProfile mountEnabled] && [followUnit isMounted] && ![[playerController player] isMounted] && ![playerController isCasting]){
 			
+			// time to mount!
+			Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
+			if ( mount != nil ){
+				[self performAction:[[mount ID] intValue]];
+			}
+			
+			// Check our position again shortly!
+			[self performSelector: _cmd withObject: nil afterDelay: 1.6f];
 			return YES;
 		}
 		
-		else
-		{
-			PGLog(@"[Heal] Target is invalid or can't heal it: %@", [playerController player]);
-		}
-		
-		// Should we auto follow the focus target?
-		if ( _shouldFollow && followUnit && [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f ){
+		// Should we move toward our target?
+		Position *playerPosition = [[playerController player] position];
+		float range = [playerPosition distanceToPosition: [followUnit position]];
+		if(range >= [theCombatProfile yardsBehindTarget]) {
+			log(LOG_HEAL, @"Not within %0.2f yards of target, %0.2f away, moving closer", [theCombatProfile yardsBehindTarget], range);
 			
-			// Is our target mounted?  Are we? If not lets!
-			if ( [theCombatProfile mountEnabled] && [followUnit isMounted] && ![[playerController player] isMounted] && ![playerController isCasting]){
-				
-				// time to mount!
-				Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
-				if ( mount != nil ){
-					[self performAction:[[mount ID] intValue]];
-				}
-				
-				// Check our position again shortly!
-				[self performSelector: _cmd withObject: nil afterDelay: 1.6f];
-				return YES;
+			if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
+				[movementController followObject: followUnit];
 			}
 			
-			// Should we move toward our target?
-			Position *playerPosition = [[playerController player] position];
-			float range = [playerPosition distanceToPosition: [followUnit position]];
-			if(range >= [theCombatProfile yardsBehindTarget]) {
-				log(LOG_HEAL, @"Not within %0.2f yards of target, %0.2f away, moving closer", [theCombatProfile yardsBehindTarget], range);
-				
-				if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
-					[movementController followObject: followUnit];
-				}
-				
-				// Check our position again shortly!
-				[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
-				
-				return YES;
-			}
+			// Check our position again shortly!
+			[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+			
+			return YES;
 		}
-		
-		//log(LOG_HEAL, @"Nothing required to do! Moving down the list!");
 	}
-    
+	
     // check to see if we are moving to attack a unit and bail if we are
     if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
-        // PGLog(@"attackUnit == moveToObject");
+        log(LOG_TARGET, @"attackUnit == moveToObject");
         return NO;
     }
 	
-	// add new units to queue
-    Unit *newUnit  = [self unitToAttack];
-	BOOL newUnits = NO;
-	while ([newUnit isValid]) {
-		float newUnitDist  = newUnit ? [[newUnit position] distanceToPosition: playerPosition] : INFINITY;
-		if([newUnit isValid] && (newUnitDist < INFINITY)) {
-			log(LOG_COMBAT, @"Found %@ and adding to queue.", newUnit);
-			[combatController disposeOfUnit: newUnit];
-			newUnits = YES;
-		}
-		newUnit = [self unitToAttack];
-	}
-    // first, check if we are in combat already (we agrod something by accident, whatever)
-	BOOL playerInAir = ![[playerController player] isOnGround];
-    if( [combatController combatEnabled] && ([combatController inCombat] || newUnits) && !playerInAir ) {
-		
-		// scan combat
-		log(LOG_COMBAT, @"Bot doCombatSearch");
-		//[combatController doCombatSearch];
+	
+	//time for combat things
+	// first, check if we are in combat already (we agrod something by accident, whatever)
+	if([combatController combatEnabled] && [[playerController player] isInCombat])
+	{
+		[combatController doCombatSearch];
         
-        // attack unit with highest weight
-		Unit *bestUnit = [combatController findBestUnitToAttack];
-		if ( bestUnit ){
-			log(LOG_COMBAT, @"Found existing combat, attacking: %@", bestUnit);
-			//[movementController pauseMovement]; //why?
-			[combatController disposeOfUnit: bestUnit];
-			
-			return YES;
-		}
+		[combatController attackBestTarget];
+		return YES;
+		
 		//([[unit position] verticalDistanceToPosition: playerPosition] <= vertOffset)
-    }
-	else if ( playerInAir && [combatController combatEnabled] && [combatController inCombat] ){
-		log(LOG_COMBAT, @"Player is in the air, ignoring combat");
 	}
-
-    /* *** if we get here, we aren't in combat *** */
-
-    // first, check if we are in combat
-    // this is to compensate for MovementController calling evaluate while moving to a mob
-    //if( [[self procedureInProgress] isEqualToString: CombatProcedure] && [movementController moveToObject] ) {
-    //    PGLog(@"CombatProcedure && moveToObject");
-    //    return NO;
-    //}
-    
-    // get potential units and their distances
-    Mob *mobToLoot      = [self mobToLoot];
-    Unit *unitToAttack  = [self unitToAttack];
-    
+	
+	//no known targets to attack, so now check for a new target to attack
+	Unit *newUnit  = [self unitToAttack];
+	float newUnitDist  = newUnit ? [[newUnit position] distanceToPosition: playerPosition] : INFINITY;
+	
+	Mob *mobToLoot      = [self mobToLoot];
     float mobToLootDist     = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
-    float unitToAttackDist  = unitToAttack ? [[unitToAttack position] distanceToPosition: playerPosition] : INFINITY;
-    
-    // if the mob to loot is closer to us, loot it first
-    if(mobToLoot && (mobToLootDist < unitToAttackDist)) {
-        if(mobToLoot != [movementController moveToObject]) {
+
+	if(mobToLoot && (mobToLootDist < newUnitDist))
+	{
+        if(mobToLoot != [movementController moveToObject])
+		{
             // either move toward it or loot it now
             if([mobToLoot isValid] && (mobToLootDist < INFINITY) && ![blacklistController isBlacklisted:mobToLoot]) {
 				
@@ -2436,7 +2438,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 				else{
 					log(LOG_LOOT, @"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-					if(mobToLootDist <= 5.0)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
+					if(mobToLootDist <= 3.0)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
 					else                        [movementController moveToObject: mobToLoot andNotify: YES];
 					return YES;
 				}
@@ -2449,37 +2451,31 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_LOOT, @"We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
 		}
     }
-    
-    // otherwise, attack the unit
-    if([unitToAttack isValid] && (unitToAttackDist < INFINITY)) {
-        if([combatController combatEnabled]) {
-            //[movementController pauseMovement]; //why?
-            // if we're not in combat, and haven't done the pre-combat already, do it.
-            if( ![combatController inCombat] && !_didPreCombatProcedure ) {
-                // do the pre-combat routine
-                _didPreCombatProcedure = YES;
-                self.preCombatUnit = unitToAttack;
-                [self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                                  PreCombatProcedure,               @"Procedure",
-                                                  [NSNumber numberWithInt: 0],      @"CompletedRules",
-                                                  unitToAttack,                     @"Target",  nil]];
-                return YES;
-            }
-            if(unitToAttack != self.preCombatUnit) {
-                // PGLog(@"[Bot] Attacking unit other than pre-combat unit.");
-            }
-            self.preCombatUnit = nil;
-            
-            // turn and attack
-            log(LOG_COMBAT, @"Found %@ and attacking.", unitToAttack);
-            //[movementController turnTowardObject: unitToAttack]; //surely this is covered elsewhere too?
-            log(LOG_COMBAT, @"Found %@ and attacking.", unitToAttack);
-            [combatController disposeOfUnit: unitToAttack];
-            return YES;
-        } else {
-            self.preCombatUnit = nil;
-        }
-    }
+	
+	if([newUnit isValid] && [combatController combatEnabled])
+	{
+		//attack the newUnit only if we're not flying or following someone on a mount
+		if(!([followUnit isValid] && [followUnit isMounted]) && [[playerController player] isOnGround])
+		{
+			//add additional units to queue
+			while ([newUnit isValid])
+			{
+				log(LOG_COMBAT, @"Found %@ and adding to attack queue.", newUnit);
+				[combatController addUnitToAttackQueue: newUnit];
+				newUnit = [self unitToAttack];
+			}
+			[combatController attackBestTarget];
+			return YES;
+		}
+		else if (![[playerController player] isOnGround])
+		{
+			log(LOG_COMBAT, @"Player is in the air. Ignoring combat");
+		}
+		else if([followUnit isValid] && [followUnit isMounted])
+		{
+			log(LOG_COMBAT, @"Mounted and following someone. Ignoring combat.");
+		}
+	}
 	
     // check for mining and herbalism
     if(![movementController moveToObject]) {
@@ -2668,13 +2664,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 -(BOOL)mountNow{
 	log(LOG_FUNCTION, @"entering function");
-	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state] ) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
-		log(LOG_GENERAL, @"Mounting!");
+	if ( [mountCheckbox state] && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
+		//log(LOG_GENERAL, @"Mounting!");
 		usleep(100000);
 		
 		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
 		// Time to cast!
-		PGLog(@"[Bot] Using mount %@ id: %i", [mount name], [[mount ID] intValue]);
+		log(LOG_GENERAL, @"Using mount %@ id: %i", [mount name], [[mount ID] intValue]);
 		[self performAction:[[mount ID] intValue]];
 		return YES;
 	}
@@ -2867,7 +2863,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         self.isBotting = YES;
         [startStopButton setTitle: @"Stop Bot"];
-        _didPreCombatProcedure = NO;
+        self.didPreCombatProcedure = NO;
         _reviveAttempt = 0;
 		
 		// Bot started, lets reset our whisper history!
@@ -2905,19 +2901,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         [controller setCurrentStatus: @"Bot: Enabled"];
         [combatController setCombatEnabled: self.theCombatProfile.combatEnabled];
         // [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
-        
-        // if we're in combat when we start, have the mobController update
-        if([combatController inCombat] && [[playerController player] isOnGround] ) {
-            Position *playerPosition = [playerController position];
-            float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
-			
-            for(Unit *unit in [combatController unitsAttackingMe]) {
-                if(unit && ([[unit position] verticalDistanceToPosition: playerPosition] <= vertOffset)) {
-					
-					[combatController disposeOfUnit: unit];
-                }
-            }
-        }
 
         [self evaluateSituation];
     }
@@ -3976,7 +3959,7 @@ NSMutableDictionary *_diffDict = nil;
 	_lastActionTime = [playerController currentTime];
 	
 	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] ){
-		log(LOG_COMBAT, @"Spell cast failed: %@", [playerController lastErrorMessage]);
+		log(LOG_COMBAT, @"Spell %@ failed: %@ (%d)", [spellController spellForID:[NSNumber numberWithInt:actionID]] , [playerController lastErrorMessage], [self errorValue:[playerController lastErrorMessage]]);
 	}
 	
 	// did the spell not cast?
@@ -3984,7 +3967,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		 _lastActionErrorCode = lastErrorMessage;
-		 log(LOG_COMBAT, @"Spell (%d) didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
+		 //log(LOG_COMBAT, @"Spell (%d) didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
 
 		 // do something?
 		 if ( lastErrorMessage == ErrSpellNot_Ready){

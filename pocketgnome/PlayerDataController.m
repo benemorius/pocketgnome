@@ -1135,19 +1135,19 @@ static PlayerDataController* sharedController = nil;
         BOOL combatState = [self isInCombat];
         if( !_lastCombatState && combatState) {
             // we were not in combat, now we are
-            log(LOG_GENERAL, @"------ Player Entering Combat ------");
+            //log(LOG_GENERAL, @"------ Player Entering Combat ------");
             [[NSNotificationCenter defaultCenter] postNotificationName: PlayerEnteringCombatNotification object: nil];
         }
         if( _lastCombatState && !combatState) {
             // we were in combat, now we are not
-			log(LOG_GENERAL, @"------ Player Leaving Combat ------");
+			//log(LOG_GENERAL, @"------ Player Leaving Combat ------");
             [[NSNotificationCenter defaultCenter] postNotificationName: PlayerLeavingCombatNotification object: nil];
         }
         _lastCombatState = combatState;
 		
 		// Lets see which mobs are attacking us!
 		if ( combatState ){
-			[combatController doCombatSearch];
+			//[combatController doCombatSearch];
 		}
 		
 		[_combatDataList removeAllObjects];
@@ -1390,7 +1390,7 @@ static PlayerDataController* sharedController = nil;
 			return;
 		}
 		//fixme //later
-		else if ( [BlacklistController isBlacklisted:[[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]] ){
+		else if ( [blacklistController isBlacklisted:[[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]] ){
 			[aCell setTextColor: [NSColor lightGrayColor]];
 			return;
 		}

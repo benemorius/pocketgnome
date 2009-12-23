@@ -816,7 +816,6 @@ typedef enum MovementType {
     float distance = [playerData isOnGround] ? [playerPosition distanceToPosition2D: destPosition] : [playerPosition distanceToPosition: destPosition];
 	
 	BOOL isNode = [self.unit isKindOfClass: [Node class]];
-	BOOL isPlayerOnGround = [playerData isOnGround];
 	
 	// if we're near our target, move to the next
     //float playerSpeed = [playerData speed];
@@ -891,7 +890,6 @@ typedef enum MovementType {
     }
 	
 	BOOL isNode = [self.unit isKindOfClass: [Node class]];
-	BOOL isPlayerOnGround = [playerData isOnGround];
 
 	// if we're near our target, move to the next
     float playerSpeed = [playerData speed];

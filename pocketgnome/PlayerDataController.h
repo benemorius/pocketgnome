@@ -54,6 +54,7 @@
 	IBOutlet OffsetController		*offsetController;
 	IBOutlet MovementController		*movementController;
 	IBOutlet MobController			*mobController;
+	IBOutlet BlacklistController	*blacklistController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;

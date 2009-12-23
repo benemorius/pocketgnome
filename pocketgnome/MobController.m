@@ -268,7 +268,6 @@ static MobController* sharedController = nil;
         if( ![addressDict objectForKey: address] ) {
 			Unit *unit = [Mob mobWithAddress: address inMemory: memory];
             [dataList addObject: unit];
-			[botController addLootMob: unit];
 		} else {
             [[addressDict objectForKey: address] setRefreshDate: now];
         }

@@ -21,20 +21,10 @@
 #import "Player.h"
 #import "CombatProfile.h"
 
-@interface CombatController ()
-@property BOOL inCombat;
-@property (readwrite, retain) Unit *attackUnit;
-@end
-
 @interface CombatController (Internal)
 - (void)verifyCombatUnits: (BOOL)purgeCombat;
-- (void)verifyCombatState;
-- (void)attackBestTarget: (BOOL)establishPosition;
-- (void)finishUnit: (Unit*)mob;
+- (void)attackBestTarget;
 
-// data structure access
-- (BOOL)addUnitToAttackQueue: (Unit*)mob;
-- (BOOL)removeUnitFromAttackQueue: (Unit*)mob;
 //- (BOOL)addUnitToCombatList: (Unit*)unit;
 //- (BOOL)removeUnitFromCombatList: (Unit*)unit;
 
@@ -96,15 +86,6 @@
 
 
 #pragma mark (Internal) State Maintenence
-
-- (void)verifyCombatState {
-    // this function is (basically) disabled for now
-    
-    if( [_attackQueue count]) {
-        [self attackBestTarget: YES];
-        return;
-    }
-}
 
 // The sole purpose of verifyCombatUnits is to validate the units currently being tracked for combat purposes
 // this includes the complete list of combat units, as well as the attack queue
@@ -186,72 +167,14 @@
 }
 
 - (void)attackTheUnit: (Unit*)unit {
-    if(![unit isValid] || [unit isDead] || [unit isEvading] || [blacklistController isBlacklisted:unit]) {
-		log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Dead? (%d)  Evading? (%d)  Blacklisted? (%d)", ![unit isValid], [unit isDead], [unit isEvading], [blacklistController isBlacklisted:unit]);
-		[self finishUnit:unit];
-		return;
-	}
-	
-	// o noes you died!
-	if ( [playerData isDead] ){
-		log(LOG_COMBAT, @"You died, stopping attack.");
-		return;
-	}
     
-    if(self.attackUnit != unit){
-		log(LOG_COMBAT, @"No longer attacking %@, cancelling attack", unit);
-		return;
-	}
-    
-    BOOL isCasting = [playerData isCasting];
-    
-    // check player facing vs. unit position
-    float playerDirection = [playerData directionFacing];
-    float theAngle = [[playerData position] angleTo: [unit position]];
-    
-    // compensate for the 2pi --> 0 crossover
-    if(fabsf(theAngle - playerDirection) > M_PI) {
-        if(theAngle < playerDirection)  theAngle        += (M_PI*2);
-        else                            playerDirection += (M_PI*2);
-    }
-    
-    // find the difference between the angles
-    float angleTo = fabsf(theAngle - playerDirection);
-    
-    // if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
-    if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
-        log(LOG_COMBAT, @"Unit is behind us (%.2f). Repositioning.", angleTo);
-        
-        // set player facing and establish position
-        BOOL useSmooth = [movementController useSmoothTurning];
-        
-        if(!isCasting) [movementController pauseMovement];
-        [movementController turnTowardObject: unit];
-        if(!isCasting && !useSmooth) {
-            [movementController backEstablishPosition];
-        }
-    }
-	
-    if( !isCasting ) {
-        // ensure unit is our target
-        UInt64 unitUID = [unit GUID];
-        if ( ( [playerData targetID] != unitUID) || [unit isFeignDeath] ) {
-			Position *playerPosition = [playerData position];
-			log(LOG_COMBAT, @"SELECTING (com) %@  Weight: %d", unit, [self unitWeight:unit PlayerPosition:playerPosition] );
-            
-            [playerData setPrimaryTarget: unit];
-            usleep([controller refreshDelay]);
-        }
-    }
-    
-    // tell/remind bot controller to attack
-    [botController attackUnit: unit];
-    [self performSelector: @selector(attackTheUnit:) withObject: unit afterDelay: 0.25];
 }
 
 #pragma mark Notifications
 
 - (void)playerEnteringCombat: (NSNotification*)notification {
+	if(![botController isBotting])
+		return;
     log(LOG_COMBAT, @"------ Player Entering Combat ------");
     self.inCombat = YES;
     _technicallyOOC = NO;
@@ -262,10 +185,13 @@
 		[self doCombatSearch];
     }
 	
-    if(![_attackQueue count]) {
+    if(![_attackQueue count])
+	{
         [botController playerEnteringCombat];
-    } else {
-        [self attackBestTarget: NO];
+    }
+	else
+	{
+        [self attackBestTarget];
     }
 }
 
@@ -275,7 +201,6 @@
     
     // get rid of any unit still classified as in combat
     [self verifyCombatUnits: YES];
-    [self verifyCombatState];
     
     // dump everything
     [_unitsAttackingMe removeAllObjects];
@@ -317,49 +242,6 @@
 
 #pragma mark from BotController
 
-- (void)disposeOfUnit: (Unit*)unit {
-    if(!self.combatEnabled) return;
-	
-    BOOL isBlacklisted = [blacklistController isBlacklisted: unit];
-	
-    if(![unit isValid]) { // if we were sent a bad unit
-        log(LOG_COMBAT, @"Unit to attack is not valid!");
-        return;
-    } else {
-        if(isBlacklisted) {
-            log(LOG_COMBAT, @"Blacklisted unit %@ will not be fought.", unit);
-			return;
-        }
-        
-        if( [unit isDead]) {
-            log(LOG_COMBAT, @"Cannot attack a dead unit %@.", unit);
-			[blacklistController blacklistObject: unit];
-            return;
-        }
-		
-        if( [unit isEvading]) {
-            log(LOG_COMBAT, @"%@ appears to be evading...", unit);
-			[blacklistController blacklistObject: unit];
-            return;
-        }
-    }
-    
-    if( ![self.attackUnit isEqualToObject: unit]) {
-        if([self addUnitToAttackQueue: unit]) {
-			log(LOG_COMBAT, @"disposeOfUnit: %@ 0", unit);
-            [self attackBestTarget: NO];
-        } else {
-			log(LOG_COMBAT, @"disposeOfUnit: %@ 1", unit);
-            [self attackBestTarget: YES];
-        }
-    }
-	else{
-		log(LOG_COMBAT, @"Already attacking %@, ignoring disposeOfUnit", unit);
-	}
-	
-	return;
-}
-
 - (void)cancelAllCombat {
     log(LOG_COMBAT, @"Clearing all combat state.");
     self.attackUnit = nil;
@@ -372,46 +254,18 @@
 #pragma mark Attack
 
 
-- (void)attackBestTarget: (BOOL)establishPosition {
+- (void)attackBestTarget
+{
     if(!self.combatEnabled) return;
-	
-    // get the next unit from the attack queue
-    Unit *unit = [self findBestUnitToAttack];
-	if ( !unit ) {
-		log(LOG_COMBAT, @"Not able to find a unit to attack!");
+    
+	Unit *bestUnit = [self findBestUnitToAttack];
+	if (bestUnit)
+	{
+		log(LOG_COMBAT, @"Attacking: %@", bestUnit);
+		[botController attackUnit:bestUnit];
 		return;
 	}
-    
-	// if we're not attacking this unit already
-    if( ![self.attackUnit isEqualToObject: unit] ) {
-		
-        if(![playerData isCasting]) {
-            [movementController pauseMovement];
-            [movementController turnTowardObject: unit];
-            usleep( [controller refreshDelay] );
-            
-            // either move forward or backward
-            if(establishPosition) [movementController backEstablishPosition];
-            else                  [movementController establishPosition];
-        }
-        
-        // cancel previous perform requests
-        [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(combatCheck:) object: self.attackUnit];
-        [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(combatCheck:) object: unit];
-        
-        log(LOG_COMBAT, @"Commence attack on %@. (0x%X:0x%X)", unit, [unit unitBytes1], [unit unitBytes2]);
-		self.attackUnit = unit;
-        [self attackTheUnit: unit];
-        
-        // if we aren't in combat after X seconds, something is wrong
-        float delay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistDelay"] floatValue];
-        [self performSelector: @selector(combatCheck:)
-                   withObject: unit
-                   afterDelay: delay];
-    } else {
-        // we're already attacking this unit
-		log(LOG_COMBAT, @"Already attacking %@", unit);
-    }
+	log(LOG_COMBAT, @"Nothing to attack");
 }
 
 
@@ -445,13 +299,49 @@
 
 // units will ONLY be added to the attack queue from botController
 - (BOOL)addUnitToAttackQueue: (Unit*)unit {
-    if( ![_attackQueue containsObject: unit] ) {
+    if( ![_attackQueue containsObject: unit] )
+	{
+		if(![unit isValid]) { // if we were sent a bad unit
+			log(LOG_TARGET, @"Unit to attack is not valid!");
+			return NO;
+		} else {
+			if([blacklistController isBlacklisted: unit]) {
+				log(LOG_TARGET, @"Blacklisted unit %@ will not be fought.", unit);
+				return NO;
+			}
+			
+			if( [unit isDead]) {
+				log(LOG_TARGET, @"Cannot attack a dead unit %@.", unit);
+				[blacklistController blacklistObject: unit];
+				return NO;
+			}
+			
+			if( [unit isEvading]) {
+				log(LOG_TARGET, @"%@ appears to be evading...", unit);
+				[blacklistController blacklistObject: unit];
+				return NO;
+			}
+		}
         [_attackQueue addObject: unit];
         float dist = [[playerData position] distanceToPosition2D: [unit position]];
-        log(LOG_COMBAT, @"---> [A] Adding %@ at %.2f", unit, dist);
-        return YES;
-    } else {
-		log(LOG_COMBAT, @"Unit %@ already exists in the attack queue", unit);
+        log(LOG_TARGET, @"---> [A] Adding %@ at %.2f", unit, dist);
+		
+		if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
+			NSString *unitName = ([unit name]) ? [unit name] : nil;
+			// [GrowlApplicationBridge setGrowlDelegate: @""];
+			[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"%@ Attacking", [unit isPlayer] ? @"Player" : @"Mob"]
+										description: ( unitName ? [NSString stringWithFormat: @"[%d] %@ at %d%%", [unit level], unitName, [unit percentHealth]] : ([unit isPlayer]) ? [NSString stringWithFormat: @"[%d] %@ %@, %d%%", [unit level], [Unit stringForRace: [unit race]], [Unit stringForClass: [unit unitClass]], [unit percentHealth]] : [NSString stringWithFormat: @"[%d] %@, %d%%", [unit level], [Unit stringForClass: [unit unitClass]], [unit percentHealth]])
+								   notificationName: @"AddingUnit"
+										   iconData: [[unit iconForClass: [unit unitClass]] TIFFRepresentation]
+										   priority: 0
+										   isSticky: NO
+									   clickContext: nil];             
+		}
+		return YES;
+    }
+	else
+	{
+		log(LOG_TARGET, @"Unit %@ already exists in the attack queue", unit);
         return NO;
     }
 }
@@ -527,7 +417,6 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	return weight;	
 }
 
-// assumptions: combat is enabled
 - (Unit*)findBestUnitToAttack{
 	if ( ![botController isBotting] )	return nil;
 	if ( ![self combatEnabled] )		return nil;
@@ -574,7 +463,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			
 			// begin weight calculation
 			int weight = [self unitWeight:unit PlayerPosition:playerPosition];
-			log(LOG_COMBAT, @"Valid target %@ found %0.2f yards away with weight %d", unit, distanceToTarget, weight);
+			//log(LOG_COMBAT, @"Valid target %@ found %0.2f yards away with weight %d", unit, distanceToTarget, weight);
 			
 			// best weight
 			if ( weight > highestWeight ){
@@ -582,7 +471,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 				bestUnit = unit;
 			}
 		}
-		
+		log(LOG_COMBAT, @"Best unit: %@ weighs: %d", bestUnit, highestWeight);
 		// make sure the unit sticks around until we're done with it
 		[[bestUnit retain] autorelease];
 		return bestUnit;
@@ -594,7 +483,9 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 
 // find all units we are in combat with
 - (void)doCombatSearch{
-	
+	if(![botController isBotting])
+		return;
+	log(LOG_TARGET, @"Searching nearby units");
 	// add all mobs + players
 	NSArray *mobs = [mobController allMobs];
 	NSArray *players = [playersController allPlayers];
@@ -604,6 +495,8 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	BOOL playerHasPet = [[playerData player] hasPet];
 	
 	for ( Mob *mob in mobs ){
+		log(LOG_DEV, @"add loot?");
+		[botController addLootMob: mob];
 		unitTarget = [mob targetID];
 		if (
 			![mob isDead]	&&		// 1 - living units only
@@ -622,7 +515,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			// add mob!
 			[self addUnitToAttackingMe: (Unit*)mob];
 			//and queue it for disposal
-			[self disposeOfUnit: (Unit*)mob];
+			[self addUnitToAttackQueue: (Unit*)mob];
 		}
 		// remove unit
 		else {
@@ -650,7 +543,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			// add player
 			[self addUnitToAttackingMe:player];
 			//and queue it for disposal
-			[self disposeOfUnit: player];
+			[self addUnitToAttackQueue: player];
 		}
 		// remove unit
 		else{
@@ -661,7 +554,6 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	
 	// verify units we're in combat with!
 	[self verifyCombatUnits: NO];
-	[self verifyCombatState];
 	
 	log(LOG_COMBAT, @"In combat with %d units", [_unitsAttackingMe count]);
 }
@@ -670,7 +562,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	if ( ![_unitsAttackingMe containsObject: unit] ){
 		[_unitsAttackingMe addObject:unit];
 		// should we remove the unit from the blacklist?
-		log(LOG_COMBAT, @"Adding ---> [C] %@ (%d total)", unit, [_unitsAttackingMe count]);
+		log(LOG_TARGET, @"Adding ---> [C] %@ (%d total)", unit, [_unitsAttackingMe count]);
 		return YES;
 	}
 	return NO;
@@ -679,7 +571,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 - (BOOL)removeUnitFromAttackingMe: (Unit*)unit{
 	if ([_unitsAttackingMe containsObject: unit]){
 		[_unitsAttackingMe removeObject: unit];
-		log(LOG_COMBAT, @"Removing <--- [C] %@", unit);
+		log(LOG_TARGET, @"Removing <--- [C] %@", unit);
 		return YES;		
 	}
 	return NO;			 
