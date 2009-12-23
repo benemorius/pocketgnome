@@ -2442,7 +2442,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Mob *mobToLoot      = [self mobToLoot];
     float mobToLootDist     = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
 
-	if(mobToLoot && (mobToLootDist < newUnitDist))
+	if(self.doLooting && mobToLoot && (mobToLootDist < newUnitDist))
 	{
         if(mobToLoot != [movementController moveToObject])
 		{
