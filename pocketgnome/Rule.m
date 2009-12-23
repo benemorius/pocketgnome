@@ -20,7 +20,7 @@
         self.name = nil;
         self.action = [Action action];
 		self.target = -1;
-		self.breakOnSuccess = NO;
+		self.breakOnSuccess = YES;
         //self.actionID = 0;
         //self.resultType = 0;
     }

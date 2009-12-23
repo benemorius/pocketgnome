@@ -34,16 +34,16 @@
 #pragma mark Blacklisting
 
 // remove all instances of the object from the blacklist
-- (void)removeFromBlacklist: (WoWObject*)obj {
-    
-    NSMutableArray *blRemove = [NSMutableArray array];
-    for ( NSDictionary *black in _blacklist ) {
-        if ( [[black objectForKey: @"Object"] isEqualToObject: obj] ){
-            [blRemove addObject: black];
+- (void)removeFromBlacklist: (WoWObject*)obj
+{
+    NSMutableArray *blacklist = [NSMutableArray array];
+	[blacklist addObjectsFromArray:_blacklist];
+	
+    for ( NSDictionary *unit in blacklist ) {
+        if ( [[unit objectForKey: @"Object"] isEqualToObject: obj] ){
+            [_blacklist removeObject: unit];
 		}
     }
-	
-    [_blacklist removeObjectsInArray: blRemove];
 }
 
 // what is the blacklist count?
@@ -86,12 +86,14 @@
 - (void)refreshBlacklist{
 	
 	if ( [_blacklist count] ){
+		NSMutableArray *blacklist = [NSMutableArray array];
+		[blacklist addObjectsFromArray:_blacklist];
 		
-		for ( NSDictionary *black in _blacklist ){
+		for ( NSDictionary *unit in blacklist ){
 			
-			WoWObject *obj = [black objectForKey: @"Object"];
+			WoWObject *obj = [unit objectForKey: @"Object"];
 			
-			float timeSinceBlacklisted = [[black objectForKey: @"Date"] timeIntervalSinceNow] * -1.0f;
+			float timeSinceBlacklisted = [[unit objectForKey: @"Date"] timeIntervalSinceNow] * -1.0f;
 			
 			// time to remove our object if it's been 45 seconds
 			if ( timeSinceBlacklisted > 45.0f ){
@@ -101,7 +103,8 @@
 			
 			// mob/player checks
 			if ( [obj isNPC] || [obj isPlayer] ){
-				if ( ![obj isValid] || [(Unit*)obj isDead] ){
+				if(![obj isValid])
+				{
 					[self removeFromBlacklist:obj];
 					log(LOG_BLACKLIST, @"Removing object %@ from blacklist after 45 seconds for being dead(%d) or invalid(%d)", obj, [(Unit*)obj isDead], ![obj isValid]);
 				}
@@ -127,7 +130,7 @@
 			int count = [[black objectForKey: @"Count"] intValue];
 			if ( count < 1 ) count = 1;
 			
-			log(LOG_BLACKLIST, @"%0.2f > %0.2f", [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0, (15.0*count) );
+			//log(LOG_BLACKLIST, @"%0.2f > %0.2f", [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0, (15.0*count) );
 			
 			if ( [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0 > (15.0*count) ) 
 				return NO;

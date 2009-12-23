@@ -1482,7 +1482,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	else if ( self.mobToSkin ){
 		NSDate *currentTime = [NSDate date];
 		log(LOG_LOOT, @"Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);
-		
 		self.mobToSkin = nil;
 	}
 	
@@ -1490,6 +1489,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self skinOrFinish];
 	
 	// No longer need this unit!
+	[blacklistController blacklistObject:self.unitToLoot];
 	self.unitToLoot = nil;
 }
 
@@ -2123,7 +2123,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
-            if(mobToLoot && [mobToLoot isValid]) { // removed [mobToLoot isLootable] here, as sometimes a mob isn't lootable but we want to skin it!
+            if(mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot]) { // removed [mobToLoot isLootable] here, as sometimes a mob isn't lootable but we want to skin it!
                 log(LOG_LOOT, @"Selected a mob to loot: %@", mobToLoot);
                 return mobToLoot;
             }
@@ -2414,7 +2414,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // check to see if we are moving to attack a unit and bail if we are
     if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
         log(LOG_TARGET, @"attackUnit == moveToObject");
-        return NO;
+        //return NO;
     }
 	
 	
@@ -2424,8 +2424,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	{
 		[combatController doCombatSearch];
         
-		[combatController attackBestTarget];
-		return YES;
+		if([combatController attackBestTarget])
+			return YES;
 		
 		//([[unit position] verticalDistanceToPosition: playerPosition] <= vertOffset)
 	}
@@ -2451,7 +2451,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				//}
 				//else{
 					log(LOG_LOOT, @"Going to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-					if(mobToLootDist <= UNIT_DISTANCE)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
+					if(mobToLootDist <= 5.0f)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
 					else                        [movementController moveToObject: mobToLoot andNotify: YES];
 					return YES;
 				//}
@@ -2477,8 +2477,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[combatController addUnitToAttackQueue: newUnit];
 				newUnit = [self unitToAttack];
 			}
-			[combatController attackBestTarget];
-			return YES;
+			if([combatController attackBestTarget])
+				return YES;
 		}
 		else if (![[playerController player] isOnGround])
 		{

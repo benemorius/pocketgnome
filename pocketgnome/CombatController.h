@@ -51,7 +51,7 @@
 - (NSArray*)unitsAttackingMe;
 
 // action initiation
-- (void)attackBestTarget;
+- (BOOL)attackBestTarget;
 - (void)cancelAllCombat;
 - (void)finishUnit: (Unit*)mob;
 

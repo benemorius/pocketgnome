@@ -23,7 +23,7 @@
 
 @interface CombatController (Internal)
 - (void)verifyCombatUnits: (BOOL)purgeCombat;
-- (void)attackBestTarget;
+- (BOOL)attackBestTarget;
 
 //- (BOOL)addUnitToCombatList: (Unit*)unit;
 //- (BOOL)removeUnitFromCombatList: (Unit*)unit;
@@ -254,18 +254,19 @@
 #pragma mark Attack
 
 
-- (void)attackBestTarget
+- (BOOL)attackBestTarget
 {
-    if(!self.combatEnabled) return;
+    if(!self.combatEnabled) return NO;
     
 	Unit *bestUnit = [self findBestUnitToAttack];
 	if (bestUnit)
 	{
 		log(LOG_COMBAT, @"Attacking: %@", bestUnit);
 		[botController attackUnit:bestUnit];
-		return;
+		return YES;
 	}
 	log(LOG_COMBAT, @"Nothing to attack");
+	return NO;
 }
 
 

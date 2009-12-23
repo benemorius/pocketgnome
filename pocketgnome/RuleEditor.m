@@ -122,7 +122,7 @@
     [self setResultType: conditionResultTypeSegment];   // this also sets the menu
 
 	[conditionTargetType selectSegmentWithTag: [rule target]];
-	[ruleBreakOnSuccess setState:(NSInteger)NO];
+	[ruleBreakOnSuccess setState:(NSInteger)YES];
     
     if(rule) {
         for(Condition *condition in [rule conditions]) {
