@@ -31,6 +31,7 @@
     IBOutlet NSPopUpButton *resultActionDropdown;
     IBOutlet id ruleNameText;
     IBOutlet id ruleEditorWindow;
+	IBOutlet id ruleBreakOnSuccess;
     
     NSMutableArray *_conditionList;
     

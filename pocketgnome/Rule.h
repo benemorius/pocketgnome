@@ -32,6 +32,8 @@ typedef enum TargetType {
     
     Action *_action;
 	int _target;
+	
+	BOOL _breakOnSuccess;
     
     //ResultType _resultType;
     //unsigned _actionID;
@@ -44,6 +46,7 @@ typedef enum TargetType {
 //@property unsigned actionID;
 @property (readwrite, retain) NSArray *conditions;
 @property (readwrite, assign) int target;
+@property BOOL breakOnSuccess;
 
 // play nice methods
 @property (readonly) ActionType resultType;

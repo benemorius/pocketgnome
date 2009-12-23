@@ -494,9 +494,8 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	UInt64 unitTarget = 0;
 	BOOL playerHasPet = [[playerData player] hasPet];
 	
-	for ( Mob *mob in mobs ){
-		log(LOG_DEV, @"add loot?");
-		[botController addLootMob: mob];
+	for ( Mob *mob in mobs )
+	{
 		unitTarget = [mob targetID];
 		if (
 			![mob isDead]	&&		// 1 - living units only

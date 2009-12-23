@@ -815,21 +815,19 @@ typedef enum MovementType {
 	
     float distance = [playerData isOnGround] ? [playerPosition distanceToPosition2D: destPosition] : [playerPosition distanceToPosition: destPosition];
 	
-	BOOL isNode = [self.unit isKindOfClass: [Node class]];
-	
 	// if we're near our target, move to the next
     //float playerSpeed = [playerData speed];
     //if(distance2d < playerSpeed/2.0)  {
 	float distanceToUnit = WAYPOINT_SENSITIVITY;
 	
 	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
-	if (isNode)
+	if (self.unit)
 	{
 		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
 	}
 	// We're close enough to take action or move to the next waypoint!
 	if( distance <= distanceToUnit )  {
-		if(isNode)
+		if(self.unit)
 			[self moveForwardStop];
 		[self checkCurrentPosition];
 	}
@@ -889,15 +887,13 @@ typedef enum MovementType {
         }
     }
 	
-	BOOL isNode = [self.unit isKindOfClass: [Node class]];
-
 	// if we're near our target, move to the next
     float playerSpeed = [playerData speed];
     //if(distance2d < playerSpeed/2.0)  {
 	float distanceToUnit = WAYPOINT_SENSITIVITY;
 	
 	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
-	if ( isNode ){
+	if (self.unit){
 		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
 	}
 	

@@ -20,6 +20,7 @@
         self.name = nil;
         self.action = [Action action];
 		self.target = -1;
+		self.breakOnSuccess = NO;
         //self.actionID = 0;
         //self.resultType = 0;
     }
@@ -34,7 +35,7 @@
         [self setIsMatchAll: [[decoder decodeObjectForKey: @"MatchAll"] boolValue]];
         [self setConditions: [decoder decodeObjectForKey: @"Conditions"]];
 		[self setTarget: [[decoder decodeObjectForKey: @"Target"] intValue]];
-        
+        [self setBreakOnSuccess: [[decoder decodeObjectForKey:@"BreakOnSuccess"] boolValue]];
         // we have an old-style rule we must import
         if([decoder decodeObjectForKey: @"ResultType"] && [decoder decodeObjectForKey: @"ActionID"]) {
             self.action = [Action actionWithType: [[decoder decodeObjectForKey: @"ResultType"] unsignedIntValue]
@@ -57,6 +58,7 @@
     [coder encodeObject: [self conditions] forKey: @"Conditions"];
     [coder encodeObject: self.action forKey: @"Action"];
 	[coder encodeObject: [NSNumber numberWithInt:self.target] forKey: @"Target"];
+	[coder encodeObject: [NSNumber numberWithBool:self.breakOnSuccess] forKey: @"BreakOnSuccess"];
     
     //[coder encodeObject: [NSNumber numberWithInt: [self resultType]] forKey: @"ResultType"];
     //[coder encodeObject: [NSNumber numberWithUnsignedInt: [self actionID]] forKey: @"ActionID"];
@@ -71,6 +73,7 @@
     copy.isMatchAll = self.isMatchAll;
     copy.action = self.action;
 	copy.target = self.target;
+	copy.breakOnSuccess = self.breakOnSuccess;
     //copy.resultType = self.resultType;
     //copy.actionID = self.actionID;
             
@@ -100,6 +103,7 @@
 @synthesize conditions = _conditionsList;
 @synthesize action = _action;
 @synthesize target = _target;
+@synthesize breakOnSuccess = _breakOnSuccess;
 //@synthesize resultType = _resultType;
 //@synthesize actionID = _actionID;
 

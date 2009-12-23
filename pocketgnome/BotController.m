@@ -1217,7 +1217,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if( [self evaluateRule: rule withTarget: target asTest: NO] ) {
             if( [rule resultType] > 0) {
                 int32_t actionID = [rule actionID];
-                if(actionID > 0) {
+                if(actionID > 0)
+				{
                     BOOL canPerformAction = YES;
                     // if we are using an item or macro, apply a mask to the item number
                     switch([rule resultType]) {
@@ -1233,7 +1234,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         default:
                             break;
                     }
-                    
+                    int actionResult = ErrSpellNotReady;
                     // if we can cast the spell, do so
                     if(canPerformAction) {
                         
@@ -1249,18 +1250,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
 						usleep([controller refreshDelay]);
 						
-						int actionResult = [self performAction:actionID];
-						if ( [rule resultType] == ActionType_Spell ){
-							log(LOG_BEHAVIOR, @"Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
+						actionResult = [self performAction:actionID];
+						if ( [rule resultType] == ActionType_Spell )
+						{
+							log(LOG_COMBAT, @"Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
 							//[spellController cooldownLeftForSpellID:actionID];
 						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
-							log(LOG_BEHAVIOR, @"Spell %@ isn't ready! Skipping any further attempts", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
+							log(LOG_COMBAT, @"Spell %@ isn't ready! Skipping any further attempts", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
-							log(LOG_BEHAVIOR, @"Spell %@ didn't cast on target %@, !(blacklisting and moving on!)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
+							log(LOG_COMBAT, @"Spell %@ didn't cast on target %@, !(blacklisting and moving on!)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
 		
 							//[self finishCurrentProcedure: state];
 							//return;
@@ -1268,16 +1270,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						else {
 							//log(LOG_COMBAT, @"Spell %@ didn't cast on target %@ (%i)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, actionResult);
 						}
-						if(actionResult != ErrNotFound && actionResult != ErrSpellNotReady && actionResult != ErrSpellNot_Ready && [rule resultType] == ActionType_Spell)
+						if(actionResult != ErrNotFound && actionResult != ErrSpellNotReady && actionResult != ErrSpellNot_Ready)
 						{
 							//more multitasking //the world probably isn't ready for this much yet
-							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Ending combat procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
-							[self finishCurrentProcedure: state]; //but I am
+							//log(LOG_COMBAT, @"Succesfully cast %@ on %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
+							//[self finishCurrentProcedure: state]; //but I am
 						}
                     }
 	
-                    // time for the next rule?
-                    // for now we have to ignore items, since they cast spells that are different from their own ID
                     if( ([rule resultType] == ActionType_Item) || ([rule resultType] == ActionType_Macro) || ([spellController lastAttemptedActionID] == 0) || !canPerformAction ) {
                         
                         if([rule resultType] == ActionType_Spell)
@@ -1320,28 +1320,31 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                                   target,                                 @"Target",  nil];
                         
                         // shortcut end to skip the rule eval delay
-                        if( i+1 >= ruleCount) { [self finishCurrentProcedure: newState]; return; }
+                        //if( i+1 >= ruleCount) { [self finishCurrentProcedure: newState]; return; }
                         
                         // the last spell registered
                         [self performSelector: _cmd
                                    withObject: newState
                                    afterDelay: RULE_EVAL_DELAY_NORMAL];
-                    } else {
-                        // the last spell didn't register; try it again soon, but up the attempt count
-                        //PGLog(@"  The spell didn't.");
-                        [self performSelector: _cmd
-                                   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                                [state objectForKey: @"Procedure"],     @"Procedure",
-                                                [NSNumber numberWithInt: i],            @"CompletedRules",      // dont increment completed
-                                                [NSNumber numberWithInt: attempts+1],   @"RuleAttempts",        // but increment attempts
-                                                target,                                 @"Target", nil]
-                                   afterDelay: RULE_EVAL_DELAY_LONG];
                     }
-                    
-                    return;
+
+					if(!actionResult)
+					{
+						if([rule breakOnSuccess])
+						{
+							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
+							[self finishCurrentProcedure: state];
+						}
+						else
+						{
+							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Continuing procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
+						}
+					}
                 }
             }
-        } else {
+        }
+		else
+		{
             log(LOG_RULE, @"Rule %@ is FALSE.", rule);
         }
     }
@@ -1460,16 +1463,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		NSDate *currentTime = [NSDate date];
 		
 		// Unit was looted, remove from list!
-		if ( [self.unitToLoot isKindOfClass: [Node class]] ){
+		if ([self.unitToLoot isKindOfClass: [Node class]])
+		{
 			[nodeController finishedNode: (Node*)self.unitToLoot];
 			self.mobToSkin = nil;
 			log(LOG_LOOT, @"Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s");
 		}
-		else{
+		else
+		{
 			[_mobsToLoot removeObject: self.unitToLoot];
 			log(LOG_LOOT, @"Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
-
+		_lootAttempt = 0;
 		// Not 100% sure why we need this, but it seems important?
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
 	}
@@ -1831,12 +1836,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)addLootMob: (Unit*)unit {
 	if(([(Mob*)unit isSkinnable] || [(Mob*)unit isLootable]) && [[[playerController player] position] distanceToPosition: [unit position]] <= [theCombatProfile attackRange]) {
-		if ([_mobsToLoot containsObject: unit]) {
-			//PGLog(@"[Loot] Discovered mob %@ was already in the loot list, removing first", unit);
-			[_mobsToLoot removeObject: unit];
+		if ([_mobsToLoot containsObject: unit])
+		{
+			[_mobsToLoot removeObject:unit];
+			[_mobsToLoot addObject:unit];
 		}
-		PGLog(@"[Loot] Adding discovered mob %@ to loot queue.", unit);
-		[_mobsToLoot addObject: (Mob*)unit];
+		else
+		{
+			log(LOG_LOOT, @"Adding discovered mob %@ to loot queue.", unit);
+			[_mobsToLoot addObject:unit];
+		}
 	}
 	else{
 		//PGLog(@"[Loot] Discovered mob %@ isn't lootable, ignoring", unit);
@@ -1845,7 +1854,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue {
 	log(LOG_FUNCTION, @"entering function");
-    
+	[self evaluateSituation];
+	return;
+	/*
     // we only need to loot this if it's a mob and if was one we were directed to attack
     if( [unit isNPC] ) {
         if(wasInQueue) {
@@ -1872,8 +1883,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
                 }
             }
-			else{
+			else
+			{
 				log(LOG_LOOT, @"Unit %@ finished, but not dead! Health: %d", unit, [unit currentHealth]);
+				[self evaluateSituation];
 			}
             
             // if we're in the middle of a combat procedure, end it
@@ -1886,7 +1899,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if( [unit isPlayer] ) {
         [self evaluateSituation];
     }
-    
+    */
     // if we are not in combat, then an attack attempt went bust
     // --> this is disabled because the OOC notification is now being used to trigger the next action
     //if(![[combatController attackQueue] count]) {
@@ -2111,7 +2124,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
             if(mobToLoot && [mobToLoot isValid]) { // removed [mobToLoot isLootable] here, as sometimes a mob isn't lootable but we want to skin it!
-                log(LOG_LOOT, @"Acquired a mob to loot: %@", mobToLoot);
+                log(LOG_LOOT, @"Selected a mob to loot: %@", mobToLoot);
                 return mobToLoot;
             }
         }
@@ -2432,16 +2445,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             if([mobToLoot isValid] && (mobToLootDist < INFINITY) && ![blacklistController isBlacklisted:mobToLoot]) {
 				
 				// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
-				if ( self.lastAttemptedUnitToLoot == mobToLoot && _lootAttempt >= 3 ){
-					log(LOG_LOOT, @"Unable to loot %@, removing from loot list", self.lastAttemptedUnitToLoot);
-					[_mobsToLoot removeObject: self.unitToLoot];
-				}
-				else{
-					log(LOG_LOOT, @"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-					if(mobToLootDist <= 3.0)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
+				//if ( self.lastAttemptedUnitToLoot == mobToLoot && _lootAttempt >= 3 ){
+				//	log(LOG_LOOT, @"Unable to loot %@, removing from loot list", self.lastAttemptedUnitToLoot);
+				//	[_mobsToLoot removeObject: self.unitToLoot];
+				//}
+				//else{
+					log(LOG_LOOT, @"Going to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
+					if(mobToLootDist <= UNIT_DISTANCE)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
 					else                        [movementController moveToObject: mobToLoot andNotify: YES];
 					return YES;
-				}
+				//}
             }
 			else{
 				log(LOG_LOOT, @"Mob found, but either isn't valid (%d), is too far away (%d) or is blacklisted (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY), [blacklistController isBlacklisted:mobToLoot] );

@@ -95,6 +95,7 @@
         [newRule setAction: [Action actionWithType: [conditionResultTypeSegment selectedTag] 
                                              value: value]];
 		[newRule setTarget: [conditionTargetType selectedTag]];
+		[newRule setBreakOnSuccess: (BOOL)[ruleBreakOnSuccess state]];
         //[newRule setResultType: [conditionResultTypeSegment selectedTag]];
         //[newRule setActionID: [[resultActionDropdown selectedItem] tag]];
         
@@ -121,11 +122,14 @@
     [self setResultType: conditionResultTypeSegment];   // this also sets the menu
 
 	[conditionTargetType selectSegmentWithTag: [rule target]];
+	[ruleBreakOnSuccess setState:(NSInteger)NO];
     
     if(rule) {
         for(Condition *condition in [rule conditions]) {
             [_conditionList addObject: [ConditionController conditionControllerWithCondition: condition]];
         }
+		
+		[ruleBreakOnSuccess setState:(BOOL)[rule breakOnSuccess]];
         
         if( [rule isMatchAll] )
             [conditionMatchingSegment selectSegmentWithTag: 0];
