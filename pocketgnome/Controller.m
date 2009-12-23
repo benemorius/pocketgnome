@@ -153,8 +153,9 @@ static Controller* sharedController = nil;
 - (void)checkWoWVersion {
     
     NSString *appVers = [[[NSBundle mainBundle] infoDictionary] objectForKey: @"CFBundleShortVersionString"];
-    
-    if([self isWoWVersionValid]) {
+    NSString *compileInfo = [NSString stringWithFormat:@"Compiled from %@ on %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleRev"], [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleCompiledDate"]];
+    [compileInfoText setStringValue:compileInfo];
+	if([self isWoWVersionValid]) {
         [aboutValidImage setImage: [NSImage imageNamed: @"good"]];
         [versionInfoText setStringValue: [NSString stringWithFormat: @"%@ (v%@) is up to date with WoW %@.", [self appName], appVers, [self wowVersionShort]]];
     } else {

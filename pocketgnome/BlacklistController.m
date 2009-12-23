@@ -60,6 +60,8 @@
 
 // simply add an object to our blacklist!
 - (void)blacklistObject: (WoWObject*)obj{
+	if(![obj isValid])
+		return;
 
 	int blackCount = [self blacklistCount:obj];
 	
@@ -72,7 +74,7 @@
 		log(LOG_BLACKLIST, @"Increasing count for object %@ to %d", obj, blackCount + 1);	
 	}
 	
-	[self removeFromBlacklist:obj];
+	//[self removeFromBlacklist:obj];
 	
 	// update our object in our dictionary
 	blackCount++;

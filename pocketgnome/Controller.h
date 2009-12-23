@@ -63,6 +63,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet NSView *aboutView, *settingsView;
     IBOutlet NSImageView *aboutValidImage;
     IBOutlet NSTextField *versionInfoText;
+	IBOutlet NSTextField *compileInfoText;
     
     IBOutlet id mainBackgroundBox;
     IBOutlet id memoryAccessLight;

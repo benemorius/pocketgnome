@@ -2406,7 +2406,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// Check our position again shortly!
 			[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
-			
 			return YES;
 		}
 	}
@@ -2414,7 +2413,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // check to see if we are moving to attack a unit and bail if we are
     if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
         log(LOG_TARGET, @"attackUnit == moveToObject");
-        //return NO;
+        [self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
     }
 	
 	
@@ -2426,7 +2426,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
 		if([combatController attackBestTarget])
 			return YES;
-		
+		else
+		{
+			[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+			return NO;
+		}
 		//([[unit position] verticalDistanceToPosition: playerPosition] <= vertOffset)
 	}
 	
@@ -2479,6 +2483,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 			if([combatController attackBestTarget])
 				return YES;
+			else
+			{
+				[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+				return NO;
+			}
 		}
 		else if (![[playerController player] isOnGround])
 		{
