@@ -2124,7 +2124,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
-            if(mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot]) { // removed [mobToLoot isLootable] here, as sometimes a mob isn't lootable but we want to skin it!
+            if(mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot] && ([mobToLoot isLootable] || ([mobToLoot isSkinnable] && _doSkinning)))
+			{
                 log(LOG_LOOT, @"Selected a mob to loot: %@", mobToLoot);
                 return mobToLoot;
             }

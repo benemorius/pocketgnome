@@ -447,10 +447,10 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 		for ( Unit *unit in units ){
 			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
 			
-			// only check targets that are close enough
-			if ( distanceToTarget > attackRange ){
-				continue;
-			}
+			// only check targets that are close enough //no, check that before queueing it
+			//if ( distanceToTarget > attackRange ){
+			//	continue;
+			//}
 			
 			// ignore blacklisted units
 			if ( [blacklistController isBlacklisted:unit] ){
