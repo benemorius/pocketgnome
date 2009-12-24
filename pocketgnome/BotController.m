@@ -2320,7 +2320,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		{
 			for ( Unit *unit in [playersController allPlayers] )
 			{
-				if ([unit GUID] == followGUID)
+				if ([unit GUID] == followGUID && [playerPosition distanceToPosition: [unit position]] < [theCombatProfile attackRange])
 				{
 					followUnit = unit;
 					//cancel the route if we found someone to follow
@@ -2330,7 +2330,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 			for(Unit *unit in [mobController allMobs])
 			{
-				if ([unit GUID] == followGUID)
+				if ([unit GUID] == followGUID && [playerPosition distanceToPosition: [unit position]] < [theCombatProfile attackRange])
 				{
 					followUnit = unit;
 					//cancel the route if we found a mob to follow
