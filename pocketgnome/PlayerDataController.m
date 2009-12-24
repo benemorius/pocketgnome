@@ -21,6 +21,7 @@
 #import "OffsetController.h"
 #import "MobController.h"
 #import "BlacklistController.h"
+#import "PlayersController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -1193,8 +1194,26 @@ static PlayerDataController* sharedController = nil;
 			
 			
 			// Update healing info!
-			NSArray *unitsToHeal = [botController availableUnitsToHeal];
-			for(Unit *unit in unitsToHeal) {
+			// get list of all targets
+			NSMutableArray *targetsWithinRange = [NSMutableArray array];
+			NSMutableArray *unitsToHeal = [NSMutableArray array];
+			[targetsWithinRange addObjectsFromArray: [playerController allPlayers]];
+			
+			// sort by range
+			//[targetsWithinRange  ];
+			if([targetsWithinRange count])
+			{
+				for (Unit *unit in targetsWithinRange)
+				{
+					if ([botController unitValidToHeal:unit])
+					{
+							[unitsToHeal addObject: unit];
+					}
+				}
+			}
+			
+			for(Unit *unit in unitsToHeal)
+			{
 				if( ![unit isValid] )
 					continue;
 				
@@ -1389,7 +1408,6 @@ static PlayerDataController* sharedController = nil;
 			[aCell setTextColor: [NSColor orangeColor]];
 			return;
 		}
-		//fixme //later
 		else if ( [blacklistController isBlacklisted:[[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]] ){
 			[aCell setTextColor: [NSColor lightGrayColor]];
 			return;

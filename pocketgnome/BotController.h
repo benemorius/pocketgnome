@@ -258,7 +258,7 @@
 @property (readonly, retain) NSDate *skinStartTime;
 
 - (void)testRule: (Rule*)rule;
-
+- (BOOL)unitValidToHeal: (Unit*)unit;
 // Input from CombatController
 - (void)playerEnteringCombat;
 - (void)playerLeavingCombat;

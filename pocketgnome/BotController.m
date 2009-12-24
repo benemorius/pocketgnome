@@ -1670,12 +1670,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// get list of all targets
     NSMutableArray *targetsWithinRange = [NSMutableArray array];
 	NSMutableArray *targetsToHeal = [NSMutableArray array];
+	[targetsWithinRange addObject: [playerController player]];
 	[targetsWithinRange addObjectsFromArray: [playersController allPlayers]];
 	
 	// sort by range
     Position *playerPosition = [playerController position];
     [targetsWithinRange sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
-	[targetsWithinRange addObject: [playerController player]];
 	
     if ( [targetsWithinRange count] ) {
         for ( Unit *unit in targetsWithinRange ) {
@@ -2184,7 +2184,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if we have mobs in range
     if([targetsWithinRange count] || [self.preCombatUnit isValid]) {
         Unit *unit = self.preCombatUnit;
-        for(unit in targetsWithinRange) {   // find a valid mob we don't yet know of
+        for(unit in targetsWithinRange)
+		{
             if([self isUnitValidToAttack: unit fromPosition: playerPosition ignoreDistance: NO] && ![knownUnits containsObject:unit])
 			{
 				log(LOG_TARGET, @"Found unit %@ to attack.", unit);
@@ -2192,7 +2193,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 			if([knownUnits containsObject:unit])
 			{
-				log(LOG_TARGET, @"Skipping unit %@ already known.");
+				log(LOG_TARGET, @"Skipping unit %@ already known.", unit);
 			}
         }
     }
@@ -2421,7 +2422,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	//time for combat things
 	// first, check if we are in combat already (we agrod something by accident, whatever)
-	if([combatController combatEnabled] && [[playerController player] isInCombat])
+	if([combatController combatEnabled] && ([[playerController player] isInCombat] || [[combatController attackQueue] count]) )
 	{
 		[combatController doCombatSearch];
         
