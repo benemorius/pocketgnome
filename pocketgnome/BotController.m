@@ -1168,7 +1168,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                    afterDelay: 0.1];
 		return;
 	}
-    
+
     // have we exceeded our maximum attempts on this rule?
     if(attempts > 3) {
         log(LOG_CONDITION, @"Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
@@ -1234,7 +1234,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         default:
                             break;
                     }
-                    int actionResult = ErrSpellNotReady;
+                    int actionResult = 0;
                     // if we can cast the spell, do so
                     if(canPerformAction) {
                         
@@ -1278,8 +1278,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
                     }
 	
-                    if( ([rule resultType] == ActionType_Item) || ([rule resultType] == ActionType_Macro) || ([spellController lastAttemptedActionID] == 0) || !canPerformAction ) {
-                        
+                    //if( ([rule resultType] == ActionType_Item) || ([rule resultType] == ActionType_Macro) || ([spellController lastAttemptedActionID] == 0) || !canPerformAction )
+					if(!actionResult)
+					{
+						attempts = 0;
                         if([rule resultType] == ActionType_Spell)
 						{
                             if(canPerformAction)
@@ -1322,23 +1324,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         // shortcut end to skip the rule eval delay
                         //if( i+1 >= ruleCount) { [self finishCurrentProcedure: newState]; return; }
                         
-                        // the last spell registered
-                        [self performSelector: _cmd
-                                   withObject: newState
-                                   afterDelay: RULE_EVAL_DELAY_NORMAL];
-                    }
-
-					if(!actionResult)
-					{
 						if([rule breakOnSuccess])
 						{
 							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
 							[self finishCurrentProcedure: state];
+							return;
 						}
 						else
 						{
 							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Continuing procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
 						}
+                        [self performSelector: _cmd
+                                   withObject: newState
+                                   afterDelay: RULE_EVAL_DELAY_NORMAL];
 					}
                 }
             }
@@ -3963,7 +3961,7 @@ NSMutableDictionary *_diffDict = nil;
 		_lastSpellCastGameTime = [playerController currentTime];
 	}
 	else {
-		PGLog(@"Can't cast. Chat box is open");
+		log(LOG_ERROR, @"Can't cast. Chat box is open");
 	}
 	
 	// wow needs time to process the spell change before we change it back
@@ -3983,12 +3981,13 @@ NSMutableDictionary *_diffDict = nil;
 	
 	_lastActionTime = [playerController currentTime];
 	
-	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] ){
+	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] )
+	{
 		log(LOG_COMBAT, @"Spell %@ failed: %@ (%d)", [spellController spellForID:[NSNumber numberWithInt:actionID]] , [playerController lastErrorMessage], [self errorValue:[playerController lastErrorMessage]]);
-	}
+	//}
 	
 	// did the spell not cast?
-	 if ( [spellController lastAttemptedActionID] == actionID ){
+	//if ( [spellController lastAttemptedActionID] == actionID ){
 		
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		 _lastActionErrorCode = lastErrorMessage;
