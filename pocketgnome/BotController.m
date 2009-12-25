@@ -1163,6 +1163,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// We don't want to cast if our GCD is active!
 	if ( [spellController isGCDActive] ){
+        log(LOG_COMBAT, @"Waiting for global cooldown.");
 		[self performSelector: _cmd
                    withObject: state 
                    afterDelay: 0.1];
