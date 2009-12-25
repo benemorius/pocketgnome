@@ -24,7 +24,6 @@
 @class NodeController;
 @class OffsetController;
 @class MovementController;
-@class MobController;
 @class BlacklistController;
 @class PlayersController;
 
@@ -56,7 +55,7 @@
 	IBOutlet MovementController		*movementController;
 	IBOutlet MobController			*mobController;
 	IBOutlet BlacklistController	*blacklistController;
-	IBOutlet PlayersController		*playerController;
+	IBOutlet PlayersController		*playersController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;

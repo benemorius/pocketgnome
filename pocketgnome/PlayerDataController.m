@@ -19,7 +19,6 @@
 #import "BotController.h"
 #import "NodeController.h"
 #import "OffsetController.h"
-#import "MobController.h"
 #import "BlacklistController.h"
 #import "PlayersController.h"
 
@@ -1199,18 +1198,18 @@ static PlayerDataController* sharedController = nil;
 		{			
 			// Update healing info!
 			// get list of all targets
-			NSMutableArray *allplayers = [NSMutableArray array];
+			NSMutableArray *allUnits = [NSMutableArray array];
 			NSMutableArray *unitsToHeal = [NSMutableArray array];
-			[allplayers addObjectsFromArray: [playerController allPlayers]];
+			[allUnits addObjectsFromArray: [[PlayersController sharedPlayers] allPlayers]];
 			
 			[unitsToHeal addObject:[self player]];
-			if([allplayers count])
+			if([allUnits count])
 			{
-				for (Unit *unit in allplayers)
+				for (Unit *unit in allUnits)
 				{
 					//if([botController unitValidToHeal:unit])
-					//if([[self position] distanceToPosition: [unit position]] < 40.0f )
-					if(1)
+					if([[self position] distanceToPosition: [unit position]] < 40.0f )
+					//if(1)
 					{
 						
 						[unitsToHeal addObject: unit];
