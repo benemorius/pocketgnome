@@ -88,6 +88,7 @@ static PlayerDataController* sharedController = nil;
         self.wasDead = NO;
            
 		_combatDataList = [[NSMutableArray array] retain];
+		_healingDataList = [[NSMutableArray array] retain];
 		
         [[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(applicationWillTerminate:) 
@@ -1152,13 +1153,15 @@ static PlayerDataController* sharedController = nil;
 		}
 		
 		[_combatDataList removeAllObjects];
+		[_healingDataList removeAllObjects];
 		
 		// only resort and display the table if the window is visible
-		if( [[combatTable window] isVisible]) {
+		if( [[combatTable window] isVisible])
+		{
 			NSArray *units = [combatController unitsAttackingMe];
 			NSArray *attackQueue = [combatController attackQueue];
 			NSMutableArray *allUnits = [NSMutableArray array];
-			[allUnits addObjectsFromArray:units];
+			[allUnits addObjectsFromArray:[mobController allMobs]];
 
 			// Only add new units!
 			for(Unit *unit in attackQueue){
@@ -1167,7 +1170,7 @@ static PlayerDataController* sharedController = nil;
 				}
 			}
 			
-			for(Unit *unit in allUnits) {
+			for(Unit *unit in units) {
 				if( ![unit isValid] )
 					continue;
 				
@@ -1191,32 +1194,33 @@ static PlayerDataController* sharedController = nil;
 			// Update our combat table!
 			[_combatDataList sortUsingDescriptors: [combatTable sortDescriptors]];
 			[combatTable reloadData];
-			
-			
+		}
+		if([[healingTable window] isVisible])
+		{			
 			// Update healing info!
 			// get list of all targets
-			NSMutableArray *targetsWithinRange = [NSMutableArray array];
+			NSMutableArray *allplayers = [NSMutableArray array];
 			NSMutableArray *unitsToHeal = [NSMutableArray array];
-			[targetsWithinRange addObjectsFromArray: [playerController allPlayers]];
+			[allplayers addObjectsFromArray: [playerController allPlayers]];
 			
-			// sort by range
-			//[targetsWithinRange  ];
-			if([targetsWithinRange count])
+			[unitsToHeal addObject:[self player]];
+			if([allplayers count])
 			{
-				for (Unit *unit in targetsWithinRange)
+				for (Unit *unit in allplayers)
 				{
-					if ([botController unitValidToHeal:unit])
+					//if([botController unitValidToHeal:unit])
+					//if([[self position] distanceToPosition: [unit position]] < 40.0f )
+					if(1)
 					{
-							[unitsToHeal addObject: unit];
+						
+						[unitsToHeal addObject: unit];
 					}
 				}
 			}
-			
 			for(Unit *unit in unitsToHeal)
 			{
 				if( ![unit isValid] )
 					continue;
-				
 				float distance = [[self position] distanceToPosition: [unit position]];
 				[_healingDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 											 unit,                                                                @"Player",
@@ -1226,11 +1230,13 @@ static PlayerDataController* sharedController = nil;
 											 [Unit stringForGender: [unit gender]],                               @"Gender",
 											 [NSString stringWithFormat: @"%d%%", [unit percentHealth]],          @"Health",
 											 [NSNumber numberWithUnsignedInt: [unit level]],                      @"Level",
-											 [NSNumber numberWithFloat: distance],                                @"Distance", 
+											 [NSNumber numberWithFloat: distance],                                @"Distance",
+											 [unit name],														  @"Name",
 											 nil]];
+
 			}
 			
-			// Update our combat table!
+			// Update our healing table!
 			[_healingDataList sortUsingDescriptors: [healingTable sortDescriptors]];
 			[healingTable reloadData];
 			
@@ -1344,11 +1350,11 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-	if ( aTableView == combatTable ){
+	if ( aTableView == combatTable )
+	{
 		return [_combatDataList count];
 	}
-	
-	return [[botController availableUnitsToHeal] count];
+	return [_healingDataList count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
@@ -1375,6 +1381,8 @@ static PlayerDataController* sharedController = nil;
 		
 		if([[aTableColumn identifier] isEqualToString: @"Distance"])
 			return [NSString stringWithFormat: @"%.2f", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
+		if([[aTableColumn identifier] isEqualToString: @"Name"])
+			return [NSString stringWithFormat: @"%@", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Player"] name]];
 		
 		return [[_healingDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
 	}
@@ -1383,7 +1391,6 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex{
-	
 	if ( aTableView == combatTable ){
 		if( aRowIndex == -1 || aRowIndex >= [_combatDataList count]) return;
 		
@@ -1422,12 +1429,14 @@ static PlayerDataController* sharedController = nil;
 			return;
 		}
 		
-		if ( [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit] ){
-			[aCell setTextColor: [NSColor greenColor]];
-			return;
-		}
-		
-		[aCell setTextColor: [NSColor blueColor]];
+		if([[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit])
+			[aCell setTextColor:[NSColor greenColor]];
+		else if([botController unitValidToHeal:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
+			[aCell setTextColor:[NSColor blueColor]];
+		else if([blacklistController isBlacklisted:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
+			[aCell setTextColor:[NSColor lightGrayColor]];
+		else
+			[aCell setTextColor:[NSColor blackColor]];
 	}
 	
 	return;
