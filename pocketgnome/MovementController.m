@@ -823,7 +823,10 @@ typedef enum MovementType {
 	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
 	if (self.unit)
 	{
-		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
+        if([self.unit isKindOfClass: [Node class]])
+            distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
+        else
+            distanceToUnit = UNIT_DISTANCE;
 	}
 	// We're close enough to take action or move to the next waypoint!
 	if( distance <= distanceToUnit )  {
