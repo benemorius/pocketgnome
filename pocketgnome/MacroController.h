@@ -32,5 +32,6 @@
 
 // this will make us do something!
 - (void)useMacroOrSendCmd: (NSString*)key;
+- (BOOL)executeMacro:(NSString *)key;
 
 @end

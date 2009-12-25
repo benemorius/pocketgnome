@@ -1327,13 +1327,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         
 						if([rule breakOnSuccess])
 						{
-							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
+							log(LOG_COMBAT, @"Succesfully cast %@ on %@ for %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, rule);
 							[self finishCurrentProcedure: state];
 							return;
 						}
 						else
 						{
-							log(LOG_COMBAT, @"Succesfully cast %@ on %@. Continuing procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
+							log(LOG_COMBAT, @"Succesfully cast %@ on %@ for %@. Continuing procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, rule);
 						}
                         [self performSelector: _cmd
                                    withObject: newState
@@ -2413,11 +2413,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
     // check to see if we are moving to attack a unit and bail if we are
-    if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
-        log(LOG_TARGET, @"attackUnit == moveToObject");
-        [self performSelector: _cmd withObject: nil afterDelay: 0.1];
-		return NO;
-    }
+    //if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
+    //    log(LOG_TARGET, @"attackUnit == moveToObject");
+    //    [self performSelector: _cmd withObject: nil afterDelay: 0.1];
+	//	return NO;
+    //}
 	
 	
 	//time for combat things
@@ -2691,7 +2691,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [mountCheckbox state] && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
 		//log(LOG_GENERAL, @"Mounting!");
 		usleep(100000);
-		
+		if([macroController executeMacro:@"Mount"])
+            return YES;
 		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
 		// Time to cast!
 		log(LOG_GENERAL, @"Using mount %@ id: %i", [mount name], [[mount ID] intValue]);
@@ -3984,7 +3985,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] )
 	{
-		log(LOG_COMBAT, @"Spell %@ failed: %@ (%d)", [spellController spellForID:[NSNumber numberWithInt:actionID]] , [playerController lastErrorMessage], [self errorValue:[playerController lastErrorMessage]]);
+		log(LOG_COMBAT, @"Spell %@ failed on %@ : %@ (%d)", [spellController spellForID:[NSNumber numberWithInt:actionID]] , [playerController lastErrorMessage], [combatController attackUnit], [self errorValue:[playerController lastErrorMessage]]);
 	//}
 	
 	// did the spell not cast?

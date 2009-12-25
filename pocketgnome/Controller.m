@@ -1227,6 +1227,7 @@ typedef struct NameObjectStruct{
 }
 
 - (unsigned)refreshDelay {
+    return 100000;
     UInt32 refreshDelay = [self refreshDelayReal];
 
     if(refreshDelay > 1000000)  refreshDelay = 50000;   // incase we get a bogus number

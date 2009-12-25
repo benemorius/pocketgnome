@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Mount</key>
+	<dict>
+		<key>Macro</key>
+		<string>#Mount</string>
+		<key>Description</key>
+		<string>Put #Mount at the top of your mount macro</string>
+	</dict>
 	<key>BGMoveToBGTab</key>
 	<dict>
 		<key>Macro</key>
