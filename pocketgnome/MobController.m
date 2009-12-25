@@ -267,6 +267,8 @@ static MobController* sharedController = nil;
     for(NSNumber *address in addresses) {
         if( ![addressDict objectForKey: address] ) {
 			Unit *unit = [Mob mobWithAddress: address inMemory: memory];
+			if([dataList containsObject:unit])
+				continue;
             [dataList addObject: unit];
 		} else {
             [[addressDict objectForKey: address] setRefreshDate: now];

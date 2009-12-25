@@ -176,9 +176,13 @@ static PlayersController *sharedPlayers = nil;
         if([playerData baselineAddress] == [address unsignedIntValue])
             continue;
             
-        if( ![addressDict objectForKey: address] ) {
+        if( ![addressDict objectForKey: address] )
+		{
 			Player *unit = [Player playerWithAddress: address inMemory: memory];
+			if([dataList containsObject:unit])
+				continue;
             [dataList addObject: unit];
+			log(LOG_DEV, @"adding unit: %@", unit);
 			if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning])
 			{
 				[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"Player detected"]
