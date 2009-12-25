@@ -1654,8 +1654,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
         // stop other procedures
         [self cancelCurrentProcedure];
-		
-		// start the healing procedure
+		[combatController setAttackUnit:unit];
+        // start the healing procedure
         [self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
                                           HealingProcedure,                 @"Procedure",
                                           [NSNumber numberWithInt: 0],      @"CompletedRules",

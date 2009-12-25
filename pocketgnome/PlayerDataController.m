@@ -1427,13 +1427,12 @@ static PlayerDataController* sharedController = nil;
 			log(LOG_ERROR, @"can't do color :(");
 			return;
 		}
-		
-		if([[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit])
+        if([blacklistController isBlacklisted:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
+			[aCell setTextColor:[NSColor lightGrayColor]];
+		else if([[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] isEqualToObject:[combatController attackUnit]])
 			[aCell setTextColor:[NSColor greenColor]];
 		else if([botController unitValidToHeal:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
 			[aCell setTextColor:[NSColor blueColor]];
-		else if([blacklistController isBlacklisted:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
-			[aCell setTextColor:[NSColor lightGrayColor]];
 		else
 			[aCell setTextColor:[NSColor blackColor]];
 	}
