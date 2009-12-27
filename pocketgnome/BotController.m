@@ -2413,11 +2413,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
     // check to see if we are moving to attack a unit and bail if we are
-    //if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
-    //    log(LOG_TARGET, @"attackUnit == moveToObject");
-    //    [self performSelector: _cmd withObject: nil afterDelay: 0.1];
-	//	return NO;
-    //}
+    if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
+        log(LOG_TARGET, @"attackUnit == moveToObject");
+        [self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
+    }
 	
 	
 	//time for combat things

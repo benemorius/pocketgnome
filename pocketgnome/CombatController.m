@@ -228,9 +228,10 @@
 
 		// is this who we are currently attacking?
 		if ( [playerData targetID] == [self.attackUnit GUID] ){
-			log(LOG_TARGET, @"Out of range, blacklisting %@", self.attackUnit);
-			[blacklistController blacklistObject: self.attackUnit];
-			[self finishUnit:self.attackUnit];
+			//log(LOG_TARGET, @"Out of range, blacklisting %@", self.attackUnit);
+			//[blacklistController blacklistObject: self.attackUnit];
+			//[self finishUnit:self.attackUnit];
+            [movementController moveToObject:self.attackUnit andNotify: YES];
 		}
 	}
 }
