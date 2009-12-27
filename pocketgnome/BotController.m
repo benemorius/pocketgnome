@@ -1767,7 +1767,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         UInt64 unitUID = [unit GUID];
         if ( ( [playerController targetID] != unitUID) || [unit isFeignDeath] ) {
 			Position *playerPosition = [playerController position];
-			log(LOG_COMBAT, @"SELECTING (com) %@  Weight: %d", unit, [combatController unitWeight:unit PlayerPosition:playerPosition] );
+			log(LOG_COMBAT, @"SELECTING %@  Weight: %d", unit, [combatController unitWeight:unit PlayerPosition:playerPosition] );
             
             [playerController setPrimaryTarget: unit];
             usleep([controller refreshDelay]);
@@ -2374,7 +2374,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_HEAL, @"Need to heal: %@", healUnit);
 			[self healUnit:healUnit];
 			_lastUnitAttemptedToHealed = healUnit;
-			return YES;
+			//return YES;
 		}
 	}
     
