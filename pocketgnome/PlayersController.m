@@ -180,7 +180,10 @@ static PlayersController *sharedPlayers = nil;
 		{
 			Player *unit = [Player playerWithAddress: address inMemory: memory];
 			if([dataList containsObject:unit])
+            {
+                log(LOG_ERROR, @"Duplicate player found: %@", unit);
 				continue;
+            }
             [dataList addObject: unit];
 			if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning])
 			{

@@ -459,6 +459,7 @@ typedef struct NameObjectStruct{
 - (void)sortObjects: (MemoryAccess*)memory{
 	
 	UInt32 objectAddress = 0;
+    log(LOG_MEMORY, @"Total object addresses: %d", [_objectAddresses count]);
 	for ( NSNumber *objAddress in _objectAddresses ){
 		objectAddress = [objAddress intValue];
 		

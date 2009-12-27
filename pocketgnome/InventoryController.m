@@ -244,7 +244,11 @@ static InventoryController *sharedInventory = nil;
             } else if(![item name]) {
                 [item loadName];
             }
-            
+            if([dataList containsObject:item])
+            {
+                log(LOG_ERROR, @"Duplicate item found: %@", item);
+				continue;
+            }
             [dataList addObject: item];            
         }
 		else {

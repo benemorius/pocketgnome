@@ -250,6 +250,11 @@ typedef enum {
     NSDate *now = [NSDate date];
     for(NSNumber *address in addresses) {
         if( ![addressDict objectForKey: address] ) {
+            if([dataList containsObject:[Node nodeWithAddress: address inMemory: memory]])
+            {
+                log(LOG_ERROR, @"Duplicate node found: %@", [Node nodeWithAddress: address inMemory: memory]);
+				continue;
+            }
             [dataList addObject: [Node nodeWithAddress: address inMemory: memory]];
         } else {
             [[addressDict objectForKey: address] setRefreshDate: now];

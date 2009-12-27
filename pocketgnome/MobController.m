@@ -267,6 +267,11 @@ static MobController* sharedController = nil;
     for(NSNumber *address in addresses) {
         if( ![addressDict objectForKey: address] ) {
 			Unit *unit = [Mob mobWithAddress: address inMemory: memory];
+            if([dataList containsObject:unit])
+            {
+                log(LOG_ERROR, @"Duplicate mob found: %@", unit);
+				continue;
+            }
 			if([dataList containsObject:unit])
 				continue;
             [dataList addObject: unit];
