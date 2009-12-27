@@ -185,6 +185,7 @@ static PlayersController *sharedPlayers = nil;
 				continue;
             }
             [dataList addObject: unit];
+            [controller traverseNameList];
 			if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning])
 			{
 				[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"Player detected"]
