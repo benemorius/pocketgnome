@@ -1230,7 +1230,7 @@ static PlayerDataController* sharedController = nil;
 											 [NSString stringWithFormat: @"%d%%", [unit percentHealth]],          @"Health",
 											 [NSNumber numberWithUnsignedInt: [unit level]],                      @"Level",
 											 [NSNumber numberWithFloat: distance],                                @"Distance",
-											 [unit name],														  @"Name",
+											 [playersController playerNameWithGUID:[unit GUID]],                  @"Name",
 											 nil]];
 
 			}
