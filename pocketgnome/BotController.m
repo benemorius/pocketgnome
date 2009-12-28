@@ -1606,8 +1606,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         if( ![[combatController attackQueue] count] ) {
 			
-			log(LOG_BEHAVIOR, @"MORE UNITS TO ATTACK!");
-			
             // we're probably still in the middle of a combat procedure
             if(self.procedureInProgress)        // so let's cancel it
                 [self cancelCurrentProcedure];
