@@ -2526,7 +2526,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			//add additional units to queue
 			while ([newUnit isValid])
 			{
-                if([tank isValid] && !([newUnit targetID] == [tank GUID]))
+                if([theCombatProfile attackOnlyTankedMobs] && [tank isValid] && !([newUnit targetID] == [tank GUID]))
                 {
                     log(LOG_DEV, @"Not attacking %@ because it's targeting %llx and not %@", newUnit, [newUnit targetID], tank);
                     continue;
