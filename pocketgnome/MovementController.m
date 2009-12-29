@@ -577,12 +577,21 @@ typedef enum MovementType {
     if(unit && [unit isValid] && [unit conformsToProtocol: @protocol(UnitPosition)]) {		
         if( ![self.unit isEqualToObject: unit]) {
             log(LOG_MOVEMENT, @"Moving to: %@", unit);
-			
-			self.unit = unit;
+            self.unit = unit;
             self.shouldNotify = notify;
+            
+            Position *position = [unit position];
+            if(![playerData isOnGround] && [botController nodeDescend] && [[playerData position] distanceToPosition2D: [unit position]] > POSITION2D_DISTANCE)
+            {
+                log(LOG_DEV, @"Moving to straight above %@", unit);
+                float currentZ = [[playerData position] zPosition];
+                [position setZPosition:currentZ];
+            }
+            else {
+                log(LOG_DEV, @"Moving directly to %@", unit);
+            }
 
-			Position *position = [unit position];
-			[self moveToPosition: position];
+            [self moveToPosition: position];
         } else {
             [self resumeMovement];
         }
@@ -804,15 +813,11 @@ typedef enum MovementType {
 }
 
 - (void)checkProximity: (NSTimer*)timer {
-	//this is a streamlined remake of checkCurrentPosition
-	//intended to maintain efficienty while allowing high callback rates
-	//it will call checkCurrentPosition when destination is in range
+    if ( ![botController isBotting] ) return;
 
-	//PGLog(@"checkproximity"); //don't forget this fires at 50hz
-	
+    //this is kept separate from checkCurrentPosition to allow faster timer rates for greater movement precision
     Position *playerPosition = [playerData position];
     Position *destPosition = (self.unit) ? [self.unit position] : [[self destination] position];
-	
     float distance = [playerData isOnGround] ? [playerPosition distanceToPosition2D: destPosition] : [playerPosition distanceToPosition: destPosition];
 	
 	// if we're near our target, move to the next
@@ -820,7 +825,6 @@ typedef enum MovementType {
     //if(distance2d < playerSpeed/2.0)  {
 	float distanceToUnit = WAYPOINT_SENSITIVITY;
 	
-	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
 	if (self.unit)
 	{
         if([self.unit isKindOfClass: [Node class]])
@@ -830,10 +834,61 @@ typedef enum MovementType {
 	}
 	// We're close enough to take action or move to the next waypoint!
 	if( distance <= distanceToUnit )  {
-		if(self.unit)
-			[self moveForwardStop];
-		[self checkCurrentPosition];
-	}
+		// Moving to a waypoint
+        if(!self.unit)
+        {
+            log(LOG_MOVEMENT, @"Reached waypoint. %0.2f <= %0.2f", distance, distanceToUnit);
+            if([botController isBotting])
+            {
+                if([botController shouldProceedFromWaypoint: [self destination]])
+                {
+                    [self moveToNextWaypoint];
+                }
+            }
+            else
+            {
+                [self moveToNextWaypoint];
+            }
+        }
+        else
+        {
+            log(LOG_MOVEMENT, @"We're close to the unit. Stopping movement.");
+            [self finishAlt];
+        }
+        return;
+    }
+    else
+    {
+        log(LOG_MOVEMENT, @"Not yet reached position. %0.2f > %0.2f", distance, distanceToUnit);
+        if([playerData isOnGround])
+        {
+            if((distance > [playerData speed]) && (!self.unit))
+            {
+                if( self.shouldJump && ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown) )
+                {
+                    [self jump];
+                }
+            }
+            else
+            {
+                [self correctDirection: NO];
+            }
+        }
+        else if(![playerData isOnGround] && ![[self.unit position] isEqualTo:lastAttemptedPosition])
+        {
+            float distanceToAboveUnit = [playerPosition distanceToPosition2D:[self.unit position]];
+            if(self.unit && distanceToAboveUnit < POSITION2D_DISTANCE)
+            {
+                log(LOG_MOVEMENT, @"We're above the node. Dropping.");
+                [self moveToPosition:[self.unit position]];
+            }
+            else if(self.unit && distanceToAboveUnit >= POSITION2D_DISTANCE)
+            {
+                log(LOG_MOVEMENT, @"Not yet reached position %@ above node: %@", lastAttemptedPosition, [self.unit position]);
+                log(LOG_MOVEMENT, @"Distance: %0.2f > %0.2f", distanceToAboveUnit, POSITION2D_DISTANCE);
+            }
+        }
+    }
 }
 
 - (void)checkCurrentPosition: (NSTimer*)timer {
@@ -850,13 +905,9 @@ typedef enum MovementType {
     Position *destPosition = (self.unit) ? [self.unit position] : [[self destination] position];
 
     float distance = [playerData isOnGround] ? [playerPosition distanceToPosition2D: destPosition] : [playerPosition distanceToPosition: destPosition];
-    //float distance2D = [playerPosition distanceToPosition2D: destPosition];
-	
-	//maintain a record of the previous distance to destination
-	//to be checked against the current distance to destination
-	//the plethora of flyaway checks isn't really necessary when we do this
-	if ([self lastDistance]) {
-		if (distance > [self lastDistance]) {
+
+    if ([self lastDistance]) {
+        if (distance > [self lastDistance]) {
 			log(LOG_MOVEMENT_CORRECTION, @"We're moving away from our destination! %0.2f > %0.2f", distance, self.lastDistance);
 			[self moveForwardStop];
 			[self correctDirection: YES];
@@ -864,16 +915,14 @@ typedef enum MovementType {
 		}
 	}
 	else {
-		log(LOG_MOVEMENT_CORRECTION, @"lastDistance not set");
+		//log(LOG_MOVEMENT_CORRECTION, @"lastDistance not set");
 	}
-
-	
 	
 	self.lastDistance = distance;
 
     // sanity check, incase something happens
     if(distance == INFINITY) {
-        log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
+        log(LOG_ERROR, @"Player distance == infinity. Stopping.");
         if(self.unit)   [self finishAlt];
         else            [self finishRoute];
         return;
@@ -890,46 +939,6 @@ typedef enum MovementType {
         }
     }
 	
-	// if we're near our target, move to the next
-    float playerSpeed = [playerData speed];
-    //if(distance2d < playerSpeed/2.0)  {
-	float distanceToUnit = WAYPOINT_SENSITIVITY;
-	
-	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
-	if (self.unit){
-		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
-	}
-	
-	// We're close enough to take action or move to the next waypoint!
-	if( distance <= distanceToUnit )  {
-		log(LOG_MOVEMENT, @"Reached waypoint. %0.2f <= %0.2f", distance, distanceToUnit);
-		// Moving to a waypoint
-        if(!self.unit) {
-            if([botController isBotting]) {
-                if([botController shouldProceedFromWaypoint: [self destination]]) {
-                    [self moveToNextWaypoint];
-                }
-            } else {
-                [self moveToNextWaypoint];
-            }
-        } else {
-            log(LOG_MOVEMENT, @"We're close to the unit. Stopping movement.");
-            [self finishAlt];
-        }
-        return;
-    } else {
-		log(LOG_MOVEMENT, @"Not yet reached waypoint. %0.2f > %0.2f", distance, distanceToUnit);
-        // if we're far enough away from our target, see if we should jump
-        if( (distance > playerSpeed) && (!self.unit)) {
-            if( self.shouldJump && ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown) ) {
-                [self jump];
-            }
-        } else {
-            [self correctDirection: NO];
-        }
-    }
-    
-	
     // if we're not moving forward for some reason, start moving again
     if( (([movementType selectedTag] == MOVE_CTM && ![self isCTMActive]) || [movementType selectedTag] != MOVE_CTM ) && !self.isPaused && (([playerData movementFlags] & 0x1) != 0x1)) {   // [self isPatrolling] && 
         log(LOG_MOVEMENT, @"We are stopped for some reason... starting again.");
@@ -945,6 +954,7 @@ typedef enum MovementType {
 - (void)resetMovementTimer {
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(realMoveToNextWaypoint) object: nil];
     [_movementTimer invalidate]; _movementTimer = nil;
+    [_proximityTimer invalidate]; _proximityTimer = nil;
 }
 
 - (void)resetMovementState {
@@ -1122,8 +1132,14 @@ typedef enum MovementType {
 #define OneDegree   0.0174532925
 
 - (void)turnTowardObject: (WoWObject*)unit{
-	
-	[self turnToward: [unit position]];
+	if(![playerData isOnGround] && [botController nodeDescend] && [[playerData position] distanceToPosition2D: [unit position]] > POSITION2D_DISTANCE)
+    {
+        Position *position2d = [[unit position] copy];
+        [position2d setZPosition:[[playerData position] zPosition]];
+        [self turnToward:position2d];
+        return;
+    }
+    [self turnToward: [unit position]];
 	
 	/*// Turn toward a unit!
 	if ( [movementType selectedTag] == MOVE_CTM ){

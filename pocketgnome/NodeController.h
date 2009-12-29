@@ -10,6 +10,7 @@
 #import "Node.h"
 
 @class PlayerDataController;
+@class BlacklistController;
 
 typedef enum {
     AnyNode = 0,
@@ -24,6 +25,7 @@ typedef enum {
     IBOutlet PlayerDataController *playerController;
     IBOutlet id movementController;
     IBOutlet id memoryViewController;
+    IBOutlet BlacklistController *blacklistController;
     
     IBOutlet NSView *view;
     

@@ -20,10 +20,18 @@
     BOOL attackAnyLevel, ignoreElite, ignoreLevelOne;
 	
 	// Healing
-	BOOL healingEnabled, autoFollowTarget, mountEnabled;
+	BOOL healingEnabled, autoFollowTarget, followMountEnabled;
 	float yardsBehindTarget, healingRange;
 	int healthThreshold;
 	UInt64 selectedTankGUID;
+    
+    BOOL attackOnlyTankedMobs;
+    float followRange;
+	BOOL followCombatDisabled;
+	BOOL followHealDisabled;
+	BOOL followLootDisabled;
+	BOOL followGatherDisabled;
+	
 	
 	BOOL enemyWeightEnabled;
 	int enemyWeightPlayer;
@@ -66,8 +74,16 @@
 @property (readwrite, assign) BOOL autoFollowTarget;
 @property (readwrite, assign) float yardsBehindTarget;
 @property (readwrite, assign) float healingRange;
-@property (readwrite, assign) BOOL mountEnabled;
+@property (readwrite, assign) BOOL followMountEnabled;
 @property (readwrite, assign) int healthThreshold;
+
+@property (readwrite, assign) BOOL attackOnlyTankedMobs;
+@property (readwrite, assign) float followRange;
+@property (readwrite, assign) BOOL followCombatDisabled;
+@property (readwrite, assign) BOOL followHealDisabled;
+@property (readwrite, assign) BOOL followLootDisabled;
+@property (readwrite, assign) BOOL followGatherDisabled;
+
 
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) int attackLevelMin;

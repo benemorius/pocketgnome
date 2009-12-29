@@ -90,7 +90,7 @@ static CombatProfileEditor *sharedEditor = nil;
 	
 	if ( [friendlyPlayers count] > 0 ){
 		for(Player *player in friendlyPlayers) {
-			item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@", player] action: nil keyEquivalent: @""] autorelease];
+			item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@ %@", [playersController playerNameWithGUID:[player GUID]], player] action: nil keyEquivalent: @""] autorelease];
 			[item setIndentationLevel: 1];
 			[item setRepresentedObject: [NSNumber numberWithUnsignedLongLong:[player GUID]]];
 			[playerMenu addItem: item];

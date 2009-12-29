@@ -24,12 +24,14 @@
 @class AuraController;
 @class MacroController;
 @class BlacklistController;
+@class BotController;
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
 //range at which a waypoint is considered reached
 #define WAYPOINT_SENSITIVITY			9.0f
 #define UNIT_DISTANCE					5.0f
+#define POSITION2D_DISTANCE             2.0f
 // How close do we need to be to a node before we dismount?
 #define NODE_DISTANCE_UNTIL_DISMOUNT	3.5f
 // how close do we need to be to a school to fish?
@@ -38,7 +40,7 @@
 @interface MovementController : NSObject {
     IBOutlet id controller;
     IBOutlet id mobController;
-    IBOutlet id botController;
+    IBOutlet BotController          *botController;
     IBOutlet id chatController;
     IBOutlet id combatController;
 	IBOutlet AuraController			*auraController;

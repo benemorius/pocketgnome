@@ -1157,15 +1157,16 @@ static PlayerDataController* sharedController = nil;
 		// only resort and display the table if the window is visible
 		if( [[combatTable window] isVisible])
 		{
-			NSArray *units = [combatController unitsAttackingMe];
+            NSMutableArray *units = [NSMutableArray array];
+            [units addObjectsFromArray:[combatController unitsAttackingMe]];
 			NSArray *attackQueue = [combatController attackQueue];
 			NSMutableArray *allUnits = [NSMutableArray array];
 			[allUnits addObjectsFromArray:[mobController allMobs]];
 
 			// Only add new units!
 			for(Unit *unit in attackQueue){
-				if ( ![allUnits containsObject:unit] ){
-					[allUnits addObject:unit];
+				if ( ![units containsObject:unit] ){
+					[units addObject:unit];
 				}
 			}
 			

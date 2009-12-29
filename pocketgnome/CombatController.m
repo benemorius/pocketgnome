@@ -102,7 +102,7 @@
     
     for(Unit* unit in _attackQueue) {
         // remove the unit if it's invalid, blacklisted, dead, evading or no longer in combat
-        if( ![unit isValid] || [blacklistController isBlacklisted: unit] || [unit isDead] || [unit isEvading] || [unit isTappedByOther]) {// || ![unit isInCombat] ) {
+        if( ![unit isValid] || [blacklistController isBlacklisted: unit] || [unit isDead] || [unit isEvading]){ // || [unit isTappedByOther]) {// || ![unit isInCombat] ) {
             log(LOG_COMBAT, @"[A] Removing %@  NotValid?(%d) Blacklisted?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [blacklistController isBlacklisted: unit], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
 			[unitsToRemove addObject: unit];
         }
@@ -110,7 +110,8 @@
     
     for(Unit* unit in unitsToRemove) {
         // this removes the unit from the attack queue as well
-        [self finishUnit: unit];
+        //[self finishUnit: unit];
+        [self removeUnitFromAttackQueue:unit];
     }
     
     if([unitsToRemove count]) { 
@@ -246,7 +247,6 @@
 - (void)cancelAllCombat {
     log(LOG_COMBAT, @"Clearing all combat state.");
     self.attackUnit = nil;
-	[blacklistController removeAllUnits];
     [_attackQueue removeAllObjects];
 	[_unitsAttackingMe removeAllObjects];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
@@ -257,7 +257,7 @@
 
 - (BOOL)attackBestTarget
 {
-    if(!self.combatEnabled) return NO;
+    if(!self.combatEnabled || ![botController isBotting]) return NO;
     
 	Unit *bestUnit = [self findBestUnitToAttack];
 	if (bestUnit)
@@ -441,7 +441,6 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	// lets find the best target
 	if ( [units count] ){
 		float distanceToTarget = 0.0f;
-		float attackRange = botController.theCombatProfile.attackRange;
 		int highestWeight = 0;
 		Unit *bestUnit = nil;
 		

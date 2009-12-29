@@ -37,9 +37,17 @@
 		self.autoFollowTarget = NO;
 		self.yardsBehindTarget = 10.0f;
 		self.healingRange = 40.0f;
-		self.mountEnabled = NO;
+		self.followMountEnabled = NO;
 		self.selectedTankGUID = 0x0;
 		self.healthThreshold = 95;
+        
+        self.followRange = 40;
+        self.attackOnlyTankedMobs = YES;
+		self.followCombatDisabled = NO;
+		self.followHealDisabled = NO;
+		self.followLootDisabled = NO;
+		self.followGatherDisabled = NO;
+		
 
         self.attackRange = 20.0f;
         self.attackLevelMin = 2;
@@ -92,9 +100,16 @@
     copy.autoFollowTarget = self.autoFollowTarget;
     copy.yardsBehindTarget = self.yardsBehindTarget;
 	copy.healingRange = self.healingRange;
-	copy.mountEnabled = self.mountEnabled;
+	copy.followMountEnabled = self.followMountEnabled;
 	copy.selectedTankGUID = self.selectedTankGUID;
 	copy.healthThreshold = self.healthThreshold;
+    
+    copy.followRange = self.followRange;
+    copy.attackOnlyTankedMobs = self.attackOnlyTankedMobs;
+	copy.followCombatDisabled = self.followCombatDisabled;
+	copy.followHealDisabled = self.followHealDisabled;
+	copy.followLootDisabled = self.followLootDisabled;
+	copy.followGatherDisabled = self.followGatherDisabled;
 	
     copy.attackRange = self.attackRange;
     copy.attackLevelMin = self.attackLevelMin;
@@ -133,9 +148,16 @@
         self.autoFollowTarget = [[decoder decodeObjectForKey: @"AutoFollowTarget"] boolValue];
 		self.yardsBehindTarget = [[decoder decodeObjectForKey: @"YardsBehindTarget"] floatValue];
 		self.healingRange = [[decoder decodeObjectForKey: @"HealingRange"] floatValue];
-		self.mountEnabled = [[decoder decodeObjectForKey: @"MountEnabled"] boolValue];
+		self.followMountEnabled = [[decoder decodeObjectForKey: @"FollowMountEnabled"] boolValue];
 		self.selectedTankGUID = [[decoder decodeObjectForKey: @"selectedTankGUID"] unsignedLongLongValue];
 		self.healthThreshold = [[decoder decodeObjectForKey: @"HealthThreshold"] intValue];
+        
+        self.followRange = [[decoder decodeObjectForKey: @"FollowRange"] floatValue];
+        self.attackOnlyTankedMobs = [[decoder decodeObjectForKey: @"AttackOnlyTankedMobs"] boolValue];
+		self.followCombatDisabled = [[decoder decodeObjectForKey: @"FollowCombatDisabled"] boolValue];
+		self.followHealDisabled = [[decoder decodeObjectForKey: @"FollowHealDisabled"] boolValue];
+		self.followLootDisabled = [[decoder decodeObjectForKey: @"FollowLootDisabled"] boolValue];
+		self.followGatherDisabled = [[decoder decodeObjectForKey: @"FollowGatherDisabled"] boolValue];
 		
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
         self.attackLevelMin = [[decoder decodeObjectForKey: @"AttackLevelMin"] intValue];
@@ -170,9 +192,17 @@
     [coder encodeObject: [NSNumber numberWithBool: self.autoFollowTarget] forKey: @"AutoFollowTarget"];
     [coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTarget] forKey: @"YardsBehindTarget"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.healingRange] forKey: @"HealingRange"];
-	[coder encodeObject: [NSNumber numberWithBool: self.mountEnabled] forKey: @"MountEnabled"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followMountEnabled] forKey: @"FollowMountEnabled"];
 	[coder encodeObject: [NSNumber numberWithUnsignedLongLong: self.selectedTankGUID]forKey: @"selectedTankGUID"];
 	[coder encodeObject: [NSNumber numberWithInt: self.healthThreshold] forKey: @"HealthThreshold"];
+    
+    [coder encodeObject: [NSNumber numberWithFloat: self.followRange] forKey: @"FollowRange"];
+	[coder encodeObject: [NSNumber numberWithBool: self.attackOnlyTankedMobs] forKey: @"AttackOnlyTankedMobs"];
+    [coder encodeObject: [NSNumber numberWithBool: self.followCombatDisabled] forKey: @"FollowCombatDisabled"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followHealDisabled] forKey: @"FollowHealDisabled"];
+    [coder encodeObject: [NSNumber numberWithBool: self.followLootDisabled] forKey: @"FollowLootDisabled"];
+    [coder encodeObject: [NSNumber numberWithBool: self.followGatherDisabled] forKey: @"FollowGatherDisabled"];
+
 	
     [coder encodeObject: [NSNumber numberWithFloat: self.attackRange] forKey: @"AttackRange"];
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMin] forKey: @"AttackLevelMin"];
@@ -213,9 +243,16 @@
 @synthesize autoFollowTarget;
 @synthesize yardsBehindTarget;
 @synthesize healingRange;
-@synthesize mountEnabled;
+@synthesize followMountEnabled;
 @synthesize selectedTankGUID;
 @synthesize healthThreshold;
+
+@synthesize followRange;
+@synthesize attackOnlyTankedMobs;
+@synthesize followCombatDisabled;
+@synthesize followHealDisabled;
+@synthesize followLootDisabled;
+@synthesize followGatherDisabled;
 
 @synthesize attackRange;
 @synthesize attackLevelMin;
@@ -253,17 +290,18 @@
             }
         }
     }
-    
+    PlayerDataController *playerData = [PlayerDataController sharedController];
+
     // valid?
     // dead?
     // selectable?
     // attackable?
     // already tapped?
-    if(![unit isValid] || [unit isDead] || ![unit isSelectable] || ![unit isAttackable] || [unit isTappedByOther])
+    if(![unit isValid] || [unit isDead] || ![unit isSelectable] || ![unit isAttackable])
+        return NO;
+    if([unit isTappedByOther] && (([unit targetID] != [self selectedTankGUID]) || ([unit targetID] != [playerData focusGUID])))
         return NO;
 
-    PlayerDataController *playerData = [PlayerDataController sharedController];
-    
     // get faction data
     int faction = [unit factionTemplate];
     BOOL isFriendly = [playerData isFriendlyWithFaction: faction];

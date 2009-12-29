@@ -327,6 +327,7 @@
 @synthesize startDate;
 @synthesize doLooting       = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
+@synthesize nodeDescend     = _nodeDescend;
 
 - (NSString*)sectionTitle {
     return @"Start/Stop Bot";
@@ -1184,7 +1185,31 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     int i;
     for(i = completed; i< ruleCount; i++) {
+		if(![self isBotting])
+		{
+			[self finishCurrentProcedure: state];
+			return;
+		}
         Rule *rule = [procedure ruleAtIndex: i];
+		
+		if( [[self procedureInProgress] isEqualToString: HealingProcedure])
+		{
+			if(![self unitValidToHeal:target])
+			{
+				[self finishCurrentProcedure: state];
+				return; 
+			}
+		}
+		if( [[self procedureInProgress] isEqualToString: CombatProcedure])
+		{
+			if(![target isValid] || [target isDead] || [target isEvading] || [blacklistController isBlacklisted:target])
+			{
+				log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Dead? (%d)  Evading? (%d)  Blacklisted? (%d)", ![target isValid], [target isDead], [target isEvading], [blacklistController isBlacklisted:target]);
+				[combatController finishUnit:target];
+                [self finishCurrentProcedure: state];
+				return;
+			}
+		}
 		
 		// if we're in a combat procedure, we may need to change our target!
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ){
@@ -1359,12 +1384,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_FUNCTION, @"entering function");
 	
 	// Loot if we're on the ground!
-	if ( [playerController isOnGround] ){
+	if ( [playerController isOnGround] || [auraController unit:[playerController player] hasAura:40120]) //swift flight form
+    {
+        log(LOG_NODE, @"Looting node %@", unit);
 		[self performSelector: @selector(lootUnit:) withObject: unit afterDelay:0.5f];	
 	}
 	
 	// Try again shortly
 	else {
+        log(LOG_NODE, @"Can't loot %@ because we aren't on the ground. Retrying.", unit);
+        [movementController dismount];
 		[self performSelector: @selector(lootNode:) withObject: unit afterDelay:0.1f];	
 	}
 	
@@ -1539,7 +1568,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.lastAttemptedUnitToLoot = nil;
 		
 		// Mount?  Or just evaluate
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
+		//[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
+		[self evaluateSituation];
 	}
 }
 
@@ -1716,7 +1746,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if(![self isBotting]) return;
 	
 	if ( [blacklistController isBlacklisted:unit] ){
-		log(LOG_COMBAT, @"Attempting to attack a blacklisted unit, ruh-roh");
+		log(LOG_ERROR, @"Attempted to attack a blacklisted unit. Aborting.");
+        return;
 	}
 	
 	if(![unit isValid] || [unit isDead] || [unit isEvading] || [blacklistController isBlacklisted:unit])
@@ -1949,18 +1980,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		log(LOG_MOVEMENT, @"3D:%0.2f   2D:%0.2f   Vertical:%0.2f", distance, distance2D, vertDist);
 		
+        //we shouldn't need to recheck our position if we're already in reachedUnit
 		// Get off our mount (this could be called if our movement failed, we don't want to get off our mount!)!
-		if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
-			[movementController dismount];
-			[self lootNode: unit];
-		}
-		else{
-			// This node is "done" - this is a sort of blacklist, we just don't want it anymore!
-			[nodeController finishedNode: (Node*)self.unitToLoot];
-			
-			// Resume movement!
-			[movementController resumeMovementToNearestWaypoint];
-		}
+		//if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
+        if(![auraController unit:[playerController player] hasAura:40120]) //swift flight form
+            [movementController dismount];
+		[self lootNode: unit];
+		//}
+		//else{
+		//	// This node is "done" - this is a sort of blacklist, we just don't want it anymore!
+		//	[nodeController finishedNode: (Node*)self.unitToLoot];
+		//
+		//	// Resume movement!
+		//	[movementController resumeMovementToNearestWaypoint];
+		//}
 		
 
 		//[self performSelector: @selector(lootUnit:) withObject: unit afterDelay:2.5f];
@@ -2121,7 +2154,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
-            if(mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot] && ([mobToLoot isLootable] || ([mobToLoot isSkinnable] && _doSkinning)))
+            if(mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot] && [[mobToLoot position] distanceToPosition: [playerController position]] < [theCombatProfile attackRange] && ([mobToLoot isLootable] || ([mobToLoot isSkinnable] && _doSkinning)))
 			{
                 log(LOG_LOOT, @"Selected a mob to loot: %@", mobToLoot);
                 return mobToLoot;
@@ -2167,9 +2200,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // get list of all targets
     NSMutableArray *targetsWithinRange = [NSMutableArray array];
-    
+    NSRange levelRange;
+    if([theCombatProfile attackAnyLevel])
+    {
+        levelRange.location = [theCombatProfile ignoreLevelOne] ? 2 : 1;
+        levelRange.length = 90 - levelRange.location;
+    }
+    else
+    {
+        levelRange.location = [theCombatProfile attackLevelMin];
+        levelRange.length = [theCombatProfile attackLevelMax] - levelRange.location;
+    }
+
     if(self.theCombatProfile.attackNeutralNPCs || self.theCombatProfile.attackHostileNPCs) {
-        [targetsWithinRange addObjectsFromArray: [mobController allMobs]];
+        [targetsWithinRange addObjectsFromArray:[mobController mobsWithinDistance:[theCombatProfile attackRange] levelRange:levelRange includeElite:![theCombatProfile ignoreElite] includeFriendly:NO includeNeutral:[theCombatProfile attackNeutralNPCs] includeHostile:[theCombatProfile attackHostileNPCs]]];
     }
     if(self.theCombatProfile.attackPlayers) {
         [targetsWithinRange addObjectsFromArray: [playersController allPlayers]];
@@ -2319,7 +2363,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		{
 			for ( Unit *unit in [playersController allPlayers] )
 			{
-				if ([unit GUID] == followGUID && [playerPosition distanceToPosition: [unit position]] < [theCombatProfile attackRange])
+				if ([unit GUID] == followGUID && [playerPosition distanceToPosition: [unit position]] < [theCombatProfile followRange])
 				{
 					followUnit = unit;
 					//cancel the route if we found someone to follow
@@ -2329,7 +2373,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 			for(Unit *unit in [mobController allMobs])
 			{
-				if ([unit GUID] == followGUID && [playerPosition distanceToPosition: [unit position]] < [theCombatProfile attackRange])
+				if ([unit GUID] == followGUID && [playerPosition distanceToPosition: [unit position]] < [theCombatProfile followRange])
 				{
 					followUnit = unit;
 					//cancel the route if we found a mob to follow
@@ -2339,18 +2383,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 	}
+    
+    UInt64 tankGUID = [theCombatProfile selectedTankGUID];
+    Unit *tank = [playersController playerWithGUID:tankGUID];
 
 	// Check to see if we should be healing!
-	if ( [theCombatProfile healingEnabled] ){
+	if ( [theCombatProfile healingEnabled] && !([followUnit isMounted] && [theCombatProfile followHealDisabled])){
 		
 		Unit *healUnit = nil;
 		
-		
-		// We could have our follow unit as who we should heal right now, but psh tank gets priority!
-		UInt64 tankGUID = [theCombatProfile selectedTankGUID];
-		Unit *tank = [playersController playerWithGUID:tankGUID];
-		
-		if ([tank isValid] && ![tank isDead] && [tank percentHealth] < [theCombatProfile healthThreshold])
+        if ([tank isValid] && ![tank isDead] && [tank percentHealth] < [theCombatProfile healthThreshold])
 		{			
 			healUnit = tank;
 			log(LOG_HEAL, @"Tank needs heals: %@", tank);
@@ -2381,17 +2423,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	{
 		
 		// Is our target mounted?  Are we? If not lets!
-		if ( [theCombatProfile mountEnabled] && [followUnit isMounted] && ![[playerController player] isMounted] && ![playerController isCasting]){
-			
+		if ( [theCombatProfile followMountEnabled] && [followUnit isMounted] && ![[playerController player] isMounted] && ![playerController isCasting]){
+			log(LOG_GENERAL, @"mounting to follow");
 			// time to mount!
-			Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
-			if ( mount != nil ){
-				[self performAction:[[mount ID] intValue]];
-			}
+			[self mountNow];
 			
 			// Check our position again shortly!
 			[self performSelector: _cmd withObject: nil afterDelay: 1.6f];
 			return YES;
+		}
+		else
+		{
+			//log(LOG_DEV, @"not mounting to follow");
 		}
 		
 		// Should we move toward our target?
@@ -2436,12 +2479,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	//no known targets to attack, so now check for a new target to attack
 	Unit *newUnit  = [self unitToAttack];
+	if([theCombatProfile onlyRespond])
+		newUnit = nil;
 	float newUnitDist  = newUnit ? [[newUnit position] distanceToPosition: playerPosition] : INFINITY;
 	
 	Mob *mobToLoot      = [self mobToLoot];
     float mobToLootDist     = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
 
-	if(self.doLooting && mobToLoot && (mobToLootDist < newUnitDist))
+	if(self.doLooting && !([followUnit isMounted] && [theCombatProfile followLootDisabled]) && mobToLoot && (mobToLootDist < newUnitDist))
 	{
         if(mobToLoot != [movementController moveToObject])
 		{
@@ -2468,6 +2513,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_LOOT, @"We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
 		}
     }
+	else if([followUnit isMounted] && [theCombatProfile followLootDisabled])
+	{
+		log(LOG_LOOT, @"Not looting because we're following");
+	}
 	
 	if([newUnit isValid] && [combatController combatEnabled])
 	{
@@ -2477,7 +2526,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			//add additional units to queue
 			while ([newUnit isValid])
 			{
-				log(LOG_COMBAT, @"Found %@ and adding to attack queue.", newUnit);
+                if([tank isValid] && !([newUnit targetID] == [tank GUID]))
+                {
+                    log(LOG_DEV, @"Not attacking %@ because it's targeting %llx and not %@", newUnit, [newUnit targetID], tank);
+                    continue;
+                }
+				log(LOG_TARGET, @"Found %@ and adding to attack queue.", newUnit);
 				[combatController addUnitToAttackQueue: newUnit];
 				newUnit = [self unitToAttack];
 			}
@@ -2491,16 +2545,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		else if (![[playerController player] isOnGround])
 		{
-			log(LOG_COMBAT, @"Player is in the air. Ignoring combat");
+			log(LOG_TARGET, @"Player is in the air. Not engaging in combat.");
 		}
-		else if([followUnit isValid] && [followUnit isMounted])
+		else if([theCombatProfile followCombatDisabled] && [followUnit isValid] && [followUnit isMounted])
 		{
-			log(LOG_COMBAT, @"Mounted and following someone. Ignoring combat.");
+			log(LOG_TARGET, @"Mounted and following someone. Not engaging in combat.");
 		}
 	}
 	
     // check for mining and herbalism
-    if(![movementController moveToObject]) {
+    if(![movementController moveToObject] && !([followUnit isMounted] && [theCombatProfile followGatherDisabled])) {
         NSMutableArray *nodes = [NSMutableArray array];
         if(_doMining)			[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: MiningNode maxLevel: _miningLevel]];
         if(_doHerbalism)		[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: HerbalismNode maxLevel: _herbLevel]];
@@ -2546,7 +2600,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 				}
 				// Should we be mounted before we move to the node?
-				else if ( [self mountNow] ){
+				else if ( [mountCheckbox state] && [self mountNow] ){
 					[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
 					return YES;
 				}
@@ -2663,15 +2717,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// Should we be mounted?
-	if ( [self mountNow] ){
-		[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
-		return YES;
-	}
+	if([mountCheckbox state])
+		if ( [self mountNow] )
+		{
+			log(LOG_GENERAL, @"Mounting");
+			[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
+			return YES;
+		}
     
     // if there's nothing to do, make sure we keep moving if we aren't
     if(self.theRoute) {
         if([movementController isPatrolling] && ([movementController patrolRoute] == [self.theRoute routeForKey: PrimaryRoute])) {
-            [movementController resumeMovementToNearestWaypoint];
+            if(![movementController isMoving])
+                [movementController resumeMovementToNearestWaypoint];
         } else {
             [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
             [movementController beginPatrol: 0 andAttack: self.theCombatProfile.combatEnabled];
@@ -2686,7 +2744,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 -(BOOL)mountNow{
 	log(LOG_FUNCTION, @"entering function");
-	if ( [mountCheckbox state] && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
+	if ( ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
 		//log(LOG_GENERAL, @"Mounting!");
 		usleep(100000);
 		if([macroController executeMacro:@"Mount"])
@@ -2697,7 +2755,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performAction:[[mount ID] intValue]];
 		return YES;
 	}
-	//PGLog(@"[Bot] Not Mounting");
+	//log(LOG_GENERAL, @"Not Mounting");
 	return NO;
 }
 
@@ -2783,6 +2841,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     self.doLooting = [lootCheckbox state];
     self.gatherDistance = [gatherDistText floatValue];
+    self.nodeDescend = [nodeDescendCheckbox state];
 	
 	// We only really need this if we are PvPing, but we want to store it in case they click "start bot" while in a BG, vs. doing the PvP route
 	_pvpMarks = [itemController pvpMarks];
@@ -2963,6 +3022,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [self cancelCurrentProcedure];
     [movementController setPatrolRoute: nil];
     [combatController cancelAllCombat];
+    [blacklistController removeAllUnits];
+    
 
     [_mobsToLoot removeAllObjects];
     self.isBotting = NO;
