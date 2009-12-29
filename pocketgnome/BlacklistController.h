@@ -21,5 +21,6 @@
 - (void)blacklistObject: (WoWObject*)obj;
 - (BOOL)isBlacklisted: (WoWObject*)obj;
 - (void)removeAllUnits;
+- (NSMutableArray*)blacklistedUnits;
 
 @end

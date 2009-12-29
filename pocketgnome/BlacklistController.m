@@ -41,6 +41,7 @@
 	
     for ( NSDictionary *unit in blacklist ) {
         if ( [[unit objectForKey: @"Object"] isEqualToObject: obj] ){
+            log(LOG_BLACKLIST, @"Removing unit: %@", unit);
             [_blacklist removeObject: unit];
 		}
     }
@@ -56,6 +57,17 @@
 	}
 	
     return 0;
+}
+
+- (NSMutableArray*)blacklistedUnits
+{
+    NSMutableArray *blacklist = [NSMutableArray array];
+    for(NSDictionary *dict in _blacklist)
+    {
+        if(![blacklist containsObject:[dict objectForKey: @"Object"]])
+            [blacklist addObject:[dict objectForKey: @"Object"]];
+    }
+    return blacklist;
 }
 
 // simply add an object to our blacklist!
@@ -104,13 +116,13 @@
 			}
 			
 			// mob/player checks
-			if ( [obj isNPC] || [obj isPlayer] ){
-				if(![obj isValid])
-				{
-					[self removeFromBlacklist:obj];
-					log(LOG_BLACKLIST, @"Removing object %@ from blacklist after 45 seconds for being dead(%d) or invalid(%d)", obj, [(Unit*)obj isDead], ![obj isValid]);
-				}
-			}
+			//if ( [obj isNPC] || [obj isPlayer] ){
+			//	if(![obj isValid])
+			//	{
+			//		[self removeFromBlacklist:obj];
+			//		log(LOG_BLACKLIST, @"Removing object %@ from blacklist for being dead(%d) or invalid(%d)", obj, [(Unit*)obj isDead], ![obj isValid]);
+			//	}
+			//}
 		}
 	}
 }
@@ -143,6 +155,8 @@
 
 - (void)removeAllUnits{
 	log(LOG_BLACKLIST, @"Removing all units...");
+    [_blacklist release];
+    _blacklist = [[NSMutableArray alloc] init];
 }
 
 @end
