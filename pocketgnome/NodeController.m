@@ -253,7 +253,7 @@ typedef enum {
         if( ![addressDict objectForKey: address] ) {
             if([dataList containsObject:[Node nodeWithAddress: address inMemory: memory]])
             {
-                log(LOG_ERROR, @"Duplicate node found: %@", [Node nodeWithAddress: address inMemory: memory]);
+                log(LOG_MEMORY, @"Duplicate node found: %@", [Node nodeWithAddress: address inMemory: memory]);
 				continue;
             }
             [dataList addObject: [Node nodeWithAddress: address inMemory: memory]];
