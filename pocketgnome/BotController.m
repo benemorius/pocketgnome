@@ -1279,7 +1279,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						actionResult = [self performAction:actionID];
 						if ( [rule resultType] == ActionType_Spell )
 						{
-							log(LOG_COMBAT, @"Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
+							//log(LOG_COMBAT, @"Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
 							//[spellController cooldownLeftForSpellID:actionID];
 						}
 						if ( actionResult == ErrSpellNotReady ){
@@ -1292,15 +1292,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 							//[self finishCurrentProcedure: state];
 							//return;
-						}
-						else {
-							//log(LOG_COMBAT, @"Spell %@ didn't cast on target %@ (%i)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, actionResult);
-						}
-						if(actionResult != ErrNotFound && actionResult != ErrSpellNotReady && actionResult != ErrSpellNot_Ready)
-						{
-							//more multitasking //the world probably isn't ready for this much yet
-							//log(LOG_COMBAT, @"Succesfully cast %@ on %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
-							//[self finishCurrentProcedure: state]; //but I am
 						}
                     }
 	
@@ -1353,7 +1344,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						if([rule breakOnSuccess])
 						{
 							log(LOG_COMBAT, @"Succesfully cast %@ on %@ for %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, rule);
-							[self finishCurrentProcedure: state];
+							//[self finishCurrentProcedure: state];
+                            log(LOG_DEV2, @"delaying for finishCurrentProcedure from success");
+                            [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_NORMAL];
 							return;
 						}
 						else
@@ -1374,7 +1367,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     // we're done
-    [self finishCurrentProcedure: state];
+    //[self finishCurrentProcedure: state];
+    log(LOG_DEV2, @"delaying for finishCurrentProcedure");
+    [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_NORMAL];
 }
 
 #pragma mark -
@@ -4044,7 +4039,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] )
 	{
-		log(LOG_COMBAT, @"Spell %@ failed on %@ : %@ (%d)", [spellController spellForID:[NSNumber numberWithInt:actionID]] , [playerController lastErrorMessage], [combatController attackUnit], [self errorValue:[playerController lastErrorMessage]]);
+		log(LOG_ACTION, @"Action %@ failed on %@ error: %@ (%d)", [spellController spellForID:[NSNumber numberWithInt:actionID]], [combatController attackUnit], [playerController lastErrorMessage], [self errorValue:[playerController lastErrorMessage]]);
 	//}
 	
 	// did the spell not cast?
@@ -4078,6 +4073,7 @@ NSMutableDictionary *_diffDict = nil;
 		 
 		 return lastErrorMessage;
 	}
+    log(LOG_ACTION, @"Action %@ succeeded on %@", [spellController spellForID:[NSNumber numberWithInt:actionID]] , [combatController attackUnit]);
 
 	return ErrNone;
 }
