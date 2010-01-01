@@ -4027,8 +4027,9 @@ NSMutableDictionary *_diffDict = nil;
 	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"]+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	//PGLog(@"Restored spell %i", oldActionID);
 	
-	// We don't want to check lastAttemptedActionID if it's not a spell!
-	if ( (USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID) ){
+	if (USE_MACRO_MASK & actionID)
+    {
+        log(LOG_ACTION, @"Ran macro %d", actionID);
 		return ErrNone;
 	}
 	
@@ -4040,14 +4041,9 @@ NSMutableDictionary *_diffDict = nil;
 	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] )
 	{
 		log(LOG_ACTION, @"Action %@ failed on %@ error: %@ (%d)", [spellController spellForID:[NSNumber numberWithInt:actionID]], [combatController attackUnit], [playerController lastErrorMessage], [self errorValue:[playerController lastErrorMessage]]);
-	//}
-	
-	// did the spell not cast?
-	//if ( [spellController lastAttemptedActionID] == actionID ){
 		
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		 _lastActionErrorCode = lastErrorMessage;
-		 //log(LOG_COMBAT, @"Spell (%d) didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
 
 		 // do something?
 		 if ( lastErrorMessage == ErrSpellNot_Ready){
