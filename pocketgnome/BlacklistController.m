@@ -41,7 +41,7 @@
 	
     for ( NSDictionary *unit in blacklist ) {
         if ( [[unit objectForKey: @"Object"] isEqualToObject: obj] ){
-            log(LOG_BLACKLIST, @"Removing unit: %@", unit);
+            log(LOG_BLACKLIST, @"Removing unit: %@", [unit objectForKey:@"Object"]);
             [_blacklist removeObject: unit];
 		}
     }

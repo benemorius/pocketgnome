@@ -292,16 +292,16 @@ typedef enum MovementType {
         
         // reset jump timer and head to the WP
         if(startWaypoint) {
-            log(LOG_MOVEMENT, @"Doing route: %@.", route);
+            log(LOG_WAYPOINT, @"Doing route: %@.", route);
             self.lastJumpTime = [NSDate date];
             [self moveToWaypoint: startWaypoint];
         } else {
-            log(LOG_MOVEMENT, @"StartWaypoint was nil. Ending route %@", route);
+            log(LOG_WAYPOINT, @"StartWaypoint was nil. Ending route %@", route);
             [self resetMovementState];
             return;
         }
     } else {
-        log(LOG_MOVEMENT, @"%@ has no waypoints. Ending route.", route);
+        log(LOG_WAYPOINT, @"%@ has no waypoints. Ending route.", route);
         [self resetMovementState];
         return;
     }
