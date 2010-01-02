@@ -14,6 +14,7 @@
 @interface SpellCooldownConditionController : ConditionController {
     IBOutlet BetterSegmentedControl *typeSegment;
     IBOutlet NSTextField *valueText;
+    IBOutlet BetterSegmentedControl *isOrNot;
 }
 
 @end

@@ -955,7 +955,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// check
 					conditionEval = [spellController isSpellOnCooldown:spellID];
-					log(LOG_CONDITION, @"Spell %d is on cooldown? %d", spellID, conditionEval);
+                    conditionEval = ([condition comparator] == CompareIs)? conditionEval : !conditionEval;
+					log(LOG_CONDITION, @"Spell %d %s on cooldown? %d", spellID, ([condition comparator] == CompareIs)? "is" : "is not", conditionEval);
 				}
 				
 				// checking by spell ID
@@ -968,7 +969,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					Spell *spell = [spellController spellForName:[condition value]];
 					if ( spell && [spell ID] ){
 						conditionEval = [spellController isSpellOnCooldown:[[spell ID] unsignedIntValue]];
-						log(LOG_CONDITION, @"Spell %@ is on cooldown? %d", spell, conditionEval);
+                        conditionEval = ([condition comparator] == CompareIs)? conditionEval : !conditionEval;
+						log(LOG_CONDITION, @"Spell %@ %s on cooldown? %d", spell, ([condition comparator] == CompareIs)? "is" : "is not", conditionEval);
 					}
 				}
 				

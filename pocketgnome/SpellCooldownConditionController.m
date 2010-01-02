@@ -40,7 +40,7 @@
     Condition *condition = [Condition conditionWithVariety: VarietySpellCooldown 
                                                       unit: UnitNone
                                                    quality: QualityNone
-                                                comparator: CompareNone
+                                                comparator: [isOrNot selectedTag]
                                                      state: StateNone
                                                       type: [typeSegment selectedTag]
                                                      value: value];
@@ -55,6 +55,7 @@
     if( [condition variety] != VarietySpellCooldown) return;
     
     [typeSegment selectSegmentWithTag: [condition type]];
+    [isOrNot selectSegmentWithTag: [condition comparator]];
 	[valueText setStringValue:[NSString stringWithFormat:@"%@", [condition value]]];
 	
     [self validateState: nil];
