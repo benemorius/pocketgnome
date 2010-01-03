@@ -1589,7 +1589,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	self.skinStartTime = [NSDate date];
 	
 	// Not able to skin :/
-	if( ![mob isValid] || ![mob isSkinnable] || distanceToUnit > 5.0f ) {
+	if( ![mob isValid] || ![mob isSkinnable] || distanceToUnit > UNIT_DISTANCE ) {
 		
 		[self performSelector: @selector(skinMob:) withObject:mob afterDelay:0.1f];
         return;
@@ -1823,8 +1823,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             if( ![[movementController moveToObject] isEqualToObject: unit]) {
                 float distance = [[playerController position] distanceToPosition2D: [unit position]];
                 
-                if( distance > 5.0f) {
-                    // if we are more than 5 yards away, move to this unit
+                if( distance > UNIT_DISTANCE) {
                     log(LOG_MOVEMENT, @"Melee range required; moving to %@ at %.2f yards", unit, distance);
                     [movementController moveToObject: unit andNotify: YES];
                 } else  {
@@ -2495,7 +2494,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				//}
 				//else{
 					log(LOG_LOOT, @"Going to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-					if(mobToLootDist <= 5.0f)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
+					if(mobToLootDist <= UNIT_DISTANCE)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
 					else                        [movementController moveToObject: mobToLoot andNotify: YES];
 					return YES;
 				//}

@@ -30,7 +30,7 @@
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
 //range at which a waypoint is considered reached
 #define WAYPOINT_SENSITIVITY			9.0f
-#define UNIT_DISTANCE					5.0f
+#define UNIT_DISTANCE					4.0f
 #define POSITION2D_DISTANCE             2.0f
 // How close do we need to be to a node before we dismount?
 #define NODE_DISTANCE_UNTIL_DISMOUNT	3.5f
