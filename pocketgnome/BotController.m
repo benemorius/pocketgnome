@@ -1401,7 +1401,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_FUNCTION, @"entering function");
     BOOL isNode = [unit isKindOfClass: [Node class]];
 	
-    if ( self.doLooting || isNode ) {
+    if(self.doLooting || isNode)
+    {
         Position *playerPosition = [playerController position];
         float distanceToUnit = [playerController isOnGround] ? [playerPosition distanceToPosition2D: [unit position]] : [playerPosition distanceToPosition: [unit position]];
 		[movementController pauseMovement];
@@ -1409,8 +1410,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		self.lastAttemptedUnitToLoot = unit;
 		
-        if([unit isValid] && (distanceToUnit <= 5.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
-            
+        if([unit isValid] && (distanceToUnit <= 5.0))
+        {
 			[controller setCurrentStatus: @"Bot: Looting"];
 			log(LOG_LOOT, @"Looting : %@", unit);
 			
@@ -1424,8 +1425,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// In the off chance that no items are actually looted
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
-        } 
-		else {
+        }
+		else
+        {
 			log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", [unit isValid], distanceToUnit <= 5.0, unit );
 			
 			// This will ensure we won't try to loot this node again - /cry
@@ -1435,7 +1437,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else{
 				[_mobsToLoot removeObject: self.unitToLoot];
 			}
-			
+			[blacklistController blacklistObject:self.unitToLoot];
+            
 			// Not 100% sure why we need this, but it seems important?
 			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
 			
@@ -1516,6 +1519,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[blacklistController blacklistObject:self.unitToLoot];
 	[_mobsToLoot removeObject:self.unitToLoot];
 	self.unitToLoot = nil;
+    [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
 }
 
 - (void)skinOrFinish{
@@ -1555,17 +1559,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// We're done looting+skinning!
-	if ( !canSkin ){
+	if ( !canSkin )
+    {
 		NSDate *currentTime = [NSDate date];
 		log(LOG_LOOT, @"All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
 		
 		// Reset our attempt variables!
 		_lootAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
-		
-		// Mount?  Or just evaluate
-		//[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
-		[self evaluateSituation];
 	}
 }
 
@@ -1861,7 +1862,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)addLootMob: (Unit*)unit {
 	if([unit isValid])
     {
-        if([(Mob*)unit isLootable] || ([(Mob*)unit isSkinnable] && _doSkinning))
+        if(([(Mob*)unit isLootable] || ([(Mob*)unit isSkinnable] && _doSkinning)) && ![blacklistController isBlacklisted:unit])
         {
             if([[[playerController player] position] distanceToPosition: [unit position]] <= [theCombatProfile attackRange])
             {
@@ -2056,9 +2057,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if(!health && !mana) {
         // we're done here
         log(LOG_BEHAVIOR, @"[Regen] Finished early after %.2f seconds!", [[NSDate date] timeIntervalSinceDate: start]);
-        if([playerController isSitting] && ![controller isWoWChatBoxOpen]) {
-            [chatController jump];
-        }
+        //if([playerController isSitting] && ![controller isWoWChatBoxOpen]) {
+        //    [chatController jump];
+        //}
         [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
         return;
     }
