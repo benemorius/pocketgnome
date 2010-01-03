@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2375"/>
 			<integer value="4069"/>
 			<integer value="4228"/>
+			<integer value="2375"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6286,10 +6286,6 @@ bGx5IHVzZSB0aGVtIQ</string>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>log_action</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSCustomObject" id="771133398">
@@ -11960,6 +11956,14 @@ bGx5IHVzZSB0aGVtIQ</string>
 					</object>
 					<int key="connectionID">4243</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">macroController</string>
+						<reference key="source" ref="1002180867"/>
+						<reference key="destination" ref="305775892"/>
+					</object>
+					<int key="connectionID">4244</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -17534,7 +17538,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4243</int>
+			<int key="maxID">4244</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

@@ -26,6 +26,7 @@
 @class MovementController;
 @class BlacklistController;
 @class PlayersController;
+@class MacroController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -56,6 +57,7 @@
 	IBOutlet MobController			*mobController;
 	IBOutlet BlacklistController	*blacklistController;
 	IBOutlet PlayersController		*playersController;
+    IBOutlet MacroController        *macroController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;

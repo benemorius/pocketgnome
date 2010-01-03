@@ -21,6 +21,7 @@
 #import "OffsetController.h"
 #import "BlacklistController.h"
 #import "PlayersController.h"
+#import "MacroController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -639,8 +640,11 @@ static PlayerDataController* sharedController = nil;
         // and to the player table
         ret3 = [memory saveDataForAddress: ([self infoAddress] + UnitField_Target) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
 		
-        if(ret1 && ret3)    
+        if(ret1 && ret3)
+        {
+            [macroController executeMacro:[NSString stringWithFormat:@"/cleartarget%c/targetlasttarget", '\n']];
             return YES;
+        }
         else
             return NO;
     }
