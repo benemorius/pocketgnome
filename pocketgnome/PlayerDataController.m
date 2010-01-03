@@ -1159,12 +1159,12 @@ static PlayerDataController* sharedController = nil;
 		{
             NSMutableArray *units = [NSMutableArray array];
             [units addObjectsFromArray:[combatController unitsAttackingMe]];
-			NSArray *attackQueue = [combatController attackQueue];
-			NSMutableArray *allUnits = [NSMutableArray array];
-			[allUnits addObjectsFromArray:[mobController allMobs]];
+			NSMutableArray *otherUnits = [NSMutableArray array];
+            [otherUnits addObjectsFromArray:[combatController attackQueue]];
+            [otherUnits addObjectsFromArray:[botController mobsToLoot]]; 
 
 			// Only add new units!
-			for(Unit *unit in attackQueue){
+			for(Unit *unit in otherUnits){
 				if ( ![units containsObject:unit] ){
 					[units addObject:unit];
 				}
@@ -1183,7 +1183,7 @@ static PlayerDataController* sharedController = nil;
 											 unit,                                                                @"Player",
 											 [NSString stringWithFormat: @"0x%X", [unit lowGUID]],                @"ID",
 											 [NSString stringWithFormat: @"%@%@", [unit isPet] ? @"[Pet] " : @"", [Unit stringForClass: [unit unitClass]]],                             @"Class",
-											 [Unit stringForRace: [unit race]],                                   @"Race",
+											 [unit name],                                   @"Race",
 											 [NSString stringWithFormat: @"%d%%", [unit percentHealth]],          @"Health",
 											 [NSNumber numberWithUnsignedInt: level],                             @"Level",
 											 [NSNumber numberWithFloat: distance],                                @"Distance", 
@@ -1406,17 +1406,24 @@ static PlayerDataController* sharedController = nil;
 			log(LOG_ERROR, @"can't do color :(");
 			return;
 		}
-		
-		if ( [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit] ){
+		if ( [[blacklistController blacklistedUnits] containsObject:[[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]] ){
+			[aCell setTextColor: [NSColor lightGrayColor]];
+			return;
+		}
+		else if ( [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit] ){
+			[aCell setTextColor: [NSColor greenColor]];
+			return;
+		}
+		else if ( [[combatController unitsAttackingMe] containsObject: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]]) {
 			[aCell setTextColor: [NSColor redColor]];
 			return;
 		}
-		else if ( [[combatController attackQueue] containsObject: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]]) {
+        else if ( [[combatController attackQueue] containsObject: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]]) {
 			[aCell setTextColor: [NSColor orangeColor]];
 			return;
 		}
-		else if ( [blacklistController isBlacklisted:[[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]] ){
-			[aCell setTextColor: [NSColor lightGrayColor]];
+        else if ( [[botController mobsToLoot] containsObject:[[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]] ){
+			[aCell setTextColor: [NSColor blueColor]];
 			return;
 		}
 		

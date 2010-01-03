@@ -103,7 +103,7 @@
     for(Unit* unit in _attackQueue) {
         // remove the unit if it's invalid, blacklisted, dead, evading or no longer in combat
         if( ![unit isValid] || [blacklistController isBlacklisted: unit] || [unit isDead] || [unit isEvading]){ // || [unit isTappedByOther]) {// || ![unit isInCombat] ) {
-            log(LOG_COMBAT, @"[A] Removing %@  NotValid?(%d) Blacklisted?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [blacklistController isBlacklisted: unit], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
+            log(LOG_TARGET, @"[A] Removing %@  NotValid?(%d) Blacklisted?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [blacklistController isBlacklisted: unit], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
 			[unitsToRemove addObject: unit];
         }
     }
@@ -114,16 +114,11 @@
         [self removeUnitFromAttackQueue:unit];
     }
     
-    if([unitsToRemove count]) { 
-		log(LOG_COMBAT, @"%d attacking me; %d in attack queue.", [_unitsAttackingMe count], [_attackQueue count]);
-		
-		if( ![self inCombat] && ([_unitsAttackingMe count] == 0) && ([_attackQueue count] == 0)) {
-			log(LOG_COMBAT, @"We are neither in combat nor have any remaining targets.");
+    if([unitsToRemove count])
+    { 
+		//log(LOG_TARGET, @"%d attacking me; %d in attack queue.", [_unitsAttackingMe count], [_attackQueue count]);
+		if(![self inCombat] && ([_unitsAttackingMe count] == 0))
 			[self concludeCombat];
-		}
-		else{
-			log(LOG_COMBAT, @"Still in combat!");
-		}
     }
 }
 
@@ -326,31 +321,19 @@
 		}
         [_attackQueue addObject: unit];
         float dist = [[playerData position] distanceToPosition2D: [unit position]];
-        log(LOG_TARGET, @"---> [A] Adding %@ at %.2f", unit, dist);
-		
-		if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
-			NSString *unitName = ([unit name]) ? [unit name] : nil;
-			// [GrowlApplicationBridge setGrowlDelegate: @""];
-			[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"%@ Attacking", [unit isPlayer] ? @"Player" : @"Mob"]
-										description: ( unitName ? [NSString stringWithFormat: @"[%d] %@ at %d%%", [unit level], unitName, [unit percentHealth]] : ([unit isPlayer]) ? [NSString stringWithFormat: @"[%d] %@ %@, %d%%", [unit level], [Unit stringForRace: [unit race]], [Unit stringForClass: [unit unitClass]], [unit percentHealth]] : [NSString stringWithFormat: @"[%d] %@, %d%%", [unit level], [Unit stringForClass: [unit unitClass]], [unit percentHealth]])
-								   notificationName: @"AddingUnit"
-										   iconData: [[unit iconForClass: [unit unitClass]] TIFFRepresentation]
-										   priority: 0
-										   isSticky: NO
-									   clickContext: nil];             
-		}
+        log(LOG_TARGET, @"Adding %@ to attack queue at %.2f yards.", unit, dist);
 		return YES;
     }
 	else
 	{
-		log(LOG_TARGET, @"Unit %@ already exists in the attack queue", unit);
+		//log(LOG_TARGET, @"Unit %@ already exists in the attack queue", unit);
         return NO;
     }
 }
 
 - (BOOL)removeUnitFromAttackQueue: (Unit*)unit {
     if([_attackQueue containsObject:unit]) {
-        log(LOG_COMBAT, @"<--- [A] Removing %@", unit);
+        log(LOG_TARGET, @"Removing %@ from attack queue.", unit);
         [_attackQueue removeObject: unit];
         return YES;
     }
@@ -486,83 +469,63 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 - (void)doCombatSearch{
 	if(![botController isBotting])
 		return;
-	log(LOG_TARGET, @"Searching nearby units");
-	// add all mobs + players
+
 	NSArray *mobs = [mobController allMobs];
 	NSArray *players = [playersController allPlayers];
 	
-	UInt64 playerGUID = [[playerData player] GUID];
-	UInt64 unitTarget = 0;
 	BOOL playerHasPet = [[playerData player] hasPet];
 	
-	for ( Mob *mob in mobs )
+	for(Mob *mob in mobs)
 	{
-		unitTarget = [mob targetID];
-		if (
-			![mob isDead]	&&		// 1 - living units only
-			[mob isInCombat] &&		// 2 - in Combat
-			[mob isSelectable] &&	// 3 - can select this target
-			[mob isAttackable] &&	// 4 - attackable
-			//[mob isTapped] &&		// 5 - tapped - in theory someone could tap a target while you're casting, and you get agg - so still kill (removed as a unit @ 100% could attack us and not be tapped)
-			[mob isValid] &&		// 6 - valid mob
-			(	(unitTarget == playerGUID ||										// 7 - targetting us
-				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
-			 [mob isFleeing])													// or fleeing
-			){
-			
-			log(LOG_COMBAT, @"In combat with mob %@", mob);
-			
-			// add mob!
-			[self addUnitToAttackingMe: (Unit*)mob];
-			//and queue it for disposal
-			[self addUnitToAttackQueue: (Unit*)mob];
-		}
-		// remove unit
-		else {
-			//PGLog(@"[Combat] Dropping combat with mob %@", mob);
-			[self removeUnitFromAttackingMe:(Unit*)mob];
+		if([mob isValid])
+        {
+            if([botController isUnitValidToAttack:mob fromPosition:[[playerData player] position] ignoreDistance:NO])
+				[self addUnitToAttackQueue:mob];
+            
+            if([mob targetID] == [[playerData player] GUID] || (playerHasPet && [mob targetID] == [[playerData player] petGUID]) || [mob isFleeing])
+                [self addUnitToAttackingMe: (Unit*)mob];
+            else
+                [self removeUnitFromAttackingMe:(Unit*)mob];
 		}
 	}
 	
-	for ( Player *player in players ){
-		unitTarget = [player targetID];
-		if (
-			![player isDead] &&										// 1 - living units only
-			[player currentHealth] != 1 &&							// 2 - this should be a ghost check, being lazy for now
-			[player isInCombat] &&									// 3 - in combat
-			[player isSelectable] &&								// 4 - can select this target
-			([player isAttackable] || [player isFeignDeath] ) &&	// 5 - attackable or feigned
-			[player isValid] &&										// 6 - valid
-			(	(unitTarget == playerGUID ||										// 7 - targetting us
-				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
-			 [player isFleeing])													// or fleeing
-			){
-			
-			log(LOG_COMBAT, @"In combat with player %@", player);
-			
-			// add player
-			[self addUnitToAttackingMe:player];
-			//and queue it for disposal
-			[self addUnitToAttackQueue: player];
-		}
-		// remove unit
-		else{
-			//PGLog(@"[Combat] Dropping combat with player %@", player);
-			[self removeUnitFromAttackingMe:player];
-		}
+	for(Player *player in players)
+    {
+		if([player isValid])
+        {
+            if([botController isUnitValidToAttack:player fromPosition:[[playerData player] position] ignoreDistance:NO])
+				[self addUnitToAttackQueue:player];
+
+			if([player targetID] == [[playerData player] GUID] || (playerHasPet && [player targetID] == [[playerData player] petGUID]) || [player isFleeing])
+                [self addUnitToAttackingMe:player];
+            else
+                [self removeUnitFromAttackingMe:player];
+        }
 	}
 	
 	// verify units we're in combat with!
 	[self verifyCombatUnits: NO];
 	
-	log(LOG_COMBAT, @"In combat with %d units", [_unitsAttackingMe count]);
+	log(LOG_TARGET, @"In combat with %d units; %d in attack queue", [_unitsAttackingMe count], [_attackQueue count]);
 }
 
 - (BOOL)addUnitToAttackingMe: (Unit*)unit{
-	if ( ![_unitsAttackingMe containsObject: unit] ){
+	if(![_unitsAttackingMe containsObject: unit])
+    {
 		[_unitsAttackingMe addObject:unit];
 		// should we remove the unit from the blacklist?
-		log(LOG_TARGET, @"Adding ---> [C] %@ (%d total)", unit, [_unitsAttackingMe count]);
+		log(LOG_TARGET, @"Adding %@ to units attacking me (%d total)", unit, [_unitsAttackingMe count]);
+        
+        if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
+			NSString *unitName = ([unit name]) ? [unit name] : nil;
+			[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"%@ Attacking", [unit isPlayer] ? @"Player" : @"Mob"]
+										description: ( unitName ? [NSString stringWithFormat: @"[%d] %@ at %d%%", [unit level], unitName, [unit percentHealth]] : ([unit isPlayer]) ? [NSString stringWithFormat: @"[%d] %@ %@, %d%%", [unit level], [Unit stringForRace: [unit race]], [Unit stringForClass: [unit unitClass]], [unit percentHealth]] : [NSString stringWithFormat: @"[%d] %@, %d%%", [unit level], [Unit stringForClass: [unit unitClass]], [unit percentHealth]])
+								   notificationName: @"AddingUnit"
+										   iconData: [[unit iconForClass: [unit unitClass]] TIFFRepresentation]
+										   priority: 0
+										   isSticky: NO
+									   clickContext: nil];             
+		}
 		return YES;
 	}
 	return NO;
@@ -571,7 +534,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 - (BOOL)removeUnitFromAttackingMe: (Unit*)unit{
 	if ([_unitsAttackingMe containsObject: unit]){
 		[_unitsAttackingMe removeObject: unit];
-		log(LOG_TARGET, @"Removing <--- [C] %@", unit);
+		log(LOG_TARGET, @"Removing %@ from units attacking me (%d remaining)", unit, [_unitsAttackingMe count]);
 		return YES;		
 	}
 	return NO;			 

@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "Position.h"
 
 #define USE_ITEM_MASK       0x80000000
 #define USE_MACRO_MASK      0x40000000
@@ -259,9 +260,12 @@
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
 @property (readwrite) BOOL nodeDescend;
+@property (readonly) NSMutableArray *mobsToLoot;
 
 - (void)testRule: (Rule*)rule;
 - (BOOL)unitValidToHeal: (Unit*)unit;
+- (BOOL)isUnitValidToAttack: (Unit*)unit fromPosition: (Position*)position ignoreDistance: (BOOL)ignoreDistance;
+
 // Input from CombatController
 - (void)playerEnteringCombat;
 - (void)playerLeavingCombat;

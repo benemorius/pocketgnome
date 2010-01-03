@@ -12,6 +12,7 @@
 #import "IgnoreEntry.h"
 
 #import "PlayerDataController.h"
+#import "PlayersController.h"
 
 
 @implementation CombatProfile
@@ -291,16 +292,21 @@
         }
     }
     PlayerDataController *playerData = [PlayerDataController sharedController];
+    PlayersController *playersController = [[PlayersController alloc] init];
+    Player *tank = [playersController playerWithGUID:[self selectedTankGUID]];
 
     // valid?
     // dead?
     // selectable?
     // attackable?
     // already tapped?
-    if(![unit isValid] || [unit isDead] || ![unit isSelectable] || ![unit isAttackable])
+    if(![unit isValid] || [unit isDead] || ![unit isSelectable] || !([unit isAttackable] || [unit isFeignDeath]) || [unit currentHealth] == 1)
         return NO;
     if([unit isTappedByOther] && (([unit targetID] != [self selectedTankGUID]) || ([unit targetID] != [playerData focusGUID])))
         return NO;
+    if([self attackOnlyTankedMobs] && [tank isValid] && !([unit targetID] == [tank GUID]))
+        return NO;
+
 
     // get faction data
     int faction = [unit factionTemplate];

@@ -115,8 +115,6 @@
 - (void)preRegen;
 - (void)evaluateRegen: (NSDictionary*)regenDict;
 
-- (BOOL)isUnitValidToAttack: (Unit*)unit fromPosition: (Position*)position ignoreDistance: (BOOL)ignoreDistance;
-
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test;
 - (void)performProcedureWithState: (NSDictionary*)state;
 - (void)playerHasDied: (NSNotification*)noti;
@@ -328,6 +326,7 @@
 @synthesize doLooting       = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
 @synthesize nodeDescend     = _nodeDescend;
+@synthesize mobsToLoot      = _mobsToLoot;
 
 - (NSString*)sectionTitle {
     return @"Start/Stop Bot";
@@ -1860,92 +1859,33 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)addLootMob: (Unit*)unit {
-	if(([(Mob*)unit isSkinnable] || [(Mob*)unit isLootable]) && [[[playerController player] position] distanceToPosition: [unit position]] <= [theCombatProfile attackRange]) {
-		if ([_mobsToLoot containsObject: unit])
-		{
-			[_mobsToLoot removeObject:unit];
-			[_mobsToLoot addObject:unit];
-		}
-		else
-		{
-			log(LOG_LOOT, @"Adding discovered mob %@ to loot queue.", unit);
-			[_mobsToLoot addObject:unit];
-		}
-	}
-	else{
-		//PGLog(@"[Loot] Discovered mob %@ isn't lootable, ignoring", unit);
+	if([unit isValid])
+    {
+        if([(Mob*)unit isLootable] || ([(Mob*)unit isSkinnable] && _doSkinning))
+        {
+            if([[[playerController player] position] distanceToPosition: [unit position]] <= [theCombatProfile attackRange])
+            {
+                if ([_mobsToLoot containsObject: unit])
+                {
+                    [_mobsToLoot removeObject:unit];
+                    [_mobsToLoot addObject:unit];
+                }
+                else
+                {
+                    log(LOG_LOOT, @"Adding discovered mob %@ to loot queue.", unit);
+                    [_mobsToLoot addObject:unit];
+                }
+            }
+        }
 	}
 }
 
 - (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue {
 	log(LOG_FUNCTION, @"entering function");
+    [self addLootMob:unit];
 	[self evaluateSituation];
 	return;
-	/*
-    // we only need to loot this if it's a mob and if was one we were directed to attack
-    if( [unit isNPC] ) {
-        if(wasInQueue) {
-            if([movementController moveToObject] == unit) {
-                log(LOG_MOVEMENT, @"finishUnit says stop moving to this unit.");
-                [movementController finishMovingToObject: unit];
-            }
-            
-            if([unit isDead]) {
-                if(self.doLooting) {
-                    // make sure this mob is even lootable
-                    // sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
-                    usleep(500000);
-                    if([(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable]) {
-                        if ([_mobsToLoot containsObject: unit]) {
-                            log(LOG_LOOT, @"%@ was already in the loot list, removing first", unit);
-                            [_mobsToLoot removeObject: unit];
-                        }
-                        log(LOG_LOOT, @"Adding %@ to loot list.", unit);
-                        [_mobsToLoot addObject: (Mob*)unit];
-                    }
-					else{
-						log(LOG_LOOT, @"Mob %@ isn't lootable, ignoring", unit);
-					}
-                }
-            }
-			else
-			{
-				log(LOG_LOOT, @"Unit %@ finished, but not dead! Health: %d", unit, [unit currentHealth]);
-				[self evaluateSituation];
-			}
-            
-            // if we're in the middle of a combat procedure, end it
-            if([[self procedureInProgress] isEqualToString: CombatProcedure])
-                [self cancelCurrentProcedure];
-        }
-        return;
-    }
-    
-    if( [unit isPlayer] ) {
-        [self evaluateSituation];
-    }
-    */
-    // if we are not in combat, then an attack attempt went bust
-    // --> this is disabled because the OOC notification is now being used to trigger the next action
-    //if(![[combatController attackQueue] count]) {
-    //    [self evaluateSituation];
-    //}
 }
-
-/*
-- (void)lootNodeWhenOnGround: (WoWObject*)unit{
-	
-	PGLog(@"[Bot] Movement flags 0x%x %d", [playerController movementFlags], [playerController movementFlags] & 0x0);
-	
-	// Is our player on the ground?
-	if ( ( [playerController movementFlags] & 0x0 ) == 0x0 ){
-		[self lootUnit: unit];
-		return;
-	}
-	
-	// Wait for fall time!
-	[self performSelector: @selector(lootNodeWhenOnGround:) withObject: unit afterDelay:0.1f];
-}*/
 
 #pragma mark -
 #pragma mark [Input] MovementController
@@ -2150,7 +2090,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
-            if(mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot] && [[mobToLoot position] distanceToPosition: [playerController position]] < [theCombatProfile attackRange] && ([mobToLoot isLootable] || ([mobToLoot isSkinnable] && _doSkinning)))
+            if(mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot])
 			{
                 log(LOG_LOOT, @"Selected a mob to loot: %@", mobToLoot);
                 return mobToLoot;
@@ -2166,15 +2106,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
     
-    // unit fits the combat profile
-    // unit is within the vertical offset
-    // unit is not blacklisted
-    if(   ([self.theCombatProfile unitFitsProfile: unit ignoreDistance: ignoreDistance])
-       && ([[unit position] verticalDistanceToPosition: position] <= vertOffset)  
-       && (![blacklistController isBlacklisted:unit]) ) {
-        return YES;
-    }
-    return NO;
+    if(![self.theCombatProfile unitFitsProfile:unit ignoreDistance:ignoreDistance])
+        return NO;
+    if([[unit position] verticalDistanceToPosition: position] > vertOffset)
+        return NO;
+    if([blacklistController isBlacklisted:unit])
+        return NO;
+    
+    return YES;
 }
 
 - (Unit*)unitToAttack {
@@ -2188,7 +2127,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	for ( Unit *unit in [combatController attackQueue] ){
 		if ( ![knownUnits containsObject:unit] )
 		{
-			log(LOG_TARGET, @"Adding %@ known unit", unit);
+			//log(LOG_TARGET, @"Adding %@ known unit", unit);
 			[knownUnits addObject:unit];
 		}
 	}
@@ -2231,7 +2170,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 			if([knownUnits containsObject:unit])
 			{
-				log(LOG_TARGET, @"Skipping unit %@ already known.", unit);
+				//log(LOG_TARGET, @"Skipping unit %@ already known.", unit);
 			}
         }
     }
@@ -2458,11 +2397,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	
 	//time for combat things
-	// first, check if we are in combat already (we agrod something by accident, whatever)
-	if([combatController combatEnabled] && ([[playerController player] isInCombat] || [[combatController attackQueue] count]) )
-	{
-		[combatController doCombatSearch];
-        
+    
+    [combatController doCombatSearch];
+    
+	// first, check if we are in combat already
+	if([combatController combatEnabled] && [[combatController unitsAttackingMe] count]) //[[playerController player] isInCombat])
+	{        
 		if([combatController attackBestTarget])
 			return YES;
 		else
@@ -2470,13 +2410,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self performSelector: _cmd withObject: nil afterDelay: 0.1];
 			return NO;
 		}
-		//([[unit position] verticalDistanceToPosition: playerPosition] <= vertOffset)
 	}
 	
-	//no known targets to attack, so now check for a new target to attack
-	Unit *newUnit  = [self unitToAttack];
-	if([theCombatProfile onlyRespond])
-		newUnit = nil;
+    //otherwise, determine whether to loot or attack a new mob
+    
+	Unit *newUnit  = [combatController findBestUnitToAttack];
+	//if([theCombatProfile onlyRespond])
+	//	newUnit = nil;
 	float newUnitDist  = newUnit ? [[newUnit position] distanceToPosition: playerPosition] : INFINITY;
 	
 	Mob *mobToLoot      = [self mobToLoot];
@@ -2519,18 +2459,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		//attack the newUnit only if we're not flying or following someone on a mount
 		if(!([followUnit isValid] && [followUnit isMounted]) && [[playerController player] isOnGround])
 		{
-			//add additional units to queue
-			while ([newUnit isValid])
-			{
-                if([theCombatProfile attackOnlyTankedMobs] && [tank isValid] && !([newUnit targetID] == [tank GUID]))
-                {
-                    log(LOG_DEV, @"Not attacking %@ because it's targeting %llx and not %@", newUnit, [newUnit targetID], tank);
-                    continue;
-                }
-				log(LOG_TARGET, @"Found %@ and adding to attack queue.", newUnit);
-				[combatController addUnitToAttackQueue: newUnit];
-				newUnit = [self unitToAttack];
-			}
 			if([combatController attackBestTarget])
 				return YES;
 			else
