@@ -1097,22 +1097,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         [self setProcedureInProgress: [state objectForKey: @"Procedure"]];
         log(LOG_BEHAVIOR, @"Setting current procedure: %@", self.procedureInProgress);
         
-        if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
-			NSArray *attackQueue = [combatController attackQueue];
-			NSMutableArray *allUnits = [NSMutableArray array];
-			[allUnits addObjectsFromArray:[combatController unitsAttackingMe]];
-			for(Unit *unit in attackQueue){
-				if ( ![allUnits containsObject:unit] ){
-					[allUnits addObject:unit];
-				}
-			}
-			
-            int count =		[allUnits count];
-            if(count == 1)  [controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d unit)", count]];
-            else            [controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d units)", count]];
+        if ( [[self procedureInProgress] isEqualToString: CombatProcedure])
+        {
+            [controller setCurrentStatus:[NSString stringWithFormat:@"Bot: Player in combat with %d units. %d units in attack queue", [[combatController unitsAttackingMe] count], [[combatController attackQueue] count]]];
 			
 			log(LOG_BEHAVIOR, @"In Combat: (%d:%d)", [playerController isInCombat], [combatController inCombat]);
-        } else {
+        }
+        else
+        {
             if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])
                 [controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
             else if( [[self procedureInProgress] isEqualToString: PostCombatProcedure])
@@ -1851,11 +1843,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                           CombatProcedure,                  @"Procedure",
                                           [NSNumber numberWithInt: 0],      @"CompletedRules",
                                           unit,                             @"Target", nil]];
-    } else {
-        // we are currently executing the combat routine;
-        // do nothing
-		
-		//PGLog(@"[Bot] could we be moving toward the target here?");
     }
 }
 
@@ -2390,11 +2377,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
     // check to see if we are moving to attack a unit and bail if we are
-    if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
-        log(LOG_TARGET, @"attackUnit == moveToObject");
-        [self performSelector: _cmd withObject: nil afterDelay: 0.1];
-		return NO;
-    }
+    //if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
+    //    log(LOG_TARGET, @"attackUnit == moveToObject");
+    //    [self performSelector: _cmd withObject: nil afterDelay: 0.1];
+	//	return NO;
+    //}
 	
 	
 	//time for combat things
