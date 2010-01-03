@@ -269,7 +269,7 @@ static MobController* sharedController = nil;
 			Unit *unit = [Mob mobWithAddress: address inMemory: memory];
             if([dataList containsObject:unit])
             {
-                log(LOG_ERROR, @"Duplicate mob found: %@", unit);
+                log(LOG_MEMORY, @"Duplicate mob found: %@", unit);
 				continue;
             }
 			if([dataList containsObject:unit])
@@ -476,8 +476,8 @@ static MobController* sharedController = nil;
                && ((mobLevel >= lowLevel) && (mobLevel <= highLevel))       // 4) mobs within the level range
                && ![mob isPet]                                              // 5) mobs that are not player pets
                && [mob isSelectable]                                        // 6) mobs that are selectable
-               && [mob isAttackable]                                        // 7) mobs that are attackable
-               && ![mob isTappedByOther] )                                  // 8) mobs that are not tapped by someone else
+               && [mob isAttackable] )                                       // 7) mobs that are attackable
+               //&& ![mob isTappedByOther] )                                  // 8) mobs that are not tapped by someone else //handle this later
                 [withinRangeMobs addObject: mob];
         }
     }

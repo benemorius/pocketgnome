@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4228"/>
-			<integer value="2686"/>
 			<integer value="2375"/>
+			<integer value="2686"/>
+			<integer value="4228"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -11037,6 +11037,14 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<int key="connectionID">4065</int>
 				</object>
 				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">blacklistController</string>
+						<reference key="source" ref="983345874"/>
+						<reference key="destination" ref="112137998"/>
+					</object>
+					<int key="connectionID">4066</int>
+				</object>
+				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: values.log_function</string>
 						<reference key="source" ref="897465803"/>
@@ -11888,18 +11896,10 @@ bGx5IHVzZSB0aGVtIQ</string>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">blacklistController</string>
-						<reference key="source" ref="983345874"/>
-						<reference key="destination" ref="112137998"/>
-					</object>
-					<int key="connectionID">4239</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">blacklistController</string>
 						<reference key="source" ref="1002180867"/>
 						<reference key="destination" ref="112137998"/>
 					</object>
-					<int key="connectionID">4240</int>
+					<int key="connectionID">4239</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -17456,7 +17456,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4240</int>
+			<int key="maxID">4239</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -17679,6 +17679,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<string>movementController</string>
 							<string>netherwingEggCheckbox</string>
 							<string>nodeController</string>
+							<string>nodeDescendCheckbox</string>
 							<string>nodeIgnoreFriendlyCheckbox</string>
 							<string>nodeIgnoreFriendlyDistanceText</string>
 							<string>nodeIgnoreHostileCheckbox</string>
@@ -17766,6 +17767,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<string>MovementController</string>
 							<string>NSButton</string>
 							<string>NodeController</string>
+							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSButton</string>
@@ -18434,7 +18436,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>AuraController</string>
 							<string>BlacklistController</string>
-							<string>id</string>
+							<string>BotController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -18525,6 +18527,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>blacklistController</string>
 							<string>botController</string>
 							<string>controller</string>
 							<string>memoryViewController</string>
@@ -18536,6 +18539,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>BlacklistController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

@@ -101,6 +101,7 @@
     int _currentHotkey, _currentPetAttackHotkey;
 	UInt32 _lastSpellCastGameTime;
     BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg, _doFishing;
+    BOOL _nodeDescend;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
@@ -207,6 +208,7 @@
     IBOutlet NSButton *lootCheckbox;
 	IBOutlet NSButton *mountCheckbox;
 	IBOutlet NSPopUpButton *mountType;
+    IBOutlet NSButton *nodeDescendCheckbox;
 	
 	IBOutlet NSTextField *fishingGatherDistanceText;
 	IBOutlet NSButton *fishingCheckbox;
@@ -256,6 +258,7 @@
 @property (readonly, retain) CombatProfile *theCombatProfile;
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
+@property (readwrite) BOOL nodeDescend;
 
 - (void)testRule: (Rule*)rule;
 - (BOOL)unitValidToHeal: (Unit*)unit;

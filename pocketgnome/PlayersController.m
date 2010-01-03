@@ -181,7 +181,7 @@ static PlayersController *sharedPlayers = nil;
 			Player *unit = [Player playerWithAddress: address inMemory: memory];
 			if([dataList containsObject:unit])
             {
-                log(LOG_ERROR, @"Duplicate player found: %@", unit);
+                log(LOG_MEMORY, @"Duplicate player found: %@", unit);
 				continue;
             }
             [dataList addObject: unit];

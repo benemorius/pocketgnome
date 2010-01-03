@@ -13,6 +13,7 @@
 #import "MovementController.h"
 #import "Waypoint.h"
 #import "Offsets.h"
+#import "BlacklistController.h"
 
 #import "ImageAndTextCell.h"
 
@@ -252,7 +253,7 @@ typedef enum {
         if( ![addressDict objectForKey: address] ) {
             if([dataList containsObject:[Node nodeWithAddress: address inMemory: memory]])
             {
-                log(LOG_ERROR, @"Duplicate node found: %@", [Node nodeWithAddress: address inMemory: memory]);
+                log(LOG_MEMORY, @"Duplicate node found: %@", [Node nodeWithAddress: address inMemory: memory]);
 				continue;
             }
             [dataList addObject: [Node nodeWithAddress: address inMemory: memory]];
@@ -267,11 +268,11 @@ typedef enum {
 - (BOOL)removeFinishedNode: (Node*)node{
 	if ( [_finishedNodes containsObject:node] ){
 		[_finishedNodes removeObject:node];
-		log(LOG_NODE, @"Node %@ removed from blacklist", node);
+		log(LOG_NODE, @"Node %@ removed from finishedNodes", node);
 		return YES;
 	}
 	
-	log(LOG_NODE, @"Node %@ not found in blacklist", node);
+	log(LOG_NODE, @"Node %@ not found in finishedNodes", node);
 	
 	return NO;	
 }
@@ -295,9 +296,10 @@ typedef enum {
 }
 
 - (void)finishedNode: (Node*)node{
-    if(node && ![_finishedNodes containsObject: node]) {
-        [_finishedNodes addObject: node];
-    }
+    //if(node && ![_finishedNodes containsObject: node]) {
+    //    [_finishedNodes addObject: node];
+    //}
+    [blacklistController blacklistObject:node];
 }
 
 - (void)resetAllNodes {

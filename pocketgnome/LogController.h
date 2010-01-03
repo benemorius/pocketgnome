@@ -35,6 +35,7 @@
 #define LOG_BLACKLIST "blacklist"
 #define LOG_WAYPOINT "waypoint"
 #define LOG_POSITION "position"
+#define LOG_ACTION "action"
 
 @interface LogController : NSObject {
 
