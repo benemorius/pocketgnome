@@ -32,6 +32,7 @@
 #import "CombatCountConditionController.h"
 #import "ProximityCountConditionController.h"
 #import "SpellCooldownConditionController.h"
+#import "AuraProximityConditionController.h"
 
 #import "Macro.h"
 #import "Action.h"
@@ -180,6 +181,7 @@
     if(type == 12)   newRule = [[[CombatCountConditionController alloc] init] autorelease];
     if(type == 13)   newRule = [[[ProximityCountConditionController alloc] init] autorelease];
 	if(type == 14)   newRule = [[[SpellCooldownConditionController alloc] init] autorelease];
+    if(type == 15)   newRule = [[[AuraProximityConditionController alloc] init] autorelease];
 	
     
     if(newRule) {

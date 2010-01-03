@@ -581,7 +581,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     }
                 }
                 
-                //PGLog(@"  Searching for spell '%@'", [condition value]);
+                //log(LOG_CONDITION, @"Searching for spell '%@'", [condition value]);
                 
                 Unit *aUnit = nil;
                 if( [condition unit] == UnitPlayer ) {
@@ -976,6 +976,74 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				
 				break;
 				
+                /* ******************************** */
+                /* Aura Proximity Count Condition   */
+                /* ******************************** */
+            case VarietyAuraProximity:;
+                log(LOG_CONDITION, @"Doing Aura Proximity Count condition...");
+                
+                distance = (float)[condition type];
+                
+                // get list of all possible targets
+                NSMutableArray *allEnemies = [NSMutableArray array], *validEnemies = [NSMutableArray array];
+                if(test || self.theCombatProfile.attackNeutralNPCs || self.theCombatProfile.attackHostileNPCs) {
+                    [allEnemies addObjectsFromArray: [mobController allMobs]];
+                }
+                if(test || self.theCombatProfile.attackPlayers) {
+                    [allEnemies addObjectsFromArray: [playersController allPlayers]];
+                }
+                log(LOG_CONDITION, @"Found %d total units.", [allEnemies count]);
+                
+                // extract valid targets from all targets
+                for(Unit *unit in allEnemies) {
+                    if( test || [self isUnitValidToAttack: unit fromPosition:[playerController position] ignoreDistance:YES]) {
+                        [validEnemies addObject: unit];
+                    }
+                }
+                
+                if(test) {
+                    log(LOG_CONDITION, @"Test mode checks all units; normal mode will validate units against your combat profile.");
+                    if([condition unit] == UnitPlayer) log(LOG_CONDITION, @" --> Checking %.2fy around player...", distance);
+                    if([condition unit] == UnitTarget) log(LOG_CONDITION, @" --> Checking %.2fy around target...", distance); 
+                }
+                
+                // count the units in range
+                inRangeCount = 0;
+                for(Unit *unit in validEnemies)
+                {
+                    float range = [([condition unit] == UnitTarget) ? [target position] : [thePlayer position] distanceToPosition: [unit position]];
+                    if(range <= distance)
+                    {
+                        log(LOG_CONDITION, @"In Range (%.2fy): %@", range, unit);
+                        conditionEval = [auraController unit:unit hasBuffNamed:[condition value]];
+                        conditionEval |= [auraController unit:unit hasDebuffNamed:[condition value]];
+                        if(conditionEval)
+                        {
+                            log(LOG_CONDITION, @"%@ has aura", unit);
+                        }
+                        conditionEval = ([condition quality] == CompareExists)? conditionEval : !conditionEval;
+                        if(conditionEval)
+                        {
+                            log(LOG_CONDITION, @"%@ matches", unit);
+                            inRangeCount++;
+                        }
+                    }
+                }
+                
+                // compare with specified number of units
+                if( [condition comparator] == CompareMore) {
+                    conditionEval = ( inRangeCount > [condition state] ) ? YES : NO;
+                    log(LOG_CONDITION, @" --> %d > %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
+                } else if([condition comparator] == CompareEqual) {
+                    conditionEval = ( inRangeCount == [condition state] ) ? YES : NO;
+                    log(LOG_CONDITION, @" --> %d = %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
+                } else if([condition comparator] == CompareLess) {
+                    conditionEval = ( inRangeCount < [condition state] ) ? YES : NO;
+                    log(LOG_CONDITION, @" --> %d < %d is %@.", inRangeCount, [condition state], TRUE_FALSE(conditionEval));
+                } else goto loopEnd;
+                
+                break;
+                
             default:;
                 break;
         }
