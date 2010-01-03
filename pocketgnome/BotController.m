@@ -1372,7 +1372,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_FUNCTION, @"entering function");
 	
 	// Loot if we're on the ground!
-	if ( [playerController isOnGround] || [auraController unit:[playerController player] hasAura:40120]) //swift flight form
+	if ( [playerController isOnGround] )
     {
         log(LOG_NODE, @"Looting node %@", unit);
 		[self performSelector: @selector(lootUnit:) withObject: unit afterDelay:0.5f];	
@@ -1907,8 +1907,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         //we shouldn't need to recheck our position if we're already in reachedUnit
 		// Get off our mount (this could be called if our movement failed, we don't want to get off our mount!)!
 		//if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
-        if(![auraController unit:[playerController player] hasAura:40120]) //swift flight form
-            [movementController dismount];
+        [movementController dismount];
 		[self lootNode: unit];
 		//}
 		//else{
