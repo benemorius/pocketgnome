@@ -2388,7 +2388,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [combatController doCombatSearch];
     
 	// first, check if we are in combat already
-	if([combatController combatEnabled] && [[combatController unitsAttackingMe] count]) //[[playerController player] isInCombat])
+	if([combatController combatEnabled] && [[combatController unitsAttackingMe] count] && [[playerController player] isOnGround])
 	{        
 		if([combatController attackBestTarget])
 			return YES;
