@@ -81,12 +81,15 @@
 		// the actual command
 		NSString *macroCommand = [macroData valueForKey:@"Macro"];
 		
+        if(!macroCommand)
+            macroCommand = key;
+        
 		// send the command
 		[chatController enter];
 		usleep(100000);
 		[chatController sendKeySequence: [NSString stringWithFormat: @"%@%c", macroCommand, '\n']];
 		
-		log(LOG_ERROR, @"[Macro] I just typed the '%@' command. Set up a macro so I don't have to type it in! Check the settings tab.", key);
+		log(LOG_ERROR, @"[Macro] I just typed the '%@' command. Set up a macro so I don't have to type it in!", key);
 	}
 }
 
@@ -182,7 +185,9 @@
 			
 		// the actual command
 		NSString *macroCommand = [macroData valueForKey:@"Macro"];
-			
+        if(!macroCommand)
+            macroCommand = key;
+
 		// now lets loop through all of our player macros!
 		for ( Macro *macro in _playerMacros ){
 				

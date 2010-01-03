@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="4228"/>
 			<integer value="2686"/>
 			<integer value="2375"/>
-			<integer value="4228"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -11037,14 +11037,6 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<int key="connectionID">4065</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">blacklistController</string>
-						<reference key="source" ref="983345874"/>
-						<reference key="destination" ref="112137998"/>
-					</object>
-					<int key="connectionID">4066</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: values.log_function</string>
 						<reference key="source" ref="897465803"/>
@@ -11884,6 +11876,30 @@ bGx5IHVzZSB0aGVtIQ</string>
 						<reference key="destination" ref="491075087"/>
 					</object>
 					<int key="connectionID">4237</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">macroController</string>
+						<reference key="source" ref="145982638"/>
+						<reference key="destination" ref="305775892"/>
+					</object>
+					<int key="connectionID">4238</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">blacklistController</string>
+						<reference key="source" ref="983345874"/>
+						<reference key="destination" ref="112137998"/>
+					</object>
+					<int key="connectionID">4239</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">blacklistController</string>
+						<reference key="source" ref="1002180867"/>
+						<reference key="destination" ref="112137998"/>
+					</object>
+					<int key="connectionID">4240</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -17440,7 +17456,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4237</int>
+			<int key="maxID">4240</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -18190,6 +18206,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<string>chatController</string>
 							<string>controller</string>
 							<string>itemController</string>
+							<string>macroController</string>
 							<string>offsetController</string>
 							<string>playerDataController</string>
 						</object>
@@ -18198,6 +18215,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<string>ChatController</string>
 							<string>Controller</string>
 							<string>InventoryController</string>
+							<string>MacroController</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 						</object>
@@ -18580,7 +18598,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<string>movementController</string>
 							<string>nodeController</string>
 							<string>offsetController</string>
-							<string>playerController</string>
+							<string>playersController</string>
 							<string>powerNameText</string>
 							<string>spellController</string>
 							<string>view</string>
