@@ -1141,6 +1141,9 @@ static PlayerDataController* sharedController = nil;
         [self willChangeValueForKey: @"spellCasting"];
         [self didChangeValueForKey: @"spellCasting"];
         
+        // Update our CD info!
+        [spellController reloadCooldownInfo];
+        
         // check combat flags
         BOOL combatState = [self isInCombat];
         if( !_lastCombatState && combatState) {
@@ -1248,9 +1251,6 @@ static PlayerDataController* sharedController = nil;
 			// Update our healing table!
 			[_healingDataList sortUsingDescriptors: [healingTable sortDescriptors]];
 			[healingTable reloadData];
-			
-			// Update our CD info!
-			[spellController reloadCooldownInfo];
 		}
 		
 		// Update our bot timer!
