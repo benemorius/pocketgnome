@@ -1351,7 +1351,7 @@ typedef enum MovementType {
             log(LOG_MOVEMENT_CORRECTION, @"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
         }
     } else {
-        if( [[NSDate date] timeIntervalSinceDate: self.lastDirectionCorrection] > 2.0) {
+        if( [[NSDate date] timeIntervalSinceDate: self.lastDirectionCorrection] > 1.0) {
             [self correctDirection: YES];
         }
     }
