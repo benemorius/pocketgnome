@@ -631,7 +631,8 @@ static PlayerDataController* sharedController = nil;
 	
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
-    if(memory && [self playerIsValid]) {
+    if(memory && [self playerIsValid])
+    {
         BOOL ret1, ret3;
         // save this value to the target table
         ret1 = [memory saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_CURRENT) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
@@ -660,6 +661,10 @@ static PlayerDataController* sharedController = nil;
 		[mobController clearTargets];
 		return [self setTarget:0];
 	}
+    
+    //no need to set the target if it's already the target (hopefully)
+    if([self targetID] == [target GUID])
+        return YES;
 	
 	// need to make sure we hit the mob selection variable as well!
 	if ( [target isNPC] ){
