@@ -57,10 +57,14 @@
 		self.enemyWeightEnabled = YES;
 		self.enemyWeightPlayer = 100;
 		self.enemyWeightPet = 0;
-		self.enemyWeightNPC = 75;
-		self.enemyWeightHealth = 40;
-		self.enemyWeightTarget = 25;
-		self.enemyWeightDistance = 25;
+		self.enemyWeightHostileNPC = 75;
+        self.enemyWeightNeutralNPC = 50;
+		self.enemyWeightHealth = 20;
+		self.enemyWeightTarget = 10;
+		self.enemyWeightDistance = 30;
+        self.enemyWeightElite = 20;
+        self.enemyWeightLevel = 10;
+        self.enemyWeightAttackingMe = 0;
     }
 	log(LOG_COMBAT, @"CombatProfile created with name %@", self.name);
     return self;
@@ -119,10 +123,14 @@
 	copy.enemyWeightEnabled = self.enemyWeightEnabled;
 	copy.enemyWeightPlayer = self.enemyWeightPlayer;
 	copy.enemyWeightPet = self.enemyWeightPet;
-	copy.enemyWeightNPC = self.enemyWeightNPC;
+	copy.enemyWeightHostileNPC = self.enemyWeightHostileNPC;
+    copy.enemyWeightNeutralNPC = self.enemyWeightNeutralNPC;
 	copy.enemyWeightHealth = self.enemyWeightHealth;
 	copy.enemyWeightTarget = self.enemyWeightTarget;
 	copy.enemyWeightDistance = self.enemyWeightDistance;
+    copy.enemyWeightElite = self.enemyWeightElite;
+    copy.enemyWeightLevel = self.enemyWeightLevel;
+    copy.enemyWeightAttackingMe = self.enemyWeightAttackingMe;
 
     
     return copy;
@@ -167,10 +175,14 @@
 		self.enemyWeightEnabled = [[decoder decodeObjectForKey: @"EnemyWeightEnabled"] boolValue];
 		self.enemyWeightPlayer = [[decoder decodeObjectForKey: @"EnemyWeightPlayer"] intValue];
 		self.enemyWeightPet = [[decoder decodeObjectForKey: @"EnemyWeightPet"] intValue];
-		self.enemyWeightNPC = [[decoder decodeObjectForKey: @"EnemyWeightNPC"] intValue];
+		self.enemyWeightHostileNPC = [[decoder decodeObjectForKey: @"EnemyWeightHostileNPC"] intValue];
+        self.enemyWeightNeutralNPC = [[decoder decodeObjectForKey: @"EnemyWeightNeutralNPC"] intValue];
 		self.enemyWeightTarget = [[decoder decodeObjectForKey: @"EnemyWeightTarget"] intValue];
 		self.enemyWeightHealth = [[decoder decodeObjectForKey: @"EnemyWeightHealth"] intValue];
 		self.enemyWeightDistance = [[decoder decodeObjectForKey: @"EnemyWeightDistance"] intValue];
+		self.enemyWeightElite = [[decoder decodeObjectForKey: @"EnemyWeightElite"] intValue];
+		self.enemyWeightLevel = [[decoder decodeObjectForKey: @"EnemyWeightLevel"] intValue];
+		self.enemyWeightAttackingMe = [[decoder decodeObjectForKey: @"EnemyWeightAttackingMe"] intValue];
 
 	}
 	return self;
@@ -214,10 +226,14 @@
 	[coder encodeObject: [NSNumber numberWithBool: self.enemyWeightEnabled] forKey: @"EnemyWeightEnabled"];
 	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightPlayer] forKey: @"EnemyWeightPlayer"];
 	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightPet] forKey: @"EnemyWeightPet"];
-	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightNPC] forKey: @"EnemyWeightNPC"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightHostileNPC] forKey: @"EnemyWeightHostileNPC"];
+    [coder encodeObject: [NSNumber numberWithInt: self.enemyWeightNeutralNPC] forKey: @"EnemyWeightNeutralNPC"];
 	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightTarget] forKey: @"EnemyWeightTarget"];
 	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightHealth] forKey: @"EnemyWeightHealth"];
 	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightDistance] forKey: @"EnemyWeightDistance"];
+    [coder encodeObject: [NSNumber numberWithInt: self.enemyWeightElite] forKey: @"EnemyWeightElite"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightLevel] forKey: @"EnemyWeightLevel"];
+	[coder encodeObject: [NSNumber numberWithInt: self.enemyWeightAttackingMe] forKey: @"EnemyWeightAttackingMe"];
 
 }
 
@@ -262,10 +278,14 @@
 @synthesize enemyWeightEnabled;
 @synthesize enemyWeightPlayer;
 @synthesize enemyWeightPet;
-@synthesize enemyWeightNPC;
+@synthesize enemyWeightHostileNPC;
+@synthesize enemyWeightNeutralNPC;
 @synthesize enemyWeightTarget;
 @synthesize enemyWeightHealth;
 @synthesize enemyWeightDistance;
+@synthesize enemyWeightElite;
+@synthesize enemyWeightLevel;
+@synthesize enemyWeightAttackingMe;
 
 
 - (BOOL)unitFitsProfile: (Unit*)unit ignoreDistance: (BOOL)ignoreDistance {

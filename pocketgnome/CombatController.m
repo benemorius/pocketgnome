@@ -355,20 +355,6 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
         return NSOrderedSame;
 }
 
-// so, in a perfect world
-// -) players before pets
-// -) low health targets before high health targets
-// -) closer before farther
-// everything needs to be in combatProfile range
-
-// assign 'weights' to each target based on current conditions/settings
-// highest weight unit is our best target
-
-// current target? +25
-// player? +100 pet? +25
-// hostile? +100, neutral? +100
-// health: +(100-percentHealth)
-// distance: 100*(attackRange - distance)/attackRange
 - (UInt32)unitWeight: (Unit*)unit PlayerPosition:(Position*)playerPosition{
 	float attackRange = botController.theCombatProfile.attackRange;
 	float distanceToTarget = [playerPosition distanceToPosition:[unit position]];
@@ -385,14 +371,24 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 		weight += botController.theCombatProfile.enemyWeightPlayer;
 	else if ([unit isPet])
 		weight += botController.theCombatProfile.enemyWeightPet;
-	else if ([unit isNPC])
-		weight += botController.theCombatProfile.enemyWeightNPC;
+	else if ([unit isNPC] && [playerData isHostileWithFaction:[unit factionTemplate]])
+		weight += botController.theCombatProfile.enemyWeightHostileNPC;
+    else if ([unit isNPC] && ![playerData isFriendlyWithFaction:[unit factionTemplate]])
+        weight += botController.theCombatProfile.enemyWeightNeutralNPC;
 	
 	// current target
 	if ( [playerData targetID] == [unit GUID] )
 		weight += botController.theCombatProfile.enemyWeightTarget;
+    
+    if([unit isElite])
+       weight += botController.theCombatProfile.enemyWeightElite;
+    
+    if([unit targetID] == [playerData GUID])
+        weight += botController.theCombatProfile.enemyWeightAttackingMe;
+    
+    weight += ([unit level] - [playerData level]) * botController.theCombatProfile.enemyWeightLevel;
 	
-	// health left
+    // health left
 	weight += (100.0f - [unit percentHealth]) * (botController.theCombatProfile.enemyWeightHealth / 100.0f);
 	
 	// distance to target

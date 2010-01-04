@@ -36,10 +36,14 @@
 	BOOL enemyWeightEnabled;
 	int enemyWeightPlayer;
 	int enemyWeightPet;
-	int enemyWeightNPC;
+	int enemyWeightHostileNPC;
+    int enemyWeightNeutralNPC;
 	int enemyWeightHealth;
 	int enemyWeightTarget;
 	int enemyWeightDistance;
+    int enemyWeightElite;
+    int enemyWeightLevel;
+    int enemyWeightAttackingMe;
     
     float attackRange;
     int attackLevelMin, attackLevelMax;
@@ -92,10 +96,14 @@
 @property (readwrite, assign) BOOL enemyWeightEnabled;
 @property (readwrite, assign) int enemyWeightPlayer;
 @property (readwrite, assign) int enemyWeightPet;
-@property (readwrite, assign) int enemyWeightNPC;
+@property (readwrite, assign) int enemyWeightHostileNPC;
+@property (readwrite, assign) int enemyWeightNeutralNPC;
 @property (readwrite, assign) int enemyWeightHealth;
 @property (readwrite, assign) int enemyWeightTarget;
 @property (readwrite, assign) int enemyWeightDistance;
+@property (readwrite, assign) int enemyWeightElite;
+@property (readwrite, assign) int enemyWeightLevel;
+@property (readwrite, assign) int enemyWeightAttackingMe;
 
 
 @end
