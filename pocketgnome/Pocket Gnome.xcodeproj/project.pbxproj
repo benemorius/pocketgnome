@@ -23,6 +23,8 @@
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
+		6130FC7F10F0FDD8004F7E8C /* AuraProximityConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6130FC7E10F0FDD8004F7E8C /* AuraProximityConditionController.m */; };
+		6130FC8710F100EF004F7E8C /* AuraProximityCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6130FC8610F100EF004F7E8C /* AuraProximityCondition.xib */; };
 		7C87A0AB10DBB85E0022352E /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C87A0AA10DBB85E0022352E /* LogController.m */; };
 		7CCA464710CE6BCB00DFAB96 /* SpellCooldown.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */; };
 		7CCA464810CE6BCB00DFAB96 /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CCA464610CE6BCB00DFAB96 /* SpellCooldownConditionController.m */; };
@@ -349,6 +351,9 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* PocketGnome_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketGnome_Prefix.pch; sourceTree = "<group>"; };
+		6130FC7D10F0FDD8004F7E8C /* AuraProximityConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuraProximityConditionController.h; sourceTree = "<group>"; };
+		6130FC7E10F0FDD8004F7E8C /* AuraProximityConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuraProximityConditionController.m; sourceTree = "<group>"; };
+		6130FC8610F100EF004F7E8C /* AuraProximityCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AuraProximityCondition.xib; sourceTree = "<group>"; };
 		7C87A0A910DBB85E0022352E /* LogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogController.h; sourceTree = "<group>"; };
 		7C87A0AA10DBB85E0022352E /* LogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogController.m; sourceTree = "<group>"; };
 		7CCA464410CE6BCB00DFAB96 /* SpellCooldown.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellCooldown.xib; sourceTree = "<group>"; };
@@ -1098,6 +1103,7 @@
 		7D54DCB80E08449F00E1B463 /* Condition NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				6130FC8610F100EF004F7E8C /* AuraProximityCondition.xib */,
 				7DCE50700E12F05E00C5DF01 /* AuraCondition.xib */,
 				7D5496450E1AA0F5004AA3E9 /* AuraStackCondition.xib */,
 				7DCE50710E12F05E00C5DF01 /* StatusCondition.xib */,
@@ -1129,6 +1135,8 @@
 				7D9772030D2DA23D00E6D8F9 /* StatusConditionController.h */,
 				7D9772040D2DA23D00E6D8F9 /* StatusConditionController.m */,
 				7D9772730D2DA97A00E6D8F9 /* AuraConditionController.h */,
+				6130FC7D10F0FDD8004F7E8C /* AuraProximityConditionController.h */,
+				6130FC7E10F0FDD8004F7E8C /* AuraProximityConditionController.m */,
 				7D9772740D2DA97A00E6D8F9 /* AuraConditionController.m */,
 				7D5496410E1AA073004AA3E9 /* AuraStackConditionController.h */,
 				7D5496420E1AA073004AA3E9 /* AuraStackConditionController.m */,
@@ -1612,6 +1620,7 @@
 				03C42CCA1096839E0085E888 /* Macros.plist in Resources */,
 				03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */,
 				7CCA464710CE6BCB00DFAB96 /* SpellCooldown.xib in Resources */,
+				6130FC8710F100EF004F7E8C /* AuraProximityCondition.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1737,6 +1746,7 @@
 				7CCA464810CE6BCB00DFAB96 /* SpellCooldownConditionController.m in Sources */,
 				7CF06E5D10D70C4200B28C9B /* BlacklistController.m in Sources */,
 				7C87A0AB10DBB85E0022352E /* LogController.m in Sources */,
+				6130FC7F10F0FDD8004F7E8C /* AuraProximityConditionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
