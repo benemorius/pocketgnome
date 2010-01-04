@@ -420,7 +420,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	// lets find the best target
 	if ( [units count] ){
 		float distanceToTarget = 0.0f;
-		int highestWeight = 0;
+		int highestWeight = -65535;
 		Unit *bestUnit = nil;
 		
 		for ( Unit *unit in units ){
@@ -451,7 +451,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 				bestUnit = unit;
 			}
 		}
-		log(LOG_COMBAT, @"Best unit: %@ weighs: %d", bestUnit, highestWeight);
+		log(LOG_COMBAT, @"Best unit out of %d: %@ weighs: %d", [units count], bestUnit, highestWeight);
 		// make sure the unit sticks around until we're done with it
 		[[bestUnit retain] autorelease];
 		return bestUnit;
