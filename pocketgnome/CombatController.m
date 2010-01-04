@@ -467,8 +467,8 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 
 // find all units we are in combat with
 - (void)doCombatSearch{
-	if(![botController isBotting])
-		return;
+	//if(![botController isBotting])
+	//	return;
 
 	NSArray *mobs = [mobController allMobs];
 	NSArray *players = [playersController allPlayers];
@@ -506,7 +506,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	// verify units we're in combat with!
 	[self verifyCombatUnits: NO];
 	
-	log(LOG_TARGET, @"In combat with %d units; %d in attack queue", [_unitsAttackingMe count], [_attackQueue count]);
+	//log(LOG_TARGET, @"In combat with %d units; %d in attack queue", [_unitsAttackingMe count], [_attackQueue count]);
 }
 
 - (BOOL)addUnitToAttackingMe: (Unit*)unit{

@@ -1158,17 +1158,14 @@ static PlayerDataController* sharedController = nil;
         }
         _lastCombatState = combatState;
 		
-		// Lets see which mobs are attacking us!
-		if ( combatState ){
-			//[combatController doCombatSearch];
-		}
-		
 		[_combatDataList removeAllObjects];
 		[_healingDataList removeAllObjects];
 		
 		// only resort and display the table if the window is visible
 		if( [[combatTable window] isVisible])
 		{
+            [combatController doCombatSearch];
+
             NSMutableArray *units = [NSMutableArray array];
             [units addObjectsFromArray:[combatController unitsAttackingMe]];
 			NSMutableArray *otherUnits = [NSMutableArray array];
