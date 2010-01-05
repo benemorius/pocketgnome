@@ -962,7 +962,7 @@ typedef struct NameObjectStruct{
         }
     }
     
-    log(LOG_ERROR, @"Unable to get a handle on WoW's memory.");
+    //log(LOG_ERROR, @"Unable to get a handle on WoW's memory.");
     return nil;
 }
 
