@@ -815,8 +815,12 @@ static MobController* sharedController = nil;
     memoryViewMob = nil;
     if( [sender clickedRow] == -1 || [sender clickedRow] >= [_mobDataList count] ) return;
     
-    [memoryViewController showObjectMemory: [[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
-    [controller showMemoryView];
+    //[memoryViewController showObjectMemory: [[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
+    //[controller showMemoryView];
+    Unit *mob = [[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"];
+    log(LOG_DEV, @"mob: %@", mob);
+    [combatController addUnitToAttackQueue:[[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
+    [botController attackUnit:[[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
 }
 
 #pragma mark -
