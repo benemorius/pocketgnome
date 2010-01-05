@@ -1723,7 +1723,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_FUNCTION, @"entering function");
 	Position *playerPosition = [playerController position];
 	
-	if ( [playerPosition distanceToPosition: [unit position]] < [theCombatProfile healingRange] && ![unit isDead] && [unit currentHealth] != 1 && [playerController isFriendlyWithFaction: [unit factionTemplate]] && [unit percentHealth] < [theCombatProfile healthThreshold]){
+	if ( [playerPosition distanceToPosition: [unit position]] < [theCombatProfile healingRange] && ![unit isDead] && [unit currentHealth] != 1 && [playerController isFriendlyWithFaction: [unit factionTemplate]]){
 		return YES;
 	}
 	
@@ -1756,20 +1756,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	NSMutableArray *targetsToHeal = [NSMutableArray array];
 	[targetsWithinRange addObject: [playerController player]];
 	[targetsWithinRange addObjectsFromArray: [playersController allPlayers]];
+    NSMutableArray *allMobs = [NSMutableArray array];
+    [allMobs addObjectsFromArray:[mobController allMobs]];
+    for(Mob *mob in allMobs)
+    {
+        if([mob isPet] && [playerController isFriendlyWithFaction:[mob factionTemplate]])
+            [targetsWithinRange addObject:mob];
+    }
 	
-	// sort by range
-    Position *playerPosition = [playerController position];
-    [targetsWithinRange sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
-	
-    if ( [targetsWithinRange count] ) {
-        for ( Unit *unit in targetsWithinRange ) {
-			//log(LOG_HEAL, @"Checking %@", unit);
-			if ( [self unitValidToHeal:unit] ){
-				//log(LOG_HEAL, @"Valid: %@ %d %d", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
-				if ( [unit percentHealth] < [theCombatProfile healthThreshold] ){
-					log(LOG_HEAL, @"Need to heal: %@ (%d%% < %d%%)", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
-					[targetsToHeal addObject: unit];
-				}
+    if([targetsWithinRange count])
+    {
+        for(Unit *unit in targetsWithinRange)
+        {
+			if([self unitValidToHeal:unit])
+            {
+                [targetsToHeal addObject: unit];
 			}
         }
     }

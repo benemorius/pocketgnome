@@ -1206,27 +1206,7 @@ static PlayerDataController* sharedController = nil;
 		}
 		if([[healingTable window] isVisible])
 		{			
-			// Update healing info!
-			// get list of all targets
-			NSMutableArray *allUnits = [NSMutableArray array];
-			NSMutableArray *unitsToHeal = [NSMutableArray array];
-			[allUnits addObjectsFromArray: [[PlayersController sharedPlayers] allPlayers]];
-			
-			[unitsToHeal addObject:[self player]];
-			if([allUnits count])
-			{
-				for (Unit *unit in allUnits)
-				{
-					//if([botController unitValidToHeal:unit])
-					if([[self position] distanceToPosition: [unit position]] < 40.0f )
-					//if(1)
-					{
-						
-						[unitsToHeal addObject: unit];
-					}
-				}
-			}
-			for(Unit *unit in unitsToHeal)
+			for(Unit *unit in [botController availableUnitsToHeal])
 			{
 				if( ![unit isValid] )
 					continue;
@@ -1387,8 +1367,6 @@ static PlayerDataController* sharedController = nil;
 		
 		if([[aTableColumn identifier] isEqualToString: @"Distance"])
 			return [NSString stringWithFormat: @"%.2f", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
-		if([[aTableColumn identifier] isEqualToString: @"Name"])
-			return [NSString stringWithFormat: @"%@", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Player"] name]];
 		
 		return [[_healingDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
 	}
