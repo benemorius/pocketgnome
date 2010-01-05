@@ -1355,7 +1355,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							//return;
 						}
                     }
-	
+                    
+                    NSDictionary *newState = [NSDictionary dictionaryWithObjectsAndKeys: 
+                                              [state objectForKey: @"Procedure"],     @"Procedure",
+                                              [NSNumber numberWithInt: i+1],          @"CompletedRules",    // increment
+                                              [NSNumber numberWithInt: actions+1],    @"ActionsPerformed",  // increment
+                                              target,                                 @"Target",  nil];
+                    
                     //if( ([rule resultType] == ActionType_Item) || ([rule resultType] == ActionType_Macro) || ([spellController lastAttemptedActionID] == 0) || !canPerformAction )
 					if(!actionResult)
 					{
@@ -1372,7 +1378,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                 {
                                     log(LOG_BEHAVIOR, @"VANISH! Attemping to exit combat (cross your fingers).");
                                     [combatController cancelAllCombat];
-                                    return; // bail out of here
+                                    return;
                                 }
                                 
                                 log(LOG_COMBAT, @"%@ cast after %d attempts.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]], attempts);
@@ -1380,7 +1386,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                             }
 							else
 							{
-                                log(LOG_COMBAT, @"  %@ skipped for cooldown.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]] );
+                                log(LOG_COMBAT, @"%@ skipped for cooldown.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]] );
+                                [self performSelector:_cmd withObject:newState afterDelay:RULE_EVAL_DELAY_NORMAL];
+                                return;
                             }
                         }
 						else if([rule resultType] == ActionType_Item)
@@ -1393,11 +1401,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         }
 						
                         
-                        NSDictionary *newState = [NSDictionary dictionaryWithObjectsAndKeys: 
-                                                  [state objectForKey: @"Procedure"],     @"Procedure",
-                                                  [NSNumber numberWithInt: i+1],          @"CompletedRules",    // increment
-                                                  [NSNumber numberWithInt: actions+1],    @"ActionsPerformed",  // increment
-                                                  target,                                 @"Target",  nil];
+
                         
                         // shortcut end to skip the rule eval delay
                         //if( i+1 >= ruleCount) { [self finishCurrentProcedure: newState]; return; }
@@ -1414,9 +1418,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						{
 							log(LOG_COMBAT, @"Succesfully cast %@ on %@ for %@. Continuing procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, rule);
 						}
-                        [self performSelector: _cmd
-                                   withObject: newState
-                                   afterDelay: RULE_EVAL_DELAY_NORMAL];
+                        [self performSelector:_cmd withObject:newState afterDelay:RULE_EVAL_DELAY_NORMAL];
+                        return;
 					}
                 }
             }
@@ -2387,6 +2390,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			healUnit = tank;
 			log(LOG_HEAL, @"Tank needs heals: %@", tank);
 		}
+        else if(0) //heal only self
+        {
+            healUnit = [playerController player];
+        }
 		else
 		{
 			healUnit = [self unitToHeal];
@@ -2404,7 +2411,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_HEAL, @"Need to heal: %@", healUnit);
 			[self healUnit:healUnit];
 			_lastUnitAttemptedToHealed = healUnit;
-			//return YES;
 		}
 	}
     
