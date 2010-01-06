@@ -27,6 +27,7 @@
 @class BlacklistController;
 @class PlayersController;
 @class MacroController;
+@class CombatProfile;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"

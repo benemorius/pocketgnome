@@ -212,7 +212,7 @@ static PlayersController *sharedPlayers = nil;
 - (NSString*)playerNameWithGUID:(UInt64)guid{
 	NSNumber *fullGUID = [NSNumber numberWithUnsignedLongLong:guid];
 	NSString *name = [_playerNameList objectForKey: fullGUID];
-	
+
 	if ( name ){
 		return [[name copy] autorelease];
 	}

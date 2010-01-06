@@ -36,6 +36,7 @@
 #define LOG_WAYPOINT "waypoint"
 #define LOG_POSITION "position"
 #define LOG_ACTION "action"
+#define LOG_PARTY "party"
 
 @interface LogController : NSObject {
 

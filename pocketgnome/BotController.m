@@ -1726,7 +1726,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_FUNCTION, @"entering function");
 	Position *playerPosition = [playerController position];
 	
-	if ( [playerPosition distanceToPosition: [unit position]] < [theCombatProfile healingRange] && ![unit isDead] && [unit currentHealth] != 1 && [playerController isFriendlyWithFaction: [unit factionTemplate]] && [unit percentHealth] < [theCombatProfile healthThreshold]){
+	if ( [playerPosition distanceToPosition: [unit position]] < [theCombatProfile healingRange] && ![unit isDead] && [unit currentHealth] != 1 && [playerController isFriendlyWithFaction: [unit factionTemplate]]){
 		return YES;
 	}
 	
@@ -1759,20 +1759,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	NSMutableArray *targetsToHeal = [NSMutableArray array];
 	[targetsWithinRange addObject: [playerController player]];
 	[targetsWithinRange addObjectsFromArray: [playersController allPlayers]];
+    NSMutableArray *allMobs = [NSMutableArray array];
+    [allMobs addObjectsFromArray:[mobController allMobs]];
+    for(Mob *mob in allMobs)
+    {
+        if([mob isPet] && [playerController isFriendlyWithFaction:[mob factionTemplate]])
+            [targetsWithinRange addObject:mob];
+    }
 	
-	// sort by range
-    Position *playerPosition = [playerController position];
-    [targetsWithinRange sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
-	
-    if ( [targetsWithinRange count] ) {
-        for ( Unit *unit in targetsWithinRange ) {
-			//log(LOG_HEAL, @"Checking %@", unit);
-			if ( [self unitValidToHeal:unit] ){
-				//log(LOG_HEAL, @"Valid: %@ %d %d", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
-				if ( [unit percentHealth] < [theCombatProfile healthThreshold] ){
-					log(LOG_HEAL, @"Need to heal: %@ (%d%% < %d%%)", unit, [unit percentHealth], [theCombatProfile healthThreshold] );
-					[targetsToHeal addObject: unit];
-				}
+    if([targetsWithinRange count])
+    {
+        for(Unit *unit in targetsWithinRange)
+        {
+			if([self unitValidToHeal:unit])
+            {
+                [targetsToHeal addObject: unit];
 			}
         }
     }
@@ -2381,6 +2382,48 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     UInt64 tankGUID = [theCombatProfile selectedTankGUID];
     Unit *tank = [playersController playerWithGUID:tankGUID];
 
+    
+	// Should we auto follow the focus target?
+	if ( _shouldFollow && followUnit && [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f )
+	{
+		
+		// Is our target mounted?  Are we? If not lets!
+		if ( [theCombatProfile followMountEnabled] && [followUnit isMounted] && ![[playerController player] isMounted] && ![playerController isCasting]){
+			log(LOG_PARTY, @"%@ has mounted. Trying to mount.", followUnit);
+			// time to mount!
+			[self mountNow];
+			
+			// Check our position again shortly!
+			[self performSelector: _cmd withObject: nil afterDelay: 1.6f];
+			return YES;
+		}
+		else
+		{
+			//log(LOG_DEV, @"not mounting to follow");
+		}
+		
+		// Should we move toward our target?
+		Position *playerPosition = [[playerController player] position];
+		float range = [playerPosition distanceToPosition: [followUnit position]];
+		if(range >= [theCombatProfile yardsBehindTarget] && ![[playerController player] isCasting])
+        {
+			log(LOG_PARTY, @"Not within %0.2f yards of %@. %0.2f away. Moving closer", [theCombatProfile yardsBehindTarget], followUnit, range);
+            [movementController followObject: followUnit];
+			
+			// Check our position again shortly!
+			[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+			return YES;
+		}
+        else if([[playerController player] isCasting])
+        {
+            log(LOG_PARTY, @"Player is casting. Waiting to follow %@", followUnit);
+            [self performSelector:_cmd withObject:nil afterDelay:0.25f];
+            return YES;
+        }
+	}
+	
+    
+    
 	// Check to see if we should be healing!
 	if ( [theCombatProfile healingEnabled] && !([followUnit isMounted] && [theCombatProfile followHealDisabled])){
 		
@@ -2415,41 +2458,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
     
-	// Should we auto follow the focus target?
-	if ( _shouldFollow && followUnit && [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f )
-	{
-		
-		// Is our target mounted?  Are we? If not lets!
-		if ( [theCombatProfile followMountEnabled] && [followUnit isMounted] && ![[playerController player] isMounted] && ![playerController isCasting]){
-			log(LOG_GENERAL, @"mounting to follow");
-			// time to mount!
-			[self mountNow];
-			
-			// Check our position again shortly!
-			[self performSelector: _cmd withObject: nil afterDelay: 1.6f];
-			return YES;
-		}
-		else
-		{
-			//log(LOG_DEV, @"not mounting to follow");
-		}
-		
-		// Should we move toward our target?
-		Position *playerPosition = [[playerController player] position];
-		float range = [playerPosition distanceToPosition: [followUnit position]];
-		if(range >= [theCombatProfile yardsBehindTarget]) {
-			log(LOG_HEAL, @"Not within %0.2f yards of target, %0.2f away, moving closer", [theCombatProfile yardsBehindTarget], range);
-			
-			if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
-				[movementController followObject: followUnit];
-			}
-			
-			// Check our position again shortly!
-			[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
-			return YES;
-		}
-	}
-	
+    
     // check to see if we are moving to attack a unit and bail if we are
     //if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
     //    log(LOG_TARGET, @"attackUnit == moveToObject");

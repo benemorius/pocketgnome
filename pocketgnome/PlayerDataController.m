@@ -22,6 +22,7 @@
 #import "BlacklistController.h"
 #import "PlayersController.h"
 #import "MacroController.h"
+#import "CombatProfile.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -1206,27 +1207,7 @@ static PlayerDataController* sharedController = nil;
 		}
 		if([[healingTable window] isVisible])
 		{			
-			// Update healing info!
-			// get list of all targets
-			NSMutableArray *allUnits = [NSMutableArray array];
-			NSMutableArray *unitsToHeal = [NSMutableArray array];
-			[allUnits addObjectsFromArray: [[PlayersController sharedPlayers] allPlayers]];
-			
-			[unitsToHeal addObject:[self player]];
-			if([allUnits count])
-			{
-				for (Unit *unit in allUnits)
-				{
-					//if([botController unitValidToHeal:unit])
-					if([[self position] distanceToPosition: [unit position]] < 40.0f )
-					//if(1)
-					{
-						
-						[unitsToHeal addObject: unit];
-					}
-				}
-			}
-			for(Unit *unit in unitsToHeal)
+			for(Unit *unit in [botController availableUnitsToHeal])
 			{
 				if( ![unit isValid] )
 					continue;
@@ -1387,8 +1368,6 @@ static PlayerDataController* sharedController = nil;
 		
 		if([[aTableColumn identifier] isEqualToString: @"Distance"])
 			return [NSString stringWithFormat: @"%.2f", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
-		if([[aTableColumn identifier] isEqualToString: @"Name"])
-			return [NSString stringWithFormat: @"%@", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Player"] name]];
 		
 		return [[_healingDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
 	}
@@ -1441,11 +1420,11 @@ static PlayerDataController* sharedController = nil;
 			log(LOG_ERROR, @"can't do color :(");
 			return;
 		}
-        if([blacklistController isBlacklisted:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
-			[aCell setTextColor:[NSColor lightGrayColor]];
-		else if([[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] isEqualToObject:[combatController attackUnit]])
+        if([[blacklistController blacklistedUnits] containsObject:[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]])
+			[aCell setTextColor: [NSColor lightGrayColor]];
+		else if([[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] isEqualToObject:[playersController playerWithGUID:[self targetID]]])
 			[aCell setTextColor:[NSColor greenColor]];
-		else if([botController unitValidToHeal:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
+		else if([[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"] percentHealth] < [[CombatProfile combatProfile] healthThreshold])
 			[aCell setTextColor:[NSColor blueColor]];
 		else
 			[aCell setTextColor:[NSColor blackColor]];
