@@ -264,7 +264,7 @@
 
 - (void)testRule: (Rule*)rule;
 - (BOOL)unitValidToHeal: (Unit*)unit;
-- (BOOL)isUnitValidToAttack: (Unit*)unit fromPosition: (Position*)position ignoreDistance: (BOOL)ignoreDistance;
+- (BOOL)isUnitValidToAttack:(Unit*)unit fromPosition:(Position*)position ignoreDistance:(BOOL)ignoreDistance ignoreProfile:(BOOL)ignoreProfile;
 
 // Input from CombatController
 - (void)playerEnteringCombat;

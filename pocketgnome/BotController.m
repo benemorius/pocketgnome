@@ -905,7 +905,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 
                 // extract valid targets from all targets
                 for(Unit *unit in allTargets) {
-                    if( test || [self isUnitValidToAttack: unit fromPosition: playerPosition ignoreDistance: YES]) {
+                    if( test || [self isUnitValidToAttack: unit fromPosition: playerPosition ignoreDistance: YES ignoreProfile:NO]) {
                         [validTargets addObject: unit];
                     }
                 }
@@ -996,7 +996,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 
                 // extract valid targets from all targets
                 for(Unit *unit in allEnemies) {
-                    if( test || [self isUnitValidToAttack: unit fromPosition:[playerController position] ignoreDistance:YES]) {
+                    if( test || [self isUnitValidToAttack: unit fromPosition:[playerController position] ignoreDistance:YES ignoreProfile:NO]) {
                         [validEnemies addObject: unit];
                     }
                 }
@@ -2159,12 +2159,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     return nil;
 }
 
-- (BOOL)isUnitValidToAttack: (Unit*)unit fromPosition: (Position*)position ignoreDistance: (BOOL)ignoreDistance {
+- (BOOL)isUnitValidToAttack:(Unit*)unit fromPosition:(Position*)position ignoreDistance:(BOOL)ignoreDistance ignoreProfile:(BOOL)ignoreProfile
+{
 	log(LOG_FUNCTION, @"entering function");
     
     float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
     
-    if(![self.theCombatProfile unitFitsProfile:unit ignoreDistance:ignoreDistance])
+    if(!ignoreProfile && ![self.theCombatProfile unitFitsProfile:unit ignoreDistance:ignoreDistance])
         return NO;
     if([[unit position] verticalDistanceToPosition: position] > vertOffset)
         return NO;
@@ -2221,7 +2222,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         Unit *unit = self.preCombatUnit;
         for(unit in targetsWithinRange)
 		{
-            if([self isUnitValidToAttack: unit fromPosition: playerPosition ignoreDistance: NO] && ![knownUnits containsObject:unit])
+            if([self isUnitValidToAttack: unit fromPosition: playerPosition ignoreDistance: NO ignoreProfile:NO] && ![knownUnits containsObject:unit])
 			{
 				log(LOG_TARGET, @"Found unit %@ to attack.", unit);
 				return unit;

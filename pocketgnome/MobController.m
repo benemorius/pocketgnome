@@ -315,18 +315,8 @@ static MobController* sharedController = nil;
     
     if(selectedRow >= [_mobDataList count]) return;
     Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
-    
-    // !!!: remove this hack when 10.5.7 ships
-    //[controller makeWoWFront];
-    
-    
+
     [movementController turnTowardObject: mob];
-            
-    //if(angleBetween > 0)
-    //    [playerDataController setPlayerDirection: angleOffset];
-    //else
-    //    [playerDataController setPlayerDirection: 2.0*3.1415926 - angleOffset];
-    
 }
 
 - (IBAction)additionalStart: (id)sender {

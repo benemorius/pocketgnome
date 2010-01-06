@@ -475,11 +475,13 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 	{
 		if([mob isValid])
         {
-            if([botController isUnitValidToAttack:mob fromPosition:[[playerData player] position] ignoreDistance:NO])
+            if([botController isUnitValidToAttack:mob fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:NO])
 				[self addUnitToAttackQueue:mob];
-            
-            if([mob targetID] == [[playerData player] GUID] || (playerHasPet && [mob targetID] == [[playerData player] petGUID]) || [mob isFleeing])
-                [self addUnitToAttackingMe: (Unit*)mob];
+            if([botController isUnitValidToAttack:mob fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:YES])
+            {
+                if([mob targetID] == [[playerData player] GUID] || (playerHasPet && [mob targetID] == [[playerData player] petGUID]) || [mob isFleeing])
+                    [self addUnitToAttackingMe: (Unit*)mob];
+            }
             else
                 [self removeUnitFromAttackingMe:(Unit*)mob];
 		}
@@ -489,11 +491,13 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
     {
 		if([player isValid])
         {
-            if([botController isUnitValidToAttack:player fromPosition:[[playerData player] position] ignoreDistance:NO])
+            if([botController isUnitValidToAttack:player fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:NO])
 				[self addUnitToAttackQueue:player];
-
-			if([player targetID] == [[playerData player] GUID] || (playerHasPet && [player targetID] == [[playerData player] petGUID]) || [player isFleeing])
-                [self addUnitToAttackingMe:player];
+            if([botController isUnitValidToAttack:player fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:YES])
+            {
+                if([player targetID] == [[playerData player] GUID] || (playerHasPet && [player targetID] == [[playerData player] petGUID]) || [player isFleeing])
+                    [self addUnitToAttackingMe:player];
+            }
             else
                 [self removeUnitFromAttackingMe:player];
         }
