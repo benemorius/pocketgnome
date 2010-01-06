@@ -22,6 +22,7 @@
 #import "BlacklistController.h"
 #import "PlayersController.h"
 #import "MacroController.h"
+#import "CombatProfile.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -1423,7 +1424,7 @@ static PlayerDataController* sharedController = nil;
 			[aCell setTextColor:[NSColor lightGrayColor]];
 		else if([[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] isEqualToObject:[combatController attackUnit]])
 			[aCell setTextColor:[NSColor greenColor]];
-		else if([botController unitValidToHeal:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
+		else if([[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"] percentHealth] < [[CombatProfile combatProfile] healthThreshold])
 			[aCell setTextColor:[NSColor blueColor]];
 		else
 			[aCell setTextColor:[NSColor blackColor]];
