@@ -1420,9 +1420,9 @@ static PlayerDataController* sharedController = nil;
 			log(LOG_ERROR, @"can't do color :(");
 			return;
 		}
-        if([blacklistController isBlacklisted:[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"]])
-			[aCell setTextColor:[NSColor lightGrayColor]];
-		else if([[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] isEqualToObject:[combatController attackUnit]])
+        if([[blacklistController blacklistedUnits] containsObject:[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"]])
+			[aCell setTextColor: [NSColor lightGrayColor]];
+		else if([[[_healingDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] isEqualToObject:[playersController playerWithGUID:[self targetID]]])
 			[aCell setTextColor:[NSColor greenColor]];
 		else if([[[_healingDataList objectAtIndex:aRowIndex] objectForKey:@"Player"] percentHealth] < [[CombatProfile combatProfile] healthThreshold])
 			[aCell setTextColor:[NSColor blueColor]];
