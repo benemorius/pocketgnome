@@ -398,6 +398,18 @@ static MobController* sharedController = nil;
     [movementController setPatrolRoute: nil];
 }
 
+- (IBAction)attackMob: (id)sender {
+    int selectedRow = [mobTable selectedRow];
+    if(selectedRow == -1) return;
+    
+    if(selectedRow >= [_mobDataList count]) return;
+    Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
+    
+    [combatController addUnitToAttackQueue:mob];
+    [botController attackUnit:mob];
+    [botController startBot:nil];
+}
+
 #pragma mark -
 
 - (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position aliveOnly:(BOOL)aliveOnly{
@@ -815,12 +827,8 @@ static MobController* sharedController = nil;
     memoryViewMob = nil;
     if( [sender clickedRow] == -1 || [sender clickedRow] >= [_mobDataList count] ) return;
     
-    //[memoryViewController showObjectMemory: [[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
-    //[controller showMemoryView];
-    Unit *mob = [[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"];
-    log(LOG_DEV, @"mob: %@", mob);
-    [combatController addUnitToAttackQueue:[[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
-    [botController attackUnit:[[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
+    [memoryViewController showObjectMemory: [[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
+    [controller showMemoryView];
 }
 
 #pragma mark -

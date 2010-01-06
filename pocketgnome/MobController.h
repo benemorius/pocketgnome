@@ -88,5 +88,6 @@
 - (IBAction)faceMob: (id)sender;
 - (IBAction)additionalStart: (id)sender;
 - (IBAction)additionalStop: (id)sender;
+- (IBAction)attackMob:(id)sender;
 
 @end
