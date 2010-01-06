@@ -1266,7 +1266,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if(![target isValid] || [target isDead] || [target isEvading] || [blacklistController isBlacklisted:target])
 			{
 				log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Dead? (%d)  Evading? (%d)  Blacklisted? (%d)", ![target isValid], [target isDead], [target isEvading], [blacklistController isBlacklisted:target]);
-				[combatController finishUnit:target];
+				//[combatController finishUnit:target];
                 [self finishCurrentProcedure: state];
 				return;
 			}
@@ -1813,7 +1813,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if(![unit isValid] || [unit isDead] || [unit isEvading] || [blacklistController isBlacklisted:unit])
 	{
 		log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Dead? (%d)  Evading? (%d)  Blacklisted? (%d)", ![unit isValid], [unit isDead], [unit isEvading], [blacklistController isBlacklisted:unit]);
-		[combatController finishUnit:unit];
+		//[combatController finishUnit:unit];
 		return;
 	}
 	if ([playerController isDead])

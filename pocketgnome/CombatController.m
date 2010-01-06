@@ -102,8 +102,8 @@
     
     for(Unit* unit in _attackQueue) {
         // remove the unit if it's invalid, blacklisted, dead, evading or no longer in combat
-        if( ![unit isValid] || [blacklistController isBlacklisted: unit] || [unit isDead] || [unit isEvading]){ // || [unit isTappedByOther]) {// || ![unit isInCombat] ) {
-            log(LOG_TARGET, @"[A] Removing %@  NotValid?(%d) Blacklisted?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [blacklistController isBlacklisted: unit], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
+        if( ![unit isValid] || [unit isDead] || [unit isEvading]){ // || [unit isTappedByOther]) {// || ![unit isInCombat] ) {
+            log(LOG_TARGET, @"[A] Removing %@  NotValid?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
 			[unitsToRemove addObject: unit];
         }
     }
@@ -212,7 +212,7 @@
 	if ( self.attackUnit && [playerData targetID] == [self.attackUnit GUID] ){
 		log(LOG_TARGET, @"Target not valid, blacklisting %@", self.attackUnit);
 		[blacklistController blacklistObject: self.attackUnit forSeconds:20];
-		[self finishUnit:self.attackUnit];
+		//[self finishUnit:self.attackUnit];
 	}
 }
 
