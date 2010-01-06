@@ -1349,8 +1349,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
-							log(LOG_COMBAT, @"Spell %@ didn't cast on target %@, !(blacklisting and moving on!)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
-		
+							log(LOG_COMBAT, @"Spell %@ didn't cast on target %@. Blacklisting and moving on.)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
+                            [blacklistController blacklistObject:target];
 							//[self finishCurrentProcedure: state];
 							//return;
 						}
@@ -1432,7 +1432,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // we're done
     //[self finishCurrentProcedure: state];
-    log(LOG_DEV2, @"delaying for finishCurrentProcedure");
     [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_NORMAL];
 }
 

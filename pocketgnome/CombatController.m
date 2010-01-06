@@ -302,7 +302,7 @@
 			log(LOG_TARGET, @"Unit to attack is not valid!");
 			return NO;
 		} else {
-			if([blacklistController isBlacklisted: unit]) {
+			if([[blacklistController blacklistedUnits] containsObject:unit]) {
 				log(LOG_TARGET, @"Blacklisted unit %@ will not be fought.", unit);
 				return NO;
 			}
