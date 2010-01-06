@@ -141,7 +141,7 @@
     // if the unit is either not in combat, or is evading
     if( ![unit isInCombat] || [unit isEvading] || ![unit isAttackable] ) { 
         log(LOG_COMBAT, @"-XX- Unit %@ not in combat (%d), evading (%d), or not attackable(%d), blacklisting.", unit, ![unit isInCombat], [unit isEvading], ![unit isAttackable] );
-        [blacklistController blacklistObject: unit];
+        [blacklistController blacklistObject: unit forSeconds:20];
         return;
     }
 	
@@ -211,7 +211,7 @@
 	// is there a unit we should be attacking
 	if ( self.attackUnit && [playerData targetID] == [self.attackUnit GUID] ){
 		log(LOG_TARGET, @"Target not valid, blacklisting %@", self.attackUnit);
-		[blacklistController blacklistObject: self.attackUnit];
+		[blacklistController blacklistObject: self.attackUnit forSeconds:20];
 		[self finishUnit:self.attackUnit];
 	}
 }
@@ -309,13 +309,13 @@
 			
 			if( [unit isDead]) {
 				log(LOG_TARGET, @"Cannot attack a dead unit %@.", unit);
-				[blacklistController blacklistObject: unit];
+				[blacklistController blacklistObject: unit forSeconds:20];
 				return NO;
 			}
 			
 			if( [unit isEvading]) {
 				log(LOG_TARGET, @"%@ appears to be evading...", unit);
-				[blacklistController blacklistObject: unit];
+				[blacklistController blacklistObject: unit forSeconds:20];
 				return NO;
 			}
 		}

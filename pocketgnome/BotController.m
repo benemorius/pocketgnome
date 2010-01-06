@@ -1350,7 +1350,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
 							log(LOG_COMBAT, @"Spell %@ didn't cast on target %@. Blacklisting and moving on.)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
-                            [blacklistController blacklistObject:target];
+                            [blacklistController blacklistObject:target forSeconds:10];
 							//[self finishCurrentProcedure: state];
 							//return;
 						}
@@ -1499,7 +1499,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else{
 				[_mobsToLoot removeObject: self.unitToLoot];
 			}
-			[blacklistController blacklistObject:self.unitToLoot];
+			[blacklistController blacklistObject:self.unitToLoot forSeconds:45];
             
 			// Not 100% sure why we need this, but it seems important?
 			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
@@ -1578,7 +1578,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self skinOrFinish];
 	
 	// No longer need this unit!
-	[blacklistController blacklistObject:self.unitToLoot];
+	[blacklistController blacklistObject:self.unitToLoot forSeconds:15];
 	[_mobsToLoot removeObject:self.unitToLoot];
 	self.unitToLoot = nil;
     [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];

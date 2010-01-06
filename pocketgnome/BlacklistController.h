@@ -18,7 +18,7 @@
 
 }
 
-- (void)blacklistObject: (WoWObject*)obj;
+- (void)blacklistObject:(WoWObject*)obj forSeconds:(float)seconds;
 - (BOOL)isBlacklisted: (WoWObject*)obj;
 - (void)removeAllUnits;
 - (NSMutableArray*)blacklistedUnits;

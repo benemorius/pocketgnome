@@ -70,14 +70,12 @@
     return blacklist;
 }
 
-// simply add an object to our blacklist!
-- (void)blacklistObject: (WoWObject*)obj{
+- (void)blacklistObject:(WoWObject*)obj forSeconds:(float)seconds{
 	if(![obj isValid])
 		return;
 
 	int blackCount = [self blacklistCount:obj];
 	
-	// new object, add it!
 	if ( blackCount == 0) {
 		log(LOG_BLACKLIST, @"Adding object %@", obj);
 	}
@@ -92,8 +90,9 @@
 	blackCount++;
 	[_blacklist addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 							obj,										@"Object",
-							[NSDate date],								@"Date", 
-							[NSNumber numberWithInt: blackCount],       @"Count", nil]];	
+							[NSDate date],								@"Date",
+                            [NSNumber numberWithFloat:seconds],         @"Expire",
+							[NSNumber numberWithInt: blackCount],       @"Count", nil]];
 }
 
 // remove old objects from the blacklist
@@ -109,10 +108,9 @@
 			
 			float timeSinceBlacklisted = [[unit objectForKey: @"Date"] timeIntervalSinceNow] * -1.0f;
 			
-			// time to remove our object if it's been 45 seconds
-			if ( timeSinceBlacklisted > 45.0f ){
+			if ( timeSinceBlacklisted > [[unit objectForKey:@"Expire"] floatValue] ){
 				[self removeFromBlacklist:obj];
-				log(LOG_BLACKLIST, @"Removing object %@ from blacklist after 45 seconds", obj);
+				log(LOG_BLACKLIST, @"Removing object %@ from blacklist after %0.0f seconds", obj, [unit objectForKey:@"Expire"]);
 			}
 			
 			// mob/player checks

@@ -299,7 +299,7 @@ typedef enum {
     //if(node && ![_finishedNodes containsObject: node]) {
     //    [_finishedNodes addObject: node];
     //}
-    [blacklistController blacklistObject:node];
+    [blacklistController blacklistObject:node forSeconds:5];
 }
 
 - (void)resetAllNodes {

@@ -491,7 +491,7 @@ typedef enum MovementType {
 		log(LOG_MOVEMENT, @"... Unable to reach unit %@; Blacklisting and resuming route.", self.unit);
 		
 		// Blacklist the unit for a bit since we can't get to it :(
-		[blacklistController blacklistObject:self.unit];
+		[blacklistController blacklistObject:self.unit forSeconds:45];
 		
 		self.unit = nil;
 		
