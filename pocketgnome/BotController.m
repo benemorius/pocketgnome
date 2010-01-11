@@ -1076,8 +1076,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     return NO;
 }
 
-#define RULE_EVAL_DELAY_SHORT   0.25f
-#define RULE_EVAL_DELAY_NORMAL  0.5f
+#define RULE_EVAL_DELAY_SHORT   0.1f
+#define RULE_EVAL_DELAY_NORMAL  0.25f
 #define RULE_EVAL_DELAY_LONG    0.5f
 
 - (void)cancelCurrentProcedure {
@@ -1350,10 +1350,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
 							log(LOG_COMBAT, @"Spell %@ didn't cast on target %@. Blacklisting and moving on.)", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target);
-                            [blacklistController blacklistObject:target forSeconds:10];
+                            [blacklistController blacklistObject:target forSeconds:4];
 							//[self finishCurrentProcedure: state];
 							//return;
 						}
+                        else if(actionResult == ErrNotEnoughEnergy)
+                        {
+                            [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_SHORT];
+							return;
+                        }
                     }
                     
                     NSDictionary *newState = [NSDictionary dictionaryWithObjectsAndKeys: 
@@ -1387,7 +1392,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							else
 							{
                                 log(LOG_COMBAT, @"%@ skipped for cooldown.", [spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]] );
-                                [self performSelector:_cmd withObject:newState afterDelay:RULE_EVAL_DELAY_NORMAL];
+                                [self performSelector:_cmd withObject:newState afterDelay:RULE_EVAL_DELAY_SHORT];
                                 return;
                             }
                         }
@@ -1411,14 +1416,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							log(LOG_COMBAT, @"Succesfully cast %@ on %@ for %@. Ending procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, rule);
 							//[self finishCurrentProcedure: state];
                             log(LOG_DEV2, @"delaying for finishCurrentProcedure from success");
-                            [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_NORMAL];
+                            [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_SHORT];
 							return;
 						}
 						else
 						{
 							log(LOG_COMBAT, @"Succesfully cast %@ on %@ for %@. Continuing procedure", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name], target, rule);
 						}
-                        [self performSelector:_cmd withObject:newState afterDelay:RULE_EVAL_DELAY_NORMAL];
+                        [self performSelector:_cmd withObject:newState afterDelay:RULE_EVAL_DELAY_SHORT];
                         return;
 					}
                 }
@@ -1432,7 +1437,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // we're done
     //[self finishCurrentProcedure: state];
-    [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_NORMAL];
+    [self performSelector:@selector(finishCurrentProcedure:) withObject:state afterDelay:RULE_EVAL_DELAY_SHORT];
 }
 
 #pragma mark -
@@ -2459,11 +2464,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     
     // check to see if we are moving to attack a unit and bail if we are
-    //if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
-    //    log(LOG_TARGET, @"attackUnit == moveToObject");
-    //    [self performSelector: _cmd withObject: nil afterDelay: 0.1];
-	//	return NO;
-    //}
+    if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
+        log(LOG_TARGET, @"attackUnit == moveToObject");
+        [self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
+    }
 	
 	
 	//time for combat things
@@ -4119,6 +4124,9 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	else if ( [errorMessage isEqualToString:YOU_ARE_MOUNTED] ){
 		return ErrYouAreMounted;
+	}
+    else if ( [errorMessage isEqualToString:NOT_ENOUGH_ENERGY] ){
+		return ErrNotEnoughEnergy;
 	}
 
 	return ErrNotFound;

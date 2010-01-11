@@ -28,6 +28,7 @@ typedef enum CastError {
 	ErrTargetDead = 15,
 	ErrCantAttackMounted = 16,
 	ErrYouAreMounted = 17,
+    ErrNotEnoughEnergy = 18,
 } CastError;
 
 #define INV_FULL			@"Inventory is full."
@@ -46,6 +47,7 @@ typedef enum CastError {
 #define TARGET_DEAD			@"Your target is dead"
 #define CANT_ATTACK_MOUNTED	@"Can't attack while mounted."
 #define YOU_ARE_MOUNTED		@"You are mounted."
+#define NOT_ENOUGH_ENERGY   @"Not enough energy"
 
 
 //Must have a Fishing Pole equipped

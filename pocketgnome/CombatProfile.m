@@ -66,7 +66,7 @@
         self.enemyWeightLevel = 10;
         self.enemyWeightAttackingMe = 0;
     }
-	log(LOG_COMBAT, @"CombatProfile created with name %@", self.name);
+	//log(LOG_COMBAT, @"CombatProfile created with name %@", self.name);
     return self;
 }
 
