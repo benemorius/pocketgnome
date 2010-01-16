@@ -829,6 +829,8 @@ typedef enum MovementType {
 	{
         if([self.unit isKindOfClass: [Node class]])
             distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
+        else if([self.unit GUID] == [playerData focusGUID])
+            distanceToUnit = 10;
         else
             distanceToUnit = UNIT_DISTANCE;
 	}
@@ -1432,7 +1434,8 @@ typedef enum MovementType {
 }
 
 - (void)followObject: (WoWObject*)unit{
-	[self setClickToMove: [unit position] andType:ctmWalkTo andGUID:[unit GUID]];
+	//[self setClickToMove: [unit position] andType:ctmWalkTo andGUID:[unit GUID]];
+    [self moveToObject:unit andNotify:YES];
 }
 
 - (BOOL)dismount{
