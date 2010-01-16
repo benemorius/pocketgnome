@@ -2383,8 +2383,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
     
-    UInt64 tankGUID = [theCombatProfile selectedTankGUID];
-    Unit *tank = [playersController playerWithGUID:tankGUID];
+    Unit *tank = [playersController playerWithGUID:[theCombatProfile selectedTankGUID]];
+    if([followUnit isValid])
+        tank = followUnit;
 
     
 	// Should we auto follow the focus target?
