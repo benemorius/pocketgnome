@@ -1076,7 +1076,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     return NO;
 }
 
-#define RULE_EVAL_DELAY_SHORT   0.1f
+#define RULE_EVAL_DELAY_SHORT   0.01f
 #define RULE_EVAL_DELAY_NORMAL  0.25f
 #define RULE_EVAL_DELAY_LONG    0.5f
 
@@ -1487,9 +1487,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			self.mobToSkin = (Mob*)unit;
 			_lootAttempt++;
 			
-			// Lets do this instead of the loot hotkey!
 			[self interactWithMouseoverGUID: [unit GUID]];
-			
+            usleep(300000);
+            [[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];
+			return;
+            
 			// In the off chance that no items are actually looted
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
         }
@@ -2172,6 +2174,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     if(!ignoreProfile && ![self.theCombatProfile unitFitsProfile:unit ignoreDistance:ignoreDistance])
         return NO;
+    else
+    {
+        if([playerController isFriendlyWithFaction:[unit factionTemplate]])
+            return NO;
+    }
     if([[unit position] verticalDistanceToPosition: position] > vertOffset)
         return NO;
     if([blacklistController isBlacklisted:unit])
@@ -2353,6 +2360,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_MOVEMENT, @"Jump skip number: %d", _jumpAttempt);
 		}
 	//}
+    
+    
+    
+    Unit *tank = [playersController playerWithGUID:[theCombatProfile selectedTankGUID]];
+    
+    float highestHealth = 0;
+    for (Unit *unit in [playersController allPlayers])
+    {
+        if([unit maxHealth] > highestHealth)
+        {
+            highestHealth = [unit maxHealth];
+            tank = unit;
+            [theCombatProfile setSelectedTankGUID:[unit GUID]];
+        }
+    }
+    
 	
 	//check for someone to follow, otherwise move along
 	Unit *followUnit = nil;
@@ -2381,12 +2404,28 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 			}
 		}
+        else
+        {
+            //try to chain follow through players toward the action if the tank is too far
+            if([[[playerController player] position] distanceToPosition: [tank position]] > 0.70f * [theCombatProfile attackRange])
+            {
+                
+                NSMutableArray *partyMembers = [NSMutableArray array];
+                [partyMembers addObjectsFromArray:[playersController allPlayers]];
+                float closestUnitDist = [theCombatProfile followRange];
+                for(Unit *unit in partyMembers)
+                {
+                    if([[[playerController player] position] distanceToPosition:[unit position]] < closestUnitDist)// && (([unit movementFlags] & 0x1) == 0x1))
+                        if([[unit position] distanceToPosition:[tank position]] < [[[playerController player] position] distanceToPosition:[tank position]])
+                            if([[[playerController player] position] distanceToPosition:[unit position]] > 10)
+                            {
+                                closestUnitDist = [[[playerController player] position] distanceToPosition:[unit position]];
+                                followUnit = unit;
+                            }
+                }
+            }
+        }
 	}
-    
-    Unit *tank = [playersController playerWithGUID:[theCombatProfile selectedTankGUID]];
-    if([followUnit isValid])
-        tank = followUnit;
-
     
 	// Should we auto follow the focus target?
 	if ( _shouldFollow && followUnit && [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f )
@@ -2408,11 +2447,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		
 		// Should we move toward our target?
-		Position *playerPosition = [[playerController player] position];
-		float range = [playerPosition distanceToPosition: [followUnit position]];
-		if(range >= [theCombatProfile yardsBehindTarget] && ![[playerController player] isCasting])
+        float range = [[[playerController player] position] distanceToPosition: [followUnit position]];
+		if(range >= [theCombatProfile yardsBehindTarget] && ![[playerController player] isCasting] && followUnit != [movementController moveToObject])
         {
 			log(LOG_PARTY, @"Not within %0.2f yards of %@. %0.2f away. Moving closer", [theCombatProfile yardsBehindTarget], followUnit, range);
+            [movementController moveForwardStop];
             [movementController followObject: followUnit];
 			
 			// Check our position again shortly!
@@ -2465,11 +2504,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     
     // check to see if we are moving to attack a unit and bail if we are
-    if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
-        log(LOG_TARGET, @"attackUnit == moveToObject");
-        [self performSelector: _cmd withObject: nil afterDelay: 0.1];
-		return NO;
-    }
+    //if( combatController.attackUnit && (combatController.attackUnit == 2)) {
+    //    log(LOG_TARGET, @"attackUnit == moveToObject");
+    //    [self performSelector: _cmd withObject: nil afterDelay: 0.1];
+	//	return NO;
+    //}
 	
 	
 	//time for combat things
