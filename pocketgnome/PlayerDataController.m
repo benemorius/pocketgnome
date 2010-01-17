@@ -1036,7 +1036,7 @@ static PlayerDataController* sharedController = nil;
         // check pet
         if( self.pet && (![self.pet isValid] || ([player petGUID] == 0))) {
             self.pet = nil;
-            log(LOG_GENERAL, @"Pet is no longer valid.");
+            //log(LOG_GENERAL, @"Pet is no longer valid.");
         }
         
         // player has a pet, but we don't know which mob it is
@@ -1047,7 +1047,7 @@ static PlayerDataController* sharedController = nil;
             // this mob is really our pet, right?
             if( [pet isValid] && ((playerGUID == [pet summonedBy]) || (playerGUID == [pet createdBy]) || (playerGUID == [pet charmedBy]))) {
                 self.pet = pet;
-                log(LOG_GENERAL, @"Found pet: %@", pet);
+                //log(LOG_GENERAL, @"Found pet: %@", pet);
             } else {
                 // [[MobController sharedController] enumerateAllMobs];
             }
