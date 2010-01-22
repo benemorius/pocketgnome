@@ -2417,7 +2417,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 {
                     if([[[playerController player] position] distanceToPosition:[unit position]] < closestUnitDist)// && (([unit movementFlags] & 0x1) == 0x1))
                         if([[unit position] distanceToPosition:[tank position]] < [[[playerController player] position] distanceToPosition:[tank position]])
-                            if([[[playerController player] position] distanceToPosition:[unit position]] > 10 && [unit GUID] != [tank GUID])
+                            if([[[playerController player] position] distanceToPosition:[unit position]] > [theCombatProfile followRange] && [unit GUID] != [tank GUID])
                             {
                                 closestUnitDist = [[[playerController player] position] distanceToPosition:[unit position]];
                                 followUnit = unit;
@@ -2537,7 +2537,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Mob *mobToLoot      = [self mobToLoot];
     float mobToLootDist     = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
 
-	if(self.doLooting && !([followUnit isMounted] && [theCombatProfile followLootDisabled]) && mobToLoot && (mobToLootDist < newUnitDist))
+	if(self.doLooting && !([followUnit isMounted] && [theCombatProfile followLootDisabled]) && mobToLoot && (mobToLootDist < newUnitDist) && mobToLootDist < [[mobToLoot position] distanceToPosition:[tank position]])
 	{
         if(mobToLoot != [movementController moveToObject])
 		{
