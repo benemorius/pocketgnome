@@ -829,8 +829,8 @@ typedef enum MovementType {
 	{
         if([self.unit isKindOfClass: [Node class]])
             distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
-        else if([self.unit isKindOfClass:[Player class]])
-            distanceToUnit = 8;
+//        else if([self.unit isKindOfClass:[Player class]])
+//            distanceToUnit = 8;
         else
             distanceToUnit = UNIT_DISTANCE;
 	}

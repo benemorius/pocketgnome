@@ -2417,7 +2417,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 {
                     if([[[playerController player] position] distanceToPosition:[unit position]] < closestUnitDist)// && (([unit movementFlags] & 0x1) == 0x1))
                         if([[unit position] distanceToPosition:[tank position]] < [[[playerController player] position] distanceToPosition:[tank position]])
-                            if([[[playerController player] position] distanceToPosition:[unit position]] > [theCombatProfile followRange] && [unit GUID] != [tank GUID])
+                            if([[[playerController player] position] distanceToPosition:[unit position]] > 20 && [unit GUID] != [tank GUID])
                             {
                                 closestUnitDist = [[[playerController player] position] distanceToPosition:[unit position]];
                                 followUnit = unit;
