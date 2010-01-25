@@ -30,24 +30,25 @@
         self.attackPlayers = NO;
         self.attackPets = NO;
         self.attackAnyLevel = YES;
-        self.ignoreElite = YES;
+        self.ignoreElite = NO;
         self.ignoreLevelOne = YES;
 		
-		// Healing
+		self.enableParty = NO;
 		self.healingEnabled = NO;
-		self.autoFollowTarget = NO;
+		self.followFocus = NO;
 		self.yardsBehindTarget = 10.0f;
 		self.healingRange = 40.0f;
-		self.followMountEnabled = NO;
+		self.followMountEnabled = YES;
 		self.selectedTankGUID = 0x0;
 		self.healthThreshold = 95;
         
         self.followRange = 40;
         self.attackOnlyTankedMobs = YES;
-		self.followCombatDisabled = NO;
-		self.followHealDisabled = NO;
-		self.followLootDisabled = NO;
-		self.followGatherDisabled = NO;
+        self.autoTank = YES;
+		self.followCombatDisabled = YES;
+		self.followHealDisabled = YES;
+		self.followLootDisabled = YES;
+		self.followGatherDisabled = YES;
 		
 
         self.attackRange = 20.0f;
@@ -100,9 +101,9 @@
     copy.attackAnyLevel = self.attackAnyLevel;
     copy.ignoreElite = self.ignoreElite;
     copy.ignoreLevelOne = self.ignoreLevelOne;
-	
+	copy.enableParty = self.enableParty;
 	copy.healingEnabled = self.healingEnabled;
-    copy.autoFollowTarget = self.autoFollowTarget;
+    copy.followFocus = self.followFocus;
     copy.yardsBehindTarget = self.yardsBehindTarget;
 	copy.healingRange = self.healingRange;
 	copy.followMountEnabled = self.followMountEnabled;
@@ -111,6 +112,7 @@
     
     copy.followRange = self.followRange;
     copy.attackOnlyTankedMobs = self.attackOnlyTankedMobs;
+    copy.autoTank = self.autoTank;
 	copy.followCombatDisabled = self.followCombatDisabled;
 	copy.followHealDisabled = self.followHealDisabled;
 	copy.followLootDisabled = self.followLootDisabled;
@@ -152,9 +154,9 @@
         self.attackAnyLevel = [[decoder decodeObjectForKey: @"AttackAnyLevel"] boolValue];
         self.ignoreElite = [[decoder decodeObjectForKey: @"IgnoreElite"] boolValue];
         self.ignoreLevelOne = [[decoder decodeObjectForKey: @"IgnoreLevelOne"] boolValue];
-
+        self.enableParty = [[decoder decodeObjectForKey: @"EnableParty"] boolValue];
 		self.healingEnabled = [[decoder decodeObjectForKey: @"HealingEnabled"] boolValue];
-        self.autoFollowTarget = [[decoder decodeObjectForKey: @"AutoFollowTarget"] boolValue];
+        self.followFocus = [[decoder decodeObjectForKey: @"FollowFocus"] boolValue];
 		self.yardsBehindTarget = [[decoder decodeObjectForKey: @"YardsBehindTarget"] floatValue];
 		self.healingRange = [[decoder decodeObjectForKey: @"HealingRange"] floatValue];
 		self.followMountEnabled = [[decoder decodeObjectForKey: @"FollowMountEnabled"] boolValue];
@@ -163,6 +165,7 @@
         
         self.followRange = [[decoder decodeObjectForKey: @"FollowRange"] floatValue];
         self.attackOnlyTankedMobs = [[decoder decodeObjectForKey: @"AttackOnlyTankedMobs"] boolValue];
+        self.autoTank = [[decoder decodeObjectForKey: @"AutoTank"] boolValue];
 		self.followCombatDisabled = [[decoder decodeObjectForKey: @"FollowCombatDisabled"] boolValue];
 		self.followHealDisabled = [[decoder decodeObjectForKey: @"FollowHealDisabled"] boolValue];
 		self.followLootDisabled = [[decoder decodeObjectForKey: @"FollowLootDisabled"] boolValue];
@@ -200,9 +203,9 @@
     [coder encodeObject: [NSNumber numberWithBool: self.attackAnyLevel] forKey: @"AttackAnyLevel"];
     [coder encodeObject: [NSNumber numberWithBool: self.ignoreElite] forKey: @"IgnoreElite"];
     [coder encodeObject: [NSNumber numberWithBool: self.ignoreLevelOne] forKey: @"IgnoreLevelOne"];
-
+    [coder encodeObject: [NSNumber numberWithBool: self.enableParty] forKey: @"EnableParty"];
 	[coder encodeObject: [NSNumber numberWithBool: self.healingEnabled] forKey: @"HealingEnabled"];
-    [coder encodeObject: [NSNumber numberWithBool: self.autoFollowTarget] forKey: @"AutoFollowTarget"];
+    [coder encodeObject: [NSNumber numberWithBool: self.followFocus] forKey: @"FollowFocus"];
     [coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTarget] forKey: @"YardsBehindTarget"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.healingRange] forKey: @"HealingRange"];
 	[coder encodeObject: [NSNumber numberWithBool: self.followMountEnabled] forKey: @"FollowMountEnabled"];
@@ -211,6 +214,7 @@
     
     [coder encodeObject: [NSNumber numberWithFloat: self.followRange] forKey: @"FollowRange"];
 	[coder encodeObject: [NSNumber numberWithBool: self.attackOnlyTankedMobs] forKey: @"AttackOnlyTankedMobs"];
+    [coder encodeObject: [NSNumber numberWithBool: self.autoTank] forKey: @"AutoTank"];
     [coder encodeObject: [NSNumber numberWithBool: self.followCombatDisabled] forKey: @"FollowCombatDisabled"];
 	[coder encodeObject: [NSNumber numberWithBool: self.followHealDisabled] forKey: @"FollowHealDisabled"];
     [coder encodeObject: [NSNumber numberWithBool: self.followLootDisabled] forKey: @"FollowLootDisabled"];
@@ -255,9 +259,9 @@
 @synthesize attackAnyLevel;
 @synthesize ignoreElite;
 @synthesize ignoreLevelOne;
-
+@synthesize enableParty;
 @synthesize healingEnabled;
-@synthesize autoFollowTarget;
+@synthesize followFocus;
 @synthesize yardsBehindTarget;
 @synthesize healingRange;
 @synthesize followMountEnabled;
@@ -266,6 +270,7 @@
 
 @synthesize followRange;
 @synthesize attackOnlyTankedMobs;
+@synthesize autoTank;
 @synthesize followCombatDisabled;
 @synthesize followHealDisabled;
 @synthesize followLootDisabled;

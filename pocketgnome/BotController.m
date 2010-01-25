@@ -2360,29 +2360,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_MOVEMENT, @"Jump skip number: %d", _jumpAttempt);
 		}
 	//}
+
     
-    
-    
-    Unit *tank = [playersController playerWithGUID:[theCombatProfile selectedTankGUID]];
-    
-    float highestHealth = 0;
-    for (Unit *unit in [playersController allPlayers])
-    {
-        if([unit maxHealth] > highestHealth)
-        {
-            highestHealth = [unit maxHealth];
-            tank = unit;
-            [theCombatProfile setSelectedTankGUID:[unit GUID]];
-        }
-    }
-    
-	
-	//check for someone to follow, otherwise move along
+    Unit *tank = nil;
 	Unit *followUnit = nil;
-	if ( [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f ){
-		UInt64 followGUID = [playerController focusGUID];
-		if ( followGUID )
+	if([theCombatProfile enableParty])
+    {
+        if([theCombatProfile autoTank])
+        {
+            float highestHealth = 0;
+            for (Unit *unit in [playersController allPlayers])
+            {
+                if([unit maxHealth] > highestHealth)
+                {
+                    highestHealth = [unit maxHealth];
+                    tank = unit;
+                    [theCombatProfile setSelectedTankGUID:[unit GUID]];
+                }
+            }
+        }
+        else
+        {
+            tank = [playersController playerWithGUID:[theCombatProfile selectedTankGUID]];
+        }
+        
+        
+		if ([theCombatProfile followFocus])
 		{
+            UInt64 followGUID = [playerController focusGUID];
 			for ( Unit *unit in [playersController allPlayers] )
 			{
 				if ([unit GUID] == followGUID && [playerPosition distanceToPosition: [unit position]] < [theCombatProfile followRange])
@@ -2427,8 +2432,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         }
 	}
     
-	// Should we auto follow the focus target?
-	if ( _shouldFollow && followUnit && [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f )
+	if (_shouldFollow && followUnit)
 	{
 		
 		// Is our target mounted?  Are we? If not lets!
@@ -3238,7 +3242,7 @@ NSMutableDictionary *_diffDict = nil;
 		log(LOG_HEAL, @"Stop following");
 		_shouldFollow = NO;
 	}
-	else if ( [[entry text] isEqualToString: @"heel"] ){
+	else if ( [[entry text] isEqualToString: @"follow"] ){
 		log(LOG_HEAL, @"Start following again!");
 		_shouldFollow = YES;
 	}
