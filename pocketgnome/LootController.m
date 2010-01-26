@@ -158,28 +158,28 @@
 		if ( item > 0 ){
 			// Loot the item!
 			//[chatController enter];             // open/close chat box
-            usleep(100000);
+            //usleep(100000);
 			[macroController useMacroOrSendCmd:[NSString stringWithFormat: @"/script LootSlot(%d)", i+1, '\n']];
 			usleep(500000);
 			
 			// Check to see if the item is still in memory - if it is then it's a BoP item!  Lets loot it!
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
-				[chatController enter];             // open/close chat box
-				usleep(100000);
+				//[chatController enter];             // open/close chat box
+				//usleep(100000);
 				[macroController useMacroOrSendCmd:[NSString stringWithFormat: @"/script ConfirmLootSlot(%d)", i+1, '\n']];
 				usleep(500000);
 			}
 			
 			// do it again for the next slot (sometimes the first slot is money! we don't know how to determine this)
 			//[chatController enter];             // open/close chat box
-            usleep(100000);
+            //usleep(100000);
 			[macroController useMacroOrSendCmd:[NSString stringWithFormat: @"/script LootSlot(%d)", i+2, '\n']];
 			usleep(500000);
 			
 			// Check to see if the item is still in memory - if it is then it's a BoP item!  Lets loot it!
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
-				[chatController enter];             // open/close chat box
-				usleep(100000);
+				//[chatController enter];             // open/close chat box
+				//usleep(100000);
 				[macroController useMacroOrSendCmd:[NSString stringWithFormat: @"/script ConfirmLootSlot(%d)", i+2, '\n']];
 				usleep(500000);
 			}
