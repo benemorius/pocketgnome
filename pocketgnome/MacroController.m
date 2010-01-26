@@ -66,15 +66,8 @@
 	BOOL macroExecuted = [self executeMacro:key];
 	
 	// if we didnt' find a macro, lets send the command!
-	if ( !macroExecuted ){
-
-		// hit escape to close the chat window if it's open
-		if ( [controller isWoWChatBoxOpen] ){
-			log(LOG_MACRO, @"Sending escape to close open chat!");
-			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
-			usleep(100000);
-		}
-		
+	if (!macroExecuted)
+    {
 		// get the macro info
 		NSDictionary *macroData = [_macroDictionary valueForKey:key];
 		
@@ -84,12 +77,7 @@
         if(!macroCommand)
             macroCommand = key;
         
-		// send the command
-		[chatController enter];
-		usleep(100000);
-		[chatController sendKeySequence: [NSString stringWithFormat: @"%@%c", macroCommand, '\n']];
-		
-		log(LOG_ERROR, @"[Macro] I just typed the '%@' command. Set up a macro so I don't have to type it in!", key);
+		[self overwriteMacro:macroCommand];
 	}
 }
 
@@ -206,6 +194,46 @@
 	}
 	
 	return 0;
+}
+
+- (BOOL)overwriteMacro:(NSString*)macroCommand
+{
+    UInt32 offset = [offsetController offset:@"MACRO_LIST_PTR"];
+    
+    MemoryAccess *memory = [controller wowMemoryAccess];
+    if ( !memory )
+        return NO;
+    
+    UInt32 objectPtr = 0;
+    [memory loadDataForObject:self atAddress:offset Buffer:(Byte *)&objectPtr BufLength:sizeof(objectPtr)];
+    
+    // just use the first found macro
+    if ((objectPtr & 0x1) == 0)
+    {
+        if([macroCommand length] <= 255 && [macroCommand characterAtIndex:0] == '/')
+        {
+            UInt32 macroID = 0;
+            char oldMacro[256];
+            char newMacro[256];
+            
+            [memory loadDataForObject:self atAddress:objectPtr Buffer:(Byte *)&macroID BufLength:sizeof(macroID)];
+            [memory loadDataForObject: self atAddress: objectPtr+0x160 Buffer: (Byte *)&oldMacro BufLength: sizeof(oldMacro)-1];
+            
+            strcpy(newMacro, [macroCommand UTF8String]);
+            if(![memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)newMacro BufLength:sizeof(newMacro)])
+                return NO;
+            
+            [botController performAction:macroID + USE_MACRO_MASK];
+            
+            [memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)oldMacro BufLength:sizeof(oldMacro)];
+            
+            log(LOG_MACRO, @"Executed %@", macroCommand);
+            return YES;
+        }
+        else
+            log(LOG_ERROR, @"Invalid macro: %@", macroCommand);
+    }
+    return NO;
 }
 
 @end

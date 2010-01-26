@@ -33,5 +33,7 @@
 // this will make us do something!
 - (void)useMacroOrSendCmd: (NSString*)key;
 - (BOOL)executeMacro:(NSString *)key;
+- (BOOL)overwriteMacro:(NSString *)macroCommand;
+
 
 @end
