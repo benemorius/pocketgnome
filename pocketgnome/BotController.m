@@ -3694,8 +3694,8 @@ NSMutableDictionary *_diffDict = nil;
 	log(LOG_PVP, @"Queueing...");
 	
 	// Open PvP screen
-	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
-	usleep(10000);
+	//[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
+	//usleep(10000);
 	
 	// Lets queue!
 	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
@@ -3763,7 +3763,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// If we're not PvPing - we want to start!
     if(!self.isPvPing) {
-		[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
+		//[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
 
         if(([controller reactMaskForFaction: [player factionTemplate]] & 0x2)) {
             [pvpBannerImage setImage: [NSImage imageNamed: @"BannerAlliance"]];
@@ -3783,7 +3783,7 @@ NSMutableDictionary *_diffDict = nil;
 	self.startDate = [[NSDate date] retain];
 	
 	// Close the PvP window!
-	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
+	//[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
 	
     self.pvpCheckCount = 0;
     self.pvpPlayWarning = [pvpPlayWarningCheckbox state];
