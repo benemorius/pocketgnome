@@ -1277,12 +1277,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// do something special? Search for an add to CC?
 			if ( [rule target] == TargetAdd ){
-				log(LOG_TARGET, @"Time to do something to an add! CC?");
+				//log(LOG_TARGET, @"Time to do something to an add! CC?");
 			}
 			
 			// find someone to heal?
 			else if ( [rule target] == TargetFriend ){
-				log(LOG_TARGET, @"Lets heal someone! Maybe?");
+				//log(LOG_TARGET, @"Lets heal someone! Maybe?");
 				
 			}
 			/* wtf is this for?
