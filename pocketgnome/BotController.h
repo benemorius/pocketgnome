@@ -105,6 +105,7 @@
     BOOL _nodeDescend;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
+    float _lootingDist;
     BOOL _isBotting;
 	BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
@@ -206,6 +207,7 @@
     IBOutlet NSButton *skinningCheckbox;
     IBOutlet id skinningSkillText;
     IBOutlet id gatherDistText;
+    IBOutlet id lootingDistText;
     IBOutlet NSButton *lootCheckbox;
 	IBOutlet NSButton *mountCheckbox;
 	IBOutlet NSPopUpButton *mountType;

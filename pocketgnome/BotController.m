@@ -104,6 +104,7 @@
 
 @property (readwrite, assign) BOOL doLooting;
 @property (readwrite, assign) float gatherDistance;
+@property (readwrite, assign) float lootingDistance;
 
 @end
 
@@ -325,6 +326,7 @@
 @synthesize startDate;
 @synthesize doLooting       = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
+@synthesize lootingDistance = _lootingDist;
 @synthesize nodeDescend     = _nodeDescend;
 @synthesize mobsToLoot      = _mobsToLoot;
 
@@ -1929,7 +1931,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     {
         if(([(Mob*)unit isLootable] || ([(Mob*)unit isSkinnable] && _doSkinning)) && ![blacklistController isBlacklisted:unit])
         {
-            if([[[playerController player] position] distanceToPosition: [unit position]] <= [theCombatProfile attackRange])
+            if([[[playerController player] position] distanceToPosition: [unit position]] <= [self lootingDistance])
             {
                 if ([_mobsToLoot containsObject: unit])
                 {
@@ -2884,6 +2886,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     self.doLooting = [lootCheckbox state];
     self.gatherDistance = [gatherDistText floatValue];
+    self.lootingDistance = [lootingDistText floatValue];
     self.nodeDescend = [nodeDescendCheckbox state];
 	
 	// We only really need this if we are PvPing, but we want to store it in case they click "start bot" while in a BG, vs. doing the PvP route
