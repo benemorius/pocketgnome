@@ -2317,7 +2317,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             if(!_reviveAttempt) _reviveAttempt = 1;
             else _reviveAttempt = _reviveAttempt*2;
             
-            [macroController useMacroOrSendCmd:@"Resurrect"];    // get corpse
+            [macroController useMacroOrSendCmd:@"/script RetrieveCorpse()"];    // get corpse
 			
 			if ( _reviveAttempt > 15 ){
 				_reviveAttempt = 15;
@@ -3136,7 +3136,8 @@ NSMutableDictionary *_diffDict = nil;
 	int status = [playerController battlegroundStatus];
 	if ( status == BGWaiting ){
 		// queue then check again!
-		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
+		[macroController useMacroOrSendCmd:@"/script AcceptBattlefieldPort(1,1)"];
+        [macroController useMacroOrSendCmd:@"/script AcceptBattlefieldPort(2,1)"];
 		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:1.0f];
 		log(LOG_PVP, @"Additional join BG check executed!");
 	}
@@ -3151,7 +3152,8 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// Lets join the BG!
 	if ( status == BGWaiting ){
-		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
+		[macroController useMacroOrSendCmd:@"/script AcceptBattlefieldPort(1,1)"];
+        [macroController useMacroOrSendCmd:@"/script AcceptBattlefieldPort(2,1)"];
 		float queueAfter = SSRandomFloatBetween(3.0f, 20.0f);
 		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:queueAfter];
 		log(LOG_PVP, @"Joining the BG after %0.2f seconds", queueAfter);
@@ -3278,7 +3280,7 @@ NSMutableDictionary *_diffDict = nil;
 		}
 		log(LOG_GENERAL, @"Attempting to repop %d.", try);
 		
-		[macroController useMacroOrSendCmd:@"ReleaseCorpse"];
+		[macroController useMacroOrSendCmd:@"/script RepopMe()"];
 		
 		// Try again every 5 seconds pls
 		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 5.0];
@@ -3612,7 +3614,7 @@ NSMutableDictionary *_diffDict = nil;
 				// leave the battleground
 				log(LOG_PVP, @"Leaving battleground due to Inactive debuff.");
 				
-				[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
+				[macroController useMacroOrSendCmd:@"/script LeaveBattlefield()"];
 			}
 		}
 		
@@ -3654,7 +3656,7 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	
 	log(LOG_PVP, @"Still not queued, trying again!");
-	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
+	[macroController useMacroOrSendCmd:@"/script JoinBattlefield(0)"];
 	
 	float nextCheck = SSRandomFloatBetween(1.0f, 5.0f);
 	[self performSelector: @selector(pvpQueueRetry) withObject: nil afterDelay:nextCheck];
@@ -3698,7 +3700,7 @@ NSMutableDictionary *_diffDict = nil;
 	//usleep(10000);
 	
 	// Lets queue!
-	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
+	[macroController useMacroOrSendCmd:@"/script JoinBattlefield(0)"];
 	        
 	[self noAFK];
 	self.pvpCheckCount = 0;
@@ -3933,12 +3935,12 @@ NSMutableDictionary *_diffDict = nil;
 			UInt64 guid = 0;
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&guid BufLength: sizeof(guid)] && guid ){
 				
-				[macroController useMacroOrSendCmd:@"LeaveParty"];
+				[macroController useMacroOrSendCmd:@"/script LeaveParty()"];
 				log(LOG_PVP, @"Player is in party leaving!");				
 			}
 			
 			log(LOG_PVP, @"Leaving party anyways - there a leader? 0x%qX", guid);
-			[macroController useMacroOrSendCmd:@"LeaveParty"];
+			[macroController useMacroOrSendCmd:@"/script LeaveParty()"];
 		}
 		
 		// only autojoin if it's 2 hours+ after a WG end
@@ -3950,7 +3952,7 @@ NSMutableDictionary *_diffDict = nil;
 		// should we auto accept quests too? o.O
 		
 		// click the button!
-		[macroController useMacroOrSendCmd:@"ClickFirstButton"];
+		[macroController useMacroOrSendCmd:@"/click StaticPopup1Button1"];
 		log(LOG_PVP, @"Autojoining WG!  Seconds since last WG: %0.2f", [currentTime timeIntervalSinceDate: _dateWGEnded]);
 		
 		// check how many marks they have (if it went up, we need to leave the group)!
@@ -3968,7 +3970,7 @@ NSMutableDictionary *_diffDict = nil;
 				_lastNumWGMarks = [item count];
 				
 				log(LOG_PVP, @"Wintergrasp over you now have %d marks! Leaving group!", _lastNumWGMarks);
-				[macroController useMacroOrSendCmd:@"LeaveParty"];
+				[macroController useMacroOrSendCmd:@"/script LeaveParty()"];
 				
 				// update our time
 				log(LOG_PVP, @"It's been %0.2f:: opens seconds since we were last given marks!", [currentTime timeIntervalSinceDate: _dateWGEnded]);
