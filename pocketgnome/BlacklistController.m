@@ -110,7 +110,7 @@
 			
 			if ( timeSinceBlacklisted > [[unit objectForKey:@"Expire"] floatValue] ){
 				[self removeFromBlacklist:obj];
-				log(LOG_BLACKLIST, @"Removing object %@ from blacklist after %0.0f seconds", obj, [unit objectForKey:@"Expire"]);
+				log(LOG_BLACKLIST, @"Removing object %@ from blacklist after %0.0f seconds", obj, [[unit objectForKey:@"Expire"] floatValue]);
 			}
 			
 			// mob/player checks
