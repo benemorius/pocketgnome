@@ -3924,7 +3924,7 @@ NSMutableDictionary *_diffDict = nil;
 	log(LOG_FUNCTION, @"entering function");
 	
 	// WG zone ID: 4197
-	if ( [autoJoinWG state] && ![playerController isDead] && [playerController zone] == 4197 && [playerController playerIsValid] ){
+	if ( [autoJoinWG state] && ![playerController isDead] && [playerController zone] == 4197 && [playerController playerIsValid] && [self isBotting]){
 		
 		NSDate *currentTime = [NSDate date];
 		
