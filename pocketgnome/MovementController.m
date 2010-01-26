@@ -1164,7 +1164,8 @@ typedef enum MovementType {
     BOOL printTurnInfo = NO;
     if( ![controller isWoWFront] || ((GetCurrentButtonState() & 0x2) != 0x2) ) {  // don't change position if the right mouse button is down
         Position *playerPosition = [playerData position];
-        if( [movementType selectedTag] == MOVE_KEYBOARD ) {
+        if([movementType selectedTag] == MOVE_KEYBOARD && [self isMoving])
+        {
             // check player facing vs. unit position
             float playerDirection, savedDirection;
             playerDirection = savedDirection = [playerData directionFacing];
