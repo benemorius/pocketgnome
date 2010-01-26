@@ -1440,44 +1440,8 @@ typedef enum MovementType {
 
 - (BOOL)dismount{
 	
-	[macroController useMacroOrSendCmd:@"Dismount"];
+	[macroController useMacroOrSendCmd:@"/dismount\n/cancelaura Swift Flight Form\n/cancelaura Flight Form"];
 	return YES;
-	
-	
-	// get memory
-	MemoryAccess *memory = [controller wowMemoryAccess];
-	if ( !memory )
-		return NO;
-	
-	// do they have a standard mount?
-	UInt32 mountID = [[playerData player] mountID];
-	
-	// check for druids
-	if ( mountID == 0 ){
-		if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] )
-			mountID = 40120;
-		else if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] )
-			mountID = 33943;
-	}
-	
-	// mount found! "use" it!
-	if ( mountID > 0 ){
-		
-		log(LOG_MOVEMENT, @"Dismounting from %d", mountID);
-		
-		[botController performAction: mountID];
-		
-		usleep(100000);
-		
-		return YES;
-	}
-	
-	// just in case people have problems, we'll print something to their log file
-	if ( ![playerData isOnGround] ) {
-		log(LOG_MOVEMENT, @"Unable to dismount player! In theory we should never be here! Mount ID: %d", mountID);
-    }
-	
-	return NO;	
 }
 
 @end
