@@ -285,11 +285,10 @@
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(combatCheck:) object: unit];
     
     // remove from the attack queue & combat list
-    BOOL wasInAttackQueue = [_attackQueue containsObject: unit];
     [self removeUnitFromAttackQueue: unit];
     
     // tell the bot controller
-    [botController finishUnit: unit wasInAttackQueue: wasInAttackQueue];
+    //[botController finishUnit: unit wasInAttackQueue: wasInAttackQueue];
 }
 
 #pragma mark Data Structure Access

@@ -126,7 +126,7 @@
 	// improved loot shit
 	WoWObject *_lastAttemptedUnitToLoot;
 	int _lootAttempt;
-	WoWObject *_unitToLoot;
+	WoWObject *_lootingUnit;
 	NSDate *lootStartTime;
 	NSDate *skinStartTime;
 	
@@ -272,15 +272,12 @@
 - (void)playerEnteringCombat;
 - (void)playerLeavingCombat;
 - (void)attackUnit: (Unit*)unit;
-- (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue;
 
 // Input from MovementController;
 - (void)reachedUnit: (WoWObject*)unit;
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
-
-- (void)addLootMob:(Unit *)unit;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

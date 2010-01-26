@@ -92,7 +92,7 @@
     
 @property (readwrite, retain) NSDate *startDate;
 @property (readwrite, retain) Mob *mobToSkin;
-@property (readwrite, retain) WoWObject *unitToLoot;
+@property (readwrite, retain) WoWObject *lootingUnit;
 @property (readwrite, retain) WoWObject *lastAttemptedUnitToLoot;
 @property (readwrite, retain) Unit *preCombatUnit;
 
@@ -203,7 +203,7 @@
         self.didPreCombatProcedure = NO;
 		_lastSpellCastGameTime = 0;
 		self.startDate = nil;
-		_unitToLoot = nil;
+		_lootingUnit = nil;
 		_mobToSkin = nil;
 		_shouldFollow = YES;
 		_lastUnitAttemptedToHealed = nil;
@@ -313,7 +313,7 @@
 @synthesize didPreCombatProcedure = _didPreCombatProcedure;
 @synthesize procedureInProgress = _procedureInProgress;
 @synthesize mobToSkin = _mobToSkin;
-@synthesize unitToLoot = _unitToLoot;
+@synthesize lootingUnit = _lootingUnit;
 @synthesize lastAttemptedUnitToLoot = _lastAttemptedUnitToLoot;
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
@@ -1485,7 +1485,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_LOOT, @"Looting : %@", unit);
 			
 			self.lootStartTime = [NSDate date];
-			self.unitToLoot = unit;
+			self.lootingUnit = unit;
 			self.mobToSkin = (Mob*)unit;
 			_lootAttempt++;
 			
@@ -1502,16 +1502,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", [unit isValid], distanceToUnit <= 5.0, unit );
 			
 			// This will ensure we won't try to loot this node again - /cry
-			if ( [self.unitToLoot isKindOfClass: [Node class]] ){
-				[nodeController finishedNode: (Node*)self.unitToLoot];
+			if ( [self.lootingUnit isKindOfClass: [Node class]] ){
+				[nodeController finishedNode: (Node*)self.lootingUnit];
 			}
 			else{
-				[_mobsToLoot removeObject: self.unitToLoot];
+				[_mobsToLoot removeObject: self.lootingUnit];
 			}
-			[blacklistController blacklistObject:self.unitToLoot forSeconds:45];
+			[blacklistController blacklistObject:self.lootingUnit forSeconds:45];
             
 			// Not 100% sure why we need this, but it seems important?
-			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
+			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.lootingUnit];
 			
 			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];	
         }
@@ -1557,24 +1557,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifyLootSuccess) object: nil];
 	
 	// This lets us know that the LAST loot was just from us looting a corpse (vs. via skinning or herbalism)
-	if ( self.unitToLoot ){
+	if ( self.lootingUnit ){
 		NSDate *currentTime = [NSDate date];
 		
 		// Unit was looted, remove from list!
-		if ([self.unitToLoot isKindOfClass: [Node class]])
+		if ([self.lootingUnit isKindOfClass: [Node class]])
 		{
-			[nodeController finishedNode: (Node*)self.unitToLoot];
+			[nodeController finishedNode: (Node*)self.lootingUnit];
 			self.mobToSkin = nil;
 			log(LOG_LOOT, @"Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s");
 		}
 		else
 		{
-			[_mobsToLoot removeObject: self.unitToLoot];
+			[_mobsToLoot removeObject: self.lootingUnit];
 			log(LOG_LOOT, @"Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
 		_lootAttempt = 0;
 		// Not 100% sure why we need this, but it seems important?
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.lootingUnit];
 	}
 	// Here from skinning!
 	else if ( self.mobToSkin ){
@@ -1587,9 +1587,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self skinOrFinish];
 	
 	// No longer need this unit!
-	[blacklistController blacklistObject:self.unitToLoot forSeconds:15];
-	[_mobsToLoot removeObject:self.unitToLoot];
-	self.unitToLoot = nil;
+	[blacklistController blacklistObject:self.lootingUnit forSeconds:15];
+	[_mobsToLoot removeObject:self.lootingUnit];
+	self.lootingUnit = nil;
     [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
 }
 
@@ -1926,35 +1926,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 }
 
-- (void)addLootMob: (Unit*)unit {
-	if([unit isValid])
-    {
-        if(([(Mob*)unit isLootable] || ([(Mob*)unit isSkinnable] && _doSkinning)) && ![blacklistController isBlacklisted:unit])
-        {
-            if([[[playerController player] position] distanceToPosition: [unit position]] <= [self lootingDistance])
-            {
-                if ([_mobsToLoot containsObject: unit])
-                {
-                    [_mobsToLoot removeObject:unit];
-                    [_mobsToLoot addObject:unit];
-                }
-                else
-                {
-                    log(LOG_LOOT, @"Adding discovered mob %@ to loot queue.", unit);
-                    [_mobsToLoot addObject:unit];
-                }
-            }
-        }
-	}
-}
-
-- (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue {
-	log(LOG_FUNCTION, @"entering function");
-    [self addLootMob:unit];
-	[self evaluateSituation];
-	return;
-}
-
 #pragma mark -
 #pragma mark [Input] MovementController
 
@@ -1992,7 +1963,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		//}
 		//else{
 		//	// This node is "done" - this is a sort of blacklist, we just don't want it anymore!
-		//	[nodeController finishedNode: (Node*)self.unitToLoot];
+		//	[nodeController finishedNode: (Node*)self.lootingUnit];
 		//
 		//	// Resume movement!
 		//	[movementController resumeMovementToNearestWaypoint];
@@ -2139,13 +2110,38 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [self performSelector: _cmd withObject: regenDict afterDelay: 2.0f];
 }
 
-- (Mob*)mobToLoot {
+- (Mob*)unitToLoot {
 	log(LOG_FUNCTION, @"entering function");
 	
 	NSArray *mobs = [mobController allMobs];
-	for ( Mob *mob in mobs )
+	for ( Mob *unit in mobs )
 	{
-		[self addLootMob: mob];
+        if([unit isValid])
+        {
+            if(([(Mob*)unit isLootable] || ([(Mob*)unit isSkinnable] && _doSkinning)) && ![blacklistController isBlacklisted:unit])
+            {
+                if([[[playerController player] position] distanceToPosition: [unit position]] <= [self lootingDistance])
+                {
+                    if ([_mobsToLoot containsObject: unit])
+                    {
+                        [_mobsToLoot removeObject:unit];
+                        [_mobsToLoot addObject:unit];
+                    }
+                    else
+                    {
+                        log(LOG_LOOT, @"Adding %@ to loot queue.", unit);
+                        [_mobsToLoot addObject:unit];
+                    }
+                }
+            }
+            else if([_mobsToLoot containsObject:unit])
+            {
+                log(LOG_LOOT, @"Removing %@ from loot queue.", unit);
+                [_mobsToLoot removeObject:unit];
+            }
+        }
+
+        
 	}
 	
     if([_mobsToLoot count])
@@ -2540,7 +2536,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	//	newUnit = nil;
 	float newUnitDist  = newUnit ? [[newUnit position] distanceToPosition: playerPosition] : INFINITY;
 	
-	Mob *mobToLoot      = [self mobToLoot];
+	Mob *mobToLoot      = [self unitToLoot];
     float mobToLootDist     = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
 
 	if(self.doLooting && !([followUnit isMounted] && [theCombatProfile followLootDisabled]) && mobToLoot && (mobToLootDist < newUnitDist) && mobToLootDist < [[mobToLoot position] distanceToPosition:[tank position]])
@@ -2548,23 +2544,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if(mobToLoot != [movementController moveToObject])
 		{
             // either move toward it or loot it now
-            if([mobToLoot isValid] && (mobToLootDist < INFINITY) && ![blacklistController isBlacklisted:mobToLoot]) {
-				
-				// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
-				//if ( self.lastAttemptedUnitToLoot == mobToLoot && _lootAttempt >= 3 ){
-				//	log(LOG_LOOT, @"Unable to loot %@, removing from loot list", self.lastAttemptedUnitToLoot);
-				//	[_mobsToLoot removeObject: self.unitToLoot];
-				//}
-				//else{
-					log(LOG_LOOT, @"Going to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-					if(mobToLootDist <= UNIT_DISTANCE)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
-					else                        [movementController moveToObject: mobToLoot andNotify: YES];
-					return YES;
-				//}
-            }
-			else{
-				log(LOG_LOOT, @"Mob found, but either isn't valid (%d), is too far away (%d) or is blacklisted (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY), [blacklistController isBlacklisted:mobToLoot] );
-			}
+            log(LOG_LOOT, @"Going to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
+            if(mobToLootDist <= UNIT_DISTANCE)
+                [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
+            else
+                [movementController moveToObject:mobToLoot andNotify:YES];
+            return YES;
         }
 		else{
 			log(LOG_LOOT, @"We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
