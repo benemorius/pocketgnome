@@ -462,50 +462,30 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 
 // find all units we are in combat with
 - (void)doCombatSearch{
-	//if(![botController isBotting])
-	//	return;
+	
+    NSMutableArray *units = [NSMutableArray array];
+    [units addObjectsFromArray:[mobController allMobs]];
+    [units addObjectsFromArray:[playersController allPlayers]];
+    [units addObjectsFromArray:[self attackQueue]];
+    [units addObjectsFromArray:[self unitsAttackingMe]];
 
-	NSArray *mobs = [mobController allMobs];
-	NSArray *players = [playersController allPlayers];
-	
-	BOOL playerHasPet = [[playerData player] hasPet];
-	
-	for(Mob *mob in mobs)
+	for(Unit *unit in units)
 	{
-		if([mob isValid])
+		if([unit isValid])
         {
-            if([botController isUnitValidToAttack:mob fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:NO])
-				[self addUnitToAttackQueue:mob];
-            if([botController isUnitValidToAttack:mob fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:YES])
-            {
-                if([mob targetID] == [[playerData player] GUID] || (playerHasPet && [mob targetID] == [[playerData player] petGUID]) || [mob isFleeing])
-                    [self addUnitToAttackingMe: (Unit*)mob];
-            }
+            if([botController isUnitValidToAttack:unit fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:NO])
+				[self addUnitToAttackQueue:unit];
             else
-                [self removeUnitFromAttackingMe:(Unit*)mob];
+                [self removeUnitFromAttackQueue:unit];
+            
+            if([unit targetID] == [[playerData player] GUID] || ([[playerData player] hasPet] && [unit targetID] == [[playerData player] petGUID]) || [unit isFleeing])
+                [self addUnitToAttackingMe:unit];
+            else
+                [self removeUnitFromAttackingMe:unit];
 		}
 	}
 	
-	for(Player *player in players)
-    {
-		if([player isValid])
-        {
-            if([botController isUnitValidToAttack:player fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:NO])
-				[self addUnitToAttackQueue:player];
-            if([botController isUnitValidToAttack:player fromPosition:[[playerData player] position] ignoreDistance:NO ignoreProfile:YES])
-            {
-                if([player targetID] == [[playerData player] GUID] || (playerHasPet && [player targetID] == [[playerData player] petGUID]) || [player isFleeing])
-                    [self addUnitToAttackingMe:player];
-            }
-            else
-                [self removeUnitFromAttackingMe:player];
-        }
-	}
-	
-	// verify units we're in combat with!
 	[self verifyCombatUnits: NO];
-	
-	//log(LOG_TARGET, @"In combat with %d units; %d in attack queue", [_unitsAttackingMe count], [_attackQueue count]);
 }
 
 - (BOOL)addUnitToAttackingMe: (Unit*)unit{
