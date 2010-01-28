@@ -2161,7 +2161,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_FUNCTION, @"entering function");
     
     float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
-    
+
+    if(![unit isValid] || [unit isDead] || ![unit isSelectable] || !([unit isAttackable] || [unit isFeignDeath]) || [unit currentHealth] == 1)
+        return NO;
     if(![self.theCombatProfile unitFitsProfile:unit ignoreDistance:ignoreDistance])
         return NO;
     if([[unit position] verticalDistanceToPosition: position] > vertOffset)
