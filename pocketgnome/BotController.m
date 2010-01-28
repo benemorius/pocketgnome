@@ -3058,7 +3058,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [blacklistController removeAllUnits];
     
 
-    [_mobsToLoot removeAllObjects];
     self.isBotting = NO;
     self.preCombatUnit = nil;
     [controller setCurrentStatus: @"Bot: Stopped"];

@@ -317,5 +317,7 @@
 - (void) updateRunningTimer;
 
 - (UInt8)isHotKeyInvalid;
+- (Mob*)unitToLoot;
+
 
 @end

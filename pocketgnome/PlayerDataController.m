@@ -1166,6 +1166,7 @@ static PlayerDataController* sharedController = nil;
 		if( [[combatTable window] isVisible])
 		{
             [combatController doCombatSearch];
+            [botController unitToLoot];
 
             NSMutableArray *units = [NSMutableArray array];
             [units addObjectsFromArray:[combatController unitsAttackingMe]];
