@@ -17,6 +17,7 @@
 #define LOG_TARGET "target"
 #define LOG_MOVEMENT_CORRECTION "movement_correction"
 #define LOG_MOVEMENT "movement"
+#define LOG_TURNING "turning"
 #define LOG_RULE "rule"
 #define LOG_CONDITION "condition"
 #define LOG_BEHAVIOR "behavior"
