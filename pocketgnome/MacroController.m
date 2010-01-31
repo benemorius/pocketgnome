@@ -152,7 +152,7 @@
 		log(LOG_MACRO, @"Executing macro '%@' with id 0x%X", key, macroID);
 		
 		[botController performAction:USE_MACRO_MASK + macroID];
-		usleep(100000);
+		usleep([controller refreshDelay]*2);
 		
 		return YES;
 	}

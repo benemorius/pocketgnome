@@ -1868,7 +1868,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_COMBAT, @"SELECTING %@  Weight: %d", unit, [combatController unitWeight:unit PlayerPosition:playerPosition] );
             
             [playerController setPrimaryTarget: unit];
-            usleep([controller refreshDelay]);
+            //usleep([controller refreshDelay]);
         }
     }
 	
@@ -4033,7 +4033,7 @@ NSMutableDictionary *_diffDict = nil;
 		return NO;
 	
 	UInt32 oldActionID = 0;
-	UInt32 cooldown = [controller refreshDelay]*2;
+	UInt32 cooldown = [controller refreshDelay];
 	KeyCombo hotkey = [shortcutRecorder keyCombo];
 	_currentHotkeyModifier = hotkey.flags;
 	_currentHotkey = hotkey.code;
@@ -4073,7 +4073,7 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	
 	// give WoW time to write to memory in case the spell didn't cast
-	usleep(cooldown);
+	//usleep(cooldown);
 	
 	_lastActionTime = [playerController currentTime];
 	
