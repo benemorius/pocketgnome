@@ -178,7 +178,7 @@ typedef enum MovementType {
 		[self moveForwardStop];
         
         self.isPaused = YES;
-        usleep(100000);
+        usleep([controller refreshDelay]);
     }
 }
 
@@ -464,7 +464,7 @@ typedef enum MovementType {
 			[self moveUpStop];
 			
 			[self moveForwardStop];
-			usleep(10000);
+			usleep([controller refreshDelay]*2);
 			[self resumeMovement];
 		}
 	}
