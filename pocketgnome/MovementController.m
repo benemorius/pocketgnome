@@ -1135,7 +1135,10 @@ typedef enum MovementType {
 	if(![playerData isOnGround] && [botController nodeDescend] && [[playerData position] distanceToPosition2D: [unit position]] > POSITION2D_DISTANCE)
     {
         Position *position2d = [[unit position] copy];
-        [position2d setZPosition:[[playerData position] zPosition]];
+        if([[unit position] zPosition] > [[playerData position] zPosition])
+            [position2d setZPosition:[[unit position] zPosition]+15];
+        else
+            [position2d setZPosition:[[playerData position] zPosition]];
         [self turnToward:position2d];
         return;
     }
